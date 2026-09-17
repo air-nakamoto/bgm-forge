@@ -95,14 +95,23 @@
   function rootMidi(pc,oct=4){return 12*(oct+1)+pc}
 
   function compose(settings,seed){return BGMScore.compose({...settings,scale:MODES[settings.mood.mode]},seed)}
-  function differences(a,b){if(!a||!b)return 99;let n=0;n+=a.root!==b.root;n+=a.prog.join()!=b.prog.join();n+=a.motif.join()!=b.motif.join();n+=a.rhythmIndex!==b.rhythmIndex;n+=a.arpIndex!==b.arpIndex;return n}
+  function differences(a,b){
+    if(!a||!b)return 99;
+    const harmony=s=>Array.from({length:s.themeBars},(_,bar)=>BGMScore.chordAt(s,bar)).join(',');
+    let n=0;n+=a.root!==b.root;n+=harmony(a)!==harmony(b);
+    n+=a.sound!==b.sound;n+=a.bpm!==b.bpm;
+    n+=BGMScore.arrangementKey(a)!==BGMScore.arrangementKey(b);
+    if(a.lead!==false||b.lead!==false){n+=a.motif.join()!=b.motif.join();n+=a.rhythmIndex!==b.rhythmIndex}
+    return n;
+  }
   function randomSeed(){if(typeof crypto!=='undefined'&&crypto&&crypto.getRandomValues){const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]>>>0}return Math.floor(Math.random()*0xffffffff)}
   function nextScore(){
     const previous=state.take&&state.take.score;
     let seed=randomSeed();
     for(let tries=0;;tries++){
       const score=compose(state,seed);
-      if((!previous||score.seed!==previous.seed)&&differences(score,previous)>=2)return score;
+      const freshArrangement=!previous||score.moodId!==previous.moodId||score.arrangementVariant!==previous.arrangementVariant;
+      if((!previous||score.seed!==previous.seed)&&freshArrangement&&differences(score,previous)>=2)return score;
       seed=tries<99?randomSeed():(seed+1)>>>0;
     }
   }

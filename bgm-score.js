@@ -23,8 +23,30 @@
            inner:[[4,'stab'],[3,'off'],[2,'half'],[1,'run']]}
   };
   const ACCOMPANIMENTS=[{id:'auto',name:'場面におまかせ'},{id:'up',name:'上がるアルペジオ'},{id:'wave',name:'行き来するアルペジオ'},{id:'pulse',name:'短い反復'},{id:'sparse',name:'余白のある分散和音'},{id:'chords',name:'和音をゆったり鳴らす'}];
-  const SCENE_PATTERNS={bright:'wave',town:'wave',victory:'pulse',wonder:'up',calm:'wave',solemn:'chords',mystic:'sparse',sorrow:'sparse',memory:'wave',lullaby:'wave',requiem:'chords',puzzle:'up',dark:'sparse',ritual:'pulse',machine:'pulse',chase:'pulse',tense:'pulse',horror:'sparse'};
-  const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:SCENE_PATTERNS[s.moodId]||'legacy';
+  // Each scene has three coherent accompaniment gestures. Times are in beats;
+  // harmony moves independently of the four-bar phrase, including slow pedals.
+  const SCENES={
+    bright: {inner:[[0,.75,2,2.75],[0,1.5,2.5],[.5,1,2.5,3]],bass:['fifth','walk','two'],pad:[0,2],padBars:2,hold:1.2,harmony:[1,1,2],high:72,gate:.48,drum:'light'},
+    town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
+    victory:{inner:[[0,1.5,2],[0,.5,2,3],[0,1,2.5]],bass:['march','fifth','march'],pad:[0,2],padBars:1,hold:1.5,harmony:[2,1,2],high:72,gate:.65,drum:'march'},
+    wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:2,hold:7.8,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
+    calm:   {inner:[[1.5],[.5,3],[2.5]],bass:['hold','pedal','hold'],pad:[0],padBars:2,hold:7.8,harmony:[2,4,2],high:65,gate:1.4,drum:'none'},
+    solemn: {inner:[[],[],[]],bass:['hold','pedal','fifth'],pad:[0],padBars:1,hold:3.85,harmony:[2,4,1],high:69,gate:1,drum:'none'},
+    mystic: {inner:[[.75,3.25],[1.5,2.75],[.25,2.5]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:6.8,harmony:[4,2,4],high:76,gate:.7,drum:'none'},
+    sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
+    memory: {inner:[[0,1.5,3],[.5,2,3.5],[0,.75,2.5]],bass:['fifth','two','walk'],pad:[2],padBars:2,hold:1.7,harmony:[1,2,2],high:69,gate:.6,drum:'none'},
+    lullaby:{inner:[[0,1,2.5],[.5,2,3],[0,1.5,3]],bass:['fifth','hold','two'],pad:[],padBars:1,hold:0,harmony:[2,2,4],high:76,gate:.85,drum:'none'},
+    requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:7.8,harmony:[4,2,4],high:64,gate:1,drum:'none'},
+    puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
+    dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
+    ritual: {inner:[[0,1.5,3],[0,1,2.5],[.5,2,3.5]],bass:['pedal','ritual','pedal'],pad:[0],padBars:2,hold:7.8,harmony:[4,2,4],high:65,gate:.65,drum:'ritual'},
+    machine:{inner:[[0,.5,1,1.75,2.5,3],[0,.75,1.5,2,3,3.5],[0,.5,1.5,2.5,3.25]],bass:['motor','two','motor'],pad:[],padBars:1,hold:0,harmony:[2,4,2],high:66,gate:.22,drum:'motor'},
+    chase:  {inner:[[0,.5,1,1.5,2,2.5,3,3.5],[0,.5,1.5,2,2.5,3.5],[0,.75,1.5,2,2.75,3.5]],bass:['motor','walk','motor'],pad:[0],padBars:2,hold:.9,harmony:[1,1,2],high:73,gate:.32,drum:'running'},
+    tense:  {inner:[[0,.75,1.5,2.5,3],[0,.5,1.75,2.5,3.5],[0,1.5,2,2.75]],bass:['ritual','motor','march'],pad:[0,2.5],padBars:1,hold:.7,harmony:[1,2,1],high:67,gate:.35,drum:'battle'},
+    horror: {inner:[[1.75],[3.25],[.5,2.75]],bass:['pedal','pedal','hold'],pad:[1.5],padBars:2,hold:5.8,harmony:[4,4,2],high:78,gate:.55,drum:'broken'}
+  };
+  const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:SCENES[s.moodId]?'scene':'legacy';
+  const arrangementKey=s=>[s.moodId,s.arrangementVariant,s.harmonyEvery,s.accompaniment||'auto'].join(':');
   // Registers: the inner voice stays under the melody, the pad stays inside the sampled string range.
   const INNER_GAP=4,INNER_SPAN=11,PAD_LOW=55,PAD_HIGH=79;
   const STEPS=[-4,-3,-2,-2,-1,-1,1,1,2,2,3,4];
@@ -33,7 +55,7 @@
   const pitch=(scale,d)=>scale[(d%7+7)%7]+12*Math.floor(d/7);
   const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a);
   function chordDegrees(d){return [d-7,d-5,d-3,d,d+2,d+4,d+7,d+9,d+11]}
-  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto'].join('|');return s}
+  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery].join('|');return s}
 
   // A 16-bar theme cannot be heard inside 25 beats, so the form follows the requested duration.
   function themeBarsFor(bpm,length){const beats=length*bpm/60;return beats>=64?16:beats>=32?8:beats>=16?4:2}
@@ -61,7 +83,7 @@
 
   function compose(settings,seed){
     const r=rng(seed),m=settings.mood,idx=Math.floor(r()*m.progs.length);
-    const prog=m.progs[idx].slice();prog[0]=0;
+    const prog=m.progs[idx].slice();
     // The second half of a 16-bar theme takes a different path so it is not a straight repeat.
     const progB=m.progs[m.progs.length>1?(idx+1+Math.floor(r()*(m.progs.length-1)))%m.progs.length:idx].slice();
     const motif=makeMotif(r);
@@ -71,6 +93,8 @@
       themeBars:themeBarsFor(settings.bpm,settings.length),ending:settings.ending==='cadence'?'cadence':'loop',
       baseDensity:m.density||.55,density:densityFor(m.density,settings.phrasing),phrasing:settings.phrasing||'auto',lead:settings.lead!==false,
       accompaniment:settings.accompaniment||'auto',moodId:m.id,moodName:m.name,style:m.style||'full',sound:settings.sound||'samples',level:1,energy:typeof m.energy==='number'?m.energy:.55,scene:'theme',sceneName:'テーマ'};
+    const profile=SCENES[m.id],variant=Math.floor(rng(seed^0x5343454E)()*3);
+    s.arrangementVariant=variant;s.harmonyEvery=profile?profile.harmony[variant]:1;
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
   }
 
@@ -89,6 +113,13 @@
   };
   function period(s){return Math.min(8,s.themeBars||16)}
   function chordAt(s,bar){
+    if(s.harmonyEvery){
+      // Retain the selected progression, including its opening and final chord.
+      // A loop need not resolve to the tonic every four bars.
+      const within=((bar%(s.themeBars||16))+(s.themeBars||16))%(s.themeBars||16);
+      const useB=(s.themeBars||16)>=16&&within>=8;
+      return (useB?s.progB:s.prog)[Math.floor((useB?within-8:within)/s.harmonyEvery)%4];
+    }
     const p=period(s),within=((bar%p)+p)%p;
     if(within===p-1)return 0;
     if(within===p-2)return 4;
@@ -101,7 +132,7 @@
     // Voice-leading state carried across bars: last note, last direction, whether a leap awaits its answer, run length.
     let previous=4,lastDir=0,owe=false,run=0;
     for(let bar=0;bar<bars;bar++){
-      const chord=chordAt(s,bar),phraseBar=bar%4,response=bars>=8&&bar%8>=4,cadence=bar%p===p-1;
+      const chord=chordAt(s,bar),phraseBar=bar%4,response=bars>=8&&bar%8>=4,cadence=bar%p===p-1&&chord===0;
       const interlude=bars>=16&&bar>=8&&bar<12,development=bars>=16&&bar>=12;
       // A sparse line does not walk in on the downbeat: it lets the accompaniment set the scene
       // for half a bar first, which is what makes it sit under talking instead of leading it.
@@ -171,7 +202,7 @@
   }
   function remix(source,kind,seed){
     const s=JSON.parse(JSON.stringify(source));s.seed=seed;s.edit=kind;
-    if(kind==='accompaniment'){s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
+    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
     if(kind==='drums')s.drums=s.drums==='none'?s.defaultDrums:'none';
     if(kind==='quiet')s.level=Math.max(.2,s.level*.65);
     if(kind==='ending')s.ending=s.ending==='cadence'?'loop':'cadence';
@@ -259,6 +290,59 @@
     visit(0,[]);return best;
   }
 
+  // Phrase-level gestures stay recognizable; rests and orchestration change on
+  // the answer, rather than independently re-rolling every bar.
+  function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,add}){
+    const c=SCENES[s.moodId],v=s.arrangementVariant||0,local=bar%(s.themeBars||16);
+    const phrase=Math.floor(local/4),answer=local%4===3;
+    const sparse=['wonder','calm','mystic','dark','horror'].includes(s.moodId);
+    const breath=sparse&&local%4===(v===1?1:3);
+    const n=raw.length,vel=43+energy*17;
+    if(bar%c.padBars===0){
+      // Open fifths and wider spacing distinguish drones from tonal accompaniment.
+      const pad=['dark','ritual'].includes(s.moodId)?[raw[0],raw[n-1]]:
+        s.moodId==='horror'?[raw[0],Math.min(PAD_HIGH,raw[0]+1),raw[n-1]]:raw;
+      for(const at of c.pad)pad.forEach((q,j)=>add(1,q,b+at,c.hold,vel-4+j*2,(j/(pad.length-1||1)-.5)*.9));
+    }
+    const root=base-12+pitch(s.scale,d),fifth=base-12+pitch(s.scale,d+4);
+    const bass=c.bass[v],bv=53+energy*18;
+    if(bass==='pedal'){
+      if(local%2===0)add(2,base-12,b,7.8,bv-8);
+    }else if(bass==='hold')add(2,root,b,3.85,bv);
+    else if(bass==='walk'){
+      [root,base-12+pitch(s.scale,d+2),fifth,base-12+pitch(s.scale,chordFor(bar+1))].forEach((q,k)=>add(2,q,b+k,.82,bv-(k?7:0)));
+    }else{
+      const times=bass==='motor'?[0,.5,1,1.5,2,2.5,3,3.5]:bass==='ritual'?[0,1.5,3]:bass==='march'?[0,1,2,3]:[0,2];
+      times.forEach((at,k)=>add(2,bass==='fifth'&&k%2?fifth:root,b+at,bass==='motor'?.34:bass==='ritual'?.7:bass==='march'?.75:1.7,bv-(k%2?7:0)));
+    }
+    if(!breath){
+      const times=c.inner[v],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[v];
+      times.forEach((at,k)=>{
+        // The answer leaves room; it does not append a new tune.
+        if(answer&&times.length>2&&k===times.length-1)return;
+        const index=(order[k%4]+(phrase%2&&v===2?1:0))%inner.length;
+        const q=inner[index];
+        add(3,q,b+at,Math.min(c.gate,4-at),32+energy*17+(k===0?5:-2)+(phrase%2?-3:0),k%2?.3:-.3);
+      });
+    }
+    if(s.drums==='none')return;
+    // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
+    const kind=c.drum==='none'?'light':c.drum;
+    const hit=(pitch,at,velocity,duration=.2)=>add(4,pitch,b+at,duration,velocity);
+    const kicks={march:[0,2],ritual:[0,1.5,3],motor:[0,1,2,3],running:[0,1.5,2.5],battle:[0,.75,2.5],swing:[0],ticks:[],light:[],distant:[0],broken:[.5,2.75]};
+    if((kind==='distant'&&local%2)|| (kind==='broken'&&local%4!==v))return;
+    for(const at of kicks[kind]||[])hit(36,at,kind==='distant'||kind==='broken'?42:64,.4);
+    if(kind==='running'||kind==='battle'||kind==='march'){
+      for(const at of kind==='march'?[1,3]:kind==='battle'?[1.5,3.5]:[1,3])hit(38,at,54);
+      const hats=kind==='march'?[.5,2.5]:kind==='battle'?[0,.75,1.5,2.5,3.25]:[0,.5,1,1.5,2,2.5,3,3.5];
+      hats.forEach((at,k)=>hit(42,at,k%2?26:36,.12));
+      if(answer)hit(38,3.75,42,.12);
+    }else if(kind==='motor')for(const at of [.5,1.5,2.5,3.5])hit(42,at,32,.1);
+    else if(kind==='swing')for(const at of [2/3,5/3,8/3,11/3])hit(54,at,29,.15);
+    else if(kind==='ticks')for(const at of [.5,2,3.5])hit(54,at,26,.12);
+    else if(kind==='light')for(const at of [1,3])hit(54,at,29,.18);
+  }
+
   function events(s){
     const total=s.ending==='cadence'?s.length*s.bpm/60:Math.round(s.length*s.bpm/60),base=48+s.root,notes=[],random=rng(s.arrangementSeed);
     const loop=s.ending!=='cadence',bars=s.themeBars||16,p=period(s),lastBar=Math.max(0,Math.floor((total-.5)/4));
@@ -308,8 +392,14 @@
       if((style.pad!==false||pattern==='chords')&&(variant!==3||turn)&&(pattern==='legacy'||pattern==='chords'||pos!==1)){previousPad=raw;if(!firstPad)firstPad=raw}
       const lift=0;
       // The inner voice sits in one closed octave, always a clear gap below the tune.
-      const innerHigh=(s.melodyLow||72)-INNER_GAP,innerLow=innerHigh-INNER_SPAN;
+      const innerHigh=s.lead===false&&SCENES[s.moodId]?SCENES[s.moodId].high:(s.melodyLow||72)-INNER_GAP,innerLow=innerHigh-INNER_SPAN;
       const inner=degrees.map(x=>{let q=base+pitch(s.scale,x);while(q<innerLow)q+=12;while(q>innerHigh)q-=12;return q}).sort((a,b)=>a-b);
+
+      if(pattern==='scene'){
+        sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,add});
+        previousPad=raw;if(!firstPad)firstPad=raw;
+        continue;
+      }
 
       // Pad: the chord does not restrike identically every bar.
       if((style.pad!==false||pattern==='chords')&&(variant!==3||turn)){
@@ -414,6 +504,6 @@
     const last=new Map();for(const n of notes){const key=n.part+':'+n.pitch,q=last.get(key);if(q&&q.beat+q.duration>n.beat)q.duration=n.beat-q.beat;last.set(key,n)}
     return notes.filter(n=>n.duration>0);
   }
-  const api={ACCOMPANIMENTS,accompanimentFor,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH}};
+  const api={ACCOMPANIMENTS,accompanimentFor,arrangementKey,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH}};
   if(typeof module!=='undefined')module.exports=api;else root.BGMScore=api;
 })(typeof window!=='undefined'?window:this);
