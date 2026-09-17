@@ -1983,6 +1983,9 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     locrian:[0,1,3,5,6,8,10], harmonic:[0,2,3,5,7,8,11],
     lydian:[0,2,4,6,7,9,11], mixolydian:[0,2,4,5,7,9,10]
   };
+  // Mood-level accompaniment trim for parts 1-3 (pad / bass / inner voice).
+  // 1 = unchanged. Lower = quieter backing under the melody.
+  const ACCOMP_TRIM = { wonder: .72, night: .62 };
   const MOODS = [
     {id:'bright',style:'full',desc:'朝の街道、報酬の受け取り、無事に切り抜けたあとの一息。日常に戻ってきた場面に。',name:'☀️ 明るい',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,4,5,3],[0,3,4,0],[0,5,3,4],[0,2,3,4],[3,4,0,5],[5,3,0,4]],drums:'light',energy:.75,density:.8},
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
@@ -2187,7 +2190,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
       return {meta,buffer};
     });return sampleCache;
   }
-  function sampleNote(ctx,bus,n,beat,bank,soft=false){
+  function sampleNote(ctx,bus,n,beat,bank,soft=false,trim=1){
     const kind=n.part===4?'drums':n.part===1&&!soft?'strings':'piano';
     let choices=bank.filter(x=>x.meta.kind===kind&&(kind!=='piano'||x.meta.velocity===(soft||n.velocity<65?'pp':'mf')));
     if(!choices.length)choices=bank.filter(x=>x.meta.kind===kind);
@@ -2199,7 +2202,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     const source=ctx.createBufferSource(),g=ctx.createGain(),p=ctx.createStereoPanner(),f=ctx.createBiquadFilter();
     source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(n.pitch-sample.meta.root)/12);
     if(kind==='strings'&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
-    const gain=[.24,.095,.18,.10,.22][n.part]*Math.pow(n.velocity/80,1.3);
+    const gain=[.24,.095,.18,.10,.22][n.part]*trim*Math.pow(n.velocity/80,1.3);
     const attack=kind==='strings'?Math.min(.16,duration*.2):soft?Math.min(.018,duration*.2):.003;
     g.gain.setValueAtTime(.00001,at);g.gain.linearRampToValueAtTime(gain,at+attack);
     g.gain.setValueAtTime(gain,Math.max(at+attack,end-release));g.gain.exponentialRampToValueAtTime(.00001,end);
@@ -2220,14 +2223,16 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     const noiseRandom=rng(score.seed^0x4E4F4953),noiseBuffer=ctx.createBuffer(1,Math.floor(SR*1.5),SR),nd=noiseBuffer.getChannelData(0);
     for(let i=0;i<nd.length;i++)nd[i]=noiseRandom()*2-1;
     for(const n of events){
+      // Quiet the backing parts for moods whose harmony crowds the melody.
+      const trim=(n.part>=1&&n.part<=3)?(ACCOMP_TRIM[score.moodId]||1):1;
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
       // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
-      if(['wonder','requiem'].includes(score.moodId)&&(n.part===1||n.part===2)){
+      if(['wonder','requiem','night'].includes(score.moodId)&&(n.part===1||n.part===2)){
         const fade=ctx.createGain(),at=n.beat*beat,duration=n.duration*beat;
         fade.gain.setValueAtTime(1,at);
         fade.gain.setValueAtTime(1,at+Math.min(.2,duration*.1));
-        const requiem=score.moodId==='requiem',floor=requiem?.14:.12;
+        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:.12);
         // Requiem settles into a quiet bed until the next chord, rather than
         // finishing the note early and leaving a silent part of each bar.
         fade.gain.exponentialRampToValueAtTime(floor,at+(requiem?Math.min(duration*.9,2.4*beat):duration*.9));
@@ -2241,9 +2246,9 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
         else noiseSource(ctx,noiseBuffer,bus,n.beat*beat,n.duration*beat,.045*drumGain*n.velocity/80,n.pitch===38?900:2800,n.pan||0);
         continue;
       }
-      if(bank){sampleNote(ctx,bus,n,beat,bank,soft);continue}
-      if(chip){chipTone(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,[.11,.05,.095,.045][n.part]*n.velocity/80,['key','pad','bass','key'][n.part],n.pan);continue}
-      synthNote(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,V.gains[n.part]*n.velocity/80,['key','pad','bass','key'][n.part],n.pan||0,V,bright);
+      if(bank){sampleNote(ctx,bus,n,beat,bank,soft,trim);continue}
+      if(chip){chipTone(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,[.11,.05,.095,.045][n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan);continue}
+      synthNote(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,V.gains[n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan||0,V,bright);
     }
     let abortReject=null;const abort=new Promise((_,reject)=>{abortReject=reject});
     if(onProgress||isCancelled){
