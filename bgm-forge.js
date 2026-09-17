@@ -13,11 +13,10 @@
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
     {id:'casino',style:'walk',desc:'ルーレット、カード勝負、華やかな遊技場。跳ねるピアノと軽快な低音で、陽気な駆け引きやコミカルな騒動に。',name:'🎲 カジノ',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,5,1,4],[0,2,5,4],[3,0,1,4],[0,5,3,4],[0,3,1,4],[5,1,4,0]],drums:'light',energy:.72,density:.65},
     {id:'victory',style:'drive',desc:'依頼の達成、街への凱旋、名乗りを上げる瞬間。セッションの締めやエンディングにも。',name:'🏆 凱旋',mode:'ionian',roots:[0,5,7],wave:'sawtooth',progs:[[0,3,4,0],[0,4,5,3],[0,5,3,4],[3,4,0,0],[0,2,3,4],[4,5,3,0]],drums:'drive',energy:1,density:.85},
-    {id:'wonder',style:'drift',desc:'異界へ踏み込む、精霊との邂逅、夢の中。見たことのない景色を前にして足が止まる場面に。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
+    {id:'wonder',style:'drift',desc:'夢や異世界、精霊との邂逅、神秘的な遺跡の探索。澄んだ鐘と浮遊する響きで、日常を離れる場面に。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
     {id:'night',style:'drift',desc:'涼しい夜風、星空の下の散歩、月明かりの街道。静かでも暗くならない、すっきりした夜のひとときに。',name:'🌌 夜空',mode:'lydian',roots:[5,0,7],wave:'sine',progs:[[0,4,1,0],[0,2,1,4],[3,0,4,1],[0,1,4,2],[2,4,0,1],[0,4,2,3]],drums:'none',energy:.38,density:.35},
     {id:'calm',style:'hush',desc:'宿での休息、荷物の整理、キャラクター同士の何気ない会話。長く流しっぱなしにしても疲れません。',name:'🛏️ 穏やか',mode:'aeolian',roots:[2,9,4],wave:'sine',progs:[[0,5,2,4],[0,3,5,4],[5,2,0,6],[0,2,5,3],[3,5,0,4],[5,3,0,4]],drums:'none',energy:.5,density:.5},
     {id:'solemn',style:'hymn',desc:'神殿、宣誓、王の間での謁見、葬送。重い決断を下す前の静けさに。',name:'⛪ 荘厳',mode:'ionian',roots:[9,4,2],wave:'sine',progs:[[0,3,0,4],[0,5,3,0],[3,0,4,0],[0,4,3,0],[0,2,3,4],[5,0,3,4]],drums:'none',energy:.45,density:.4},
-    {id:'mystic',style:'drift',desc:'古い遺跡、書庫での調査、占いの卓、儀式の支度。謎を前にした探索の時間に。',name:'🌌 神秘',mode:'dorian',roots:[2,4,9],wave:'triangle',progs:[[0,3,5,4],[0,1,5,3],[5,3,0,1],[0,5,3,4],[3,0,5,4],[0,4,3,5]],drums:'none',energy:.55,density:.55},
     {id:'sorrow',style:'hush',desc:'別れ、喪失、回想、看取り。取り返しのつかないことが起きたあとの場面に。',name:'💧 悲哀',mode:'aeolian',roots:[9,4,7],wave:'sine',progs:[[0,5,3,4],[0,2,5,4],[0,3,0,5],[5,3,0,4],[0,4,5,3],[2,5,0,4]],drums:'none',energy:.4,density:.45},
     {id:'memory',style:'walk',desc:'古い記録、子供の頃の記憶、もう戻れない日々。悲哀が取り返しのつかない喪失なら、こちらは温かい懐かしさ。',name:'📻 回想',mode:'mixolydian',roots:[5,10,0],wave:'sine',progs:[[0,5,3,6],[0,6,5,0],[5,0,6,3],[0,3,5,6],[6,5,0,3],[3,6,0,5]],drums:'none',energy:.45,density:.5},
     {id:'lullaby',style:'rock',desc:'眠りの入口、子供部屋、人形の並ぶ棚、夢のはじまり。穏やかより高く小さく、揺りかごのように同じ形を繰り返します。',name:'🎠 まどろみ',mode:'ionian',roots:[7,0,5],wave:'sine',progs:[[0,3,0,5],[0,4,0,3],[5,0,3,0],[0,3,5,0],[4,0,5,3],[0,0,3,4]],drums:'none',energy:.3,density:.4},
@@ -32,6 +31,7 @@
   ];
   const SOUNDS=[
     {id:'samples',name:'生楽器',note:'ピアノ・弦・打楽器'},
+    {id:'softpiano',name:'柔らかいピアノ',note:'弱く弾いた音・控えめな余韻'},
     {id:'synth',name:'やわらかい',note:'丸い電子音'},
     {id:'glass',name:'ガラス・鐘',note:'澄んだ余韻'},
     {id:'pluck',name:'爪弾き',note:'減衰する弦'},
@@ -88,8 +88,7 @@
   // The mood's waveform still tilts how bright the preset sounds.
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
-  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'glass'],calm:[60,'synth'],solemn:[60,'samples'],mystic:[76,'glass'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
-  DEFAULTS.casino=[116,'samples'];
+  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'softpiano'],calm:[60,'synth'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
   function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
@@ -213,34 +212,34 @@
       return {meta,buffer};
     });return sampleCache;
   }
-  function sampleNote(ctx,bus,n,beat,bank){
-    const kind=n.part===1?'strings':n.part===4?'drums':'piano';
-    let choices=bank.filter(x=>x.meta.kind===kind&&(kind!=='piano'||x.meta.velocity===(n.velocity<65?'pp':'mf')));
+  function sampleNote(ctx,bus,n,beat,bank,soft=false){
+    const kind=n.part===4?'drums':n.part===1&&!soft?'strings':'piano';
+    let choices=bank.filter(x=>x.meta.kind===kind&&(kind!=='piano'||x.meta.velocity===(soft||n.velocity<65?'pp':'mf')));
     if(!choices.length)choices=bank.filter(x=>x.meta.kind===kind);
     if(!choices.length)choices=bank;
     if(!choices.length)return;
     const sample=choices.reduce((a,b)=>Math.abs(b.meta.root-n.pitch)<Math.abs(a.meta.root-n.pitch)?b:a);
-    const at=n.beat*beat,duration=n.duration*beat,release=kind==='strings'?.3:kind==='drums'?.15:.2;
+    const at=n.beat*beat,duration=n.duration*beat,release=kind==='strings'?.3:kind==='drums'?.15:soft?.35:.2;
     const end=Math.min(at+duration+release,ctx.length/SR-.001);if(end-at<.01)return;
     const source=ctx.createBufferSource(),g=ctx.createGain(),p=ctx.createStereoPanner(),f=ctx.createBiquadFilter();
     source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(n.pitch-sample.meta.root)/12);
     if(kind==='strings'&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
     const gain=[.24,.095,.18,.10,.22][n.part]*Math.pow(n.velocity/80,1.3);
-    const attack=kind==='strings'?Math.min(.16,duration*.2):.003;
+    const attack=kind==='strings'?Math.min(.16,duration*.2):soft?Math.min(.018,duration*.2):.003;
     g.gain.setValueAtTime(.00001,at);g.gain.linearRampToValueAtTime(gain,at+attack);
     g.gain.setValueAtTime(gain,Math.max(at+attack,end-release));g.gain.exponentialRampToValueAtTime(.00001,end);
-    p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='drums'?9000:2500+n.velocity*60;f.Q.value=.4;
+    p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='drums'?9000:soft?1800+n.velocity*10:2500+n.velocity*60;f.Q.value=.4;
     source.connect(f);f.connect(g);g.connect(p);p.connect(bus);source.start(at);source.stop(end);
   }
   async function render(score,onProgress,isCancelled){
     const tail=3,total=score.length+tail,ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
-    const chip=score.sound==='chip',bank0=score.sound==='samples';
+    const chip=score.sound==='chip',soft=score.sound==='softpiano',bank0=score.sound==='samples'||soft;
     const V=VOICES[score.sound]||VOICES.synth,bright=BRIGHT[score.instrument]||1;
     const dim=['mystic','dark','horror','wonder','solemn','ritual'].includes(score.moodId);
-    const wet=chip?.14:bank0?(dim?.42:.32):V.wet[dim?1:0];
+    const wet=chip?.14:soft?.24:bank0?(dim?.42:.32):V.wet[dim?1:0];
     const buses=spaceBus(ctx,score.seed,wet);
     buses.master.gain.value=.72;
-    const beat=60/score.bpm,events=BGMScore.events(score),bank=score.sound==='samples'?sampleBuffers(ctx):null;
+    const beat=60/score.bpm,events=BGMScore.events(score),bank=bank0?sampleBuffers(ctx):null;
     const drumGain=chip?1:bank0?1:V.drums;
     // One seeded noise bed keeps hats and snares reproducible from the seed.
     const noiseRandom=rng(score.seed^0x4E4F4953),noiseBuffer=ctx.createBuffer(1,Math.floor(SR*1.5),SR),nd=noiseBuffer.getChannelData(0);
@@ -267,7 +266,7 @@
         else noiseSource(ctx,noiseBuffer,bus,n.beat*beat,n.duration*beat,.045*drumGain*n.velocity/80,n.pitch===38?900:2800,n.pan||0);
         continue;
       }
-      if(bank){sampleNote(ctx,bus,n,beat,bank);continue}
+      if(bank){sampleNote(ctx,bus,n,beat,bank,soft);continue}
       if(chip){chipTone(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,[.11,.05,.095,.045][n.part]*n.velocity/80,['key','pad','bass','key'][n.part],n.pan);continue}
       synthNote(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,V.gains[n.part]*n.velocity/80,['key','pad','bass','key'][n.part],n.pan||0,V,bright);
     }
