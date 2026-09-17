@@ -243,7 +243,16 @@
     const noiseRandom=rng(score.seed^0x4E4F4953),noiseBuffer=ctx.createBuffer(1,Math.floor(SR*1.5),SR),nd=noiseBuffer.getChannelData(0);
     for(let i=0;i<nd.length;i++)nd[i]=noiseRandom()*2-1;
     for(const n of events){
-      const bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
+      let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
+      // Wonder's sustained harmony breathes out instead of sitting at a fixed
+      // level. Apply before the reverb send, for sampled and synthesized voices.
+      if(score.moodId==='wonder'&&(n.part===1||n.part===2)){
+        const fade=ctx.createGain(),at=n.beat*beat,duration=n.duration*beat;
+        fade.gain.setValueAtTime(1,at);
+        fade.gain.setValueAtTime(1,at+Math.min(.2,duration*.1));
+        fade.gain.exponentialRampToValueAtTime(.12,at+duration*.9);
+        fade.connect(bus);bus=fade;
+      }
       if(n.part===4){
         if(n.pitch===36){bank?sampleNote(ctx,bus,n,beat,bank):scheduleKick(ctx,bus,n.beat*beat,n.duration*beat,(chip?.26:.32)*drumGain*n.velocity/80)}
         else if(n.pitch===42)noiseSource(ctx,noiseBuffer,bus,n.beat*beat,Math.min(n.duration*beat,.09),.05*drumGain*n.velocity/80,6500,n.pan||.2);
