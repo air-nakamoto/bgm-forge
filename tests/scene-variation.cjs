@@ -37,6 +37,16 @@ for(const mood of MOODS){
  assert.equal(arrangements.size,3,mood.id+' needs all three arrangements');
  assert.equal(new Set(arrangements.values()).size,3,mood.id+' needs audible rhythmic variations');
  const s=compose(mood,42);
+ if(mood.id==='wonder'){
+  for(let seed=1;seed<=12;seed++){
+   const loop=compose(mood,seed),end=loop.length*loop.bpm/60;
+   const events=score.events(loop);
+   assert(events.some(n=>n.part===1&&n.beat>=end-2&&n.beat+n.duration>=end-1e-6),'wonder must carry harmony into the loop boundary');
+   const preview=score.sample(loop,{sound:loop.sound,bpm:loop.bpm,lead:false});
+   assert(!score.events(preview).some(n=>n.part===1&&n.beat>=6),'preview must not insert a false turnaround');
+  }
+ }
+
  for(const lead of [false,true])for(const ending of ['loop','cadence']){
   valid(compose(mood,7,{lead,ending,length:20}));tested++;
  }

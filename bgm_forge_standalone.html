@@ -1744,7 +1744,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
 
   // Phrase-level gestures stay recognizable; rests and orchestration change on
   // the answer, rather than independently re-rolling every bar.
-  function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,add}){
+  function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,add}){
     const c=SCENES[s.moodId],v=s.arrangementVariant||0,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','calm','mystic','dark','horror'].includes(s.moodId);
@@ -1776,6 +1776,14 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
         const q=inner[index];
         add(3,q,b+at,Math.min(c.gate,4-at),32+energy*17+(k===0?5:-2)+(phrase%2?-3:0),k%2?.3:-.3);
       });
+    }
+    if(s.moodId==='wonder'&&turn){
+      // A fading scene still needs a handoff into the next downbeat. Anticipate
+      // the opening harmony quietly instead of leaving a near-silent last bar.
+      const next=chordFor(bar+1);
+      const arrival=voiceChord([next,next+2,next+4].map(x=>base+pitch(s.scale,x)),raw,null);
+      arrival.forEach((q,j)=>add(1,q,b+2,2,vel-10,(j-1)*.35));
+      add(2,base-12+pitch(s.scale,next),b+2,1.9, bv-12);
     }
     if(s.drums==='none')return;
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
@@ -1848,7 +1856,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
       const inner=degrees.map(x=>{let q=base+pitch(s.scale,x);while(q<innerLow)q+=12;while(q>innerHigh)q-=12;return q}).sort((a,b)=>a-b);
 
       if(pattern==='scene'){
-        sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,add});
+        sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,add});
         previousPad=raw;if(!firstPad)firstPad=raw;
         continue;
       }
