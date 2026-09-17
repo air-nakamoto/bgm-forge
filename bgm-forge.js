@@ -13,6 +13,7 @@
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
     {id:'victory',style:'drive',desc:'依頼の達成、街への凱旋、名乗りを上げる瞬間。セッションの締めやエンディングにも。',name:'🏆 凱旋',mode:'ionian',roots:[0,5,7],wave:'sawtooth',progs:[[0,3,4,0],[0,4,5,3],[0,5,3,4],[3,4,0,0],[0,2,3,4],[4,5,3,0]],drums:'drive',energy:1,density:.85},
     {id:'wonder',style:'drift',desc:'異界へ踏み込む、精霊との邂逅、夢の中。見たことのない景色を前にして足が止まる場面に。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
+    {id:'night',style:'drift',desc:'涼しい夜風、星空の下の散歩、月明かりの街道。静かでも暗くならない、すっきりした夜のひとときに。',name:'🌌 夜空',mode:'lydian',roots:[5,0,7],wave:'sine',progs:[[0,4,1,0],[0,2,1,4],[3,0,4,1],[0,1,4,2],[2,4,0,1],[0,4,2,3]],drums:'none',energy:.38,density:.35},
     {id:'calm',style:'hush',desc:'宿での休息、荷物の整理、キャラクター同士の何気ない会話。長く流しっぱなしにしても疲れません。',name:'🛏️ 穏やか',mode:'aeolian',roots:[2,9,4],wave:'sine',progs:[[0,5,2,4],[0,3,5,4],[5,2,0,6],[0,2,5,3],[3,5,0,4],[5,3,0,4]],drums:'none',energy:.5,density:.5},
     {id:'solemn',style:'hymn',desc:'神殿、宣誓、王の間での謁見、葬送。重い決断を下す前の静けさに。',name:'⛪ 荘厳',mode:'ionian',roots:[9,4,2],wave:'sine',progs:[[0,3,0,4],[0,5,3,0],[3,0,4,0],[0,4,3,0],[0,2,3,4],[5,0,3,4]],drums:'none',energy:.45,density:.4},
     {id:'mystic',style:'drift',desc:'古い遺跡、書庫での調査、占いの卓、儀式の支度。謎を前にした探索の時間に。',name:'🌌 神秘',mode:'dorian',roots:[2,4,9],wave:'triangle',progs:[[0,3,5,4],[0,1,5,3],[5,3,0,1],[0,5,3,4],[3,0,5,4],[0,4,3,5]],drums:'none',energy:.55,density:.55},
@@ -86,7 +87,7 @@
   // The mood's waveform still tilts how bright the preset sounds.
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
-  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],victory:[116,'samples'],wonder:[60,'glass'],calm:[60,'synth'],solemn:[60,'samples'],mystic:[76,'glass'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
+  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'glass'],calm:[60,'synth'],solemn:[60,'samples'],mystic:[76,'glass'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
   function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
