@@ -11,6 +11,7 @@
   const MOODS = [
     {id:'bright',style:'full',desc:'朝の街道、報酬の受け取り、無事に切り抜けたあとの一息。日常に戻ってきた場面に。',name:'☀️ 明るい',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,4,5,3],[0,3,4,0],[0,5,3,4],[0,2,3,4],[3,4,0,5],[5,3,0,4]],drums:'light',energy:.75,density:.8},
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
+    {id:'casino',style:'walk',desc:'ルーレット、カード勝負、華やかな遊技場。跳ねるピアノと軽快な低音で、陽気な駆け引きやコミカルな騒動に。',name:'🎲 カジノ',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,5,1,4],[0,2,5,4],[3,0,1,4],[0,5,3,4],[0,3,1,4],[5,1,4,0]],drums:'light',energy:.72,density:.65},
     {id:'victory',style:'drive',desc:'依頼の達成、街への凱旋、名乗りを上げる瞬間。セッションの締めやエンディングにも。',name:'🏆 凱旋',mode:'ionian',roots:[0,5,7],wave:'sawtooth',progs:[[0,3,4,0],[0,4,5,3],[0,5,3,4],[3,4,0,0],[0,2,3,4],[4,5,3,0]],drums:'drive',energy:1,density:.85},
     {id:'wonder',style:'drift',desc:'異界へ踏み込む、精霊との邂逅、夢の中。見たことのない景色を前にして足が止まる場面に。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
     {id:'night',style:'drift',desc:'涼しい夜風、星空の下の散歩、月明かりの街道。静かでも暗くならない、すっきりした夜のひとときに。',name:'🌌 夜空',mode:'lydian',roots:[5,0,7],wave:'sine',progs:[[0,4,1,0],[0,2,1,4],[3,0,4,1],[0,1,4,2],[2,4,0,1],[0,4,2,3]],drums:'none',energy:.38,density:.35},
@@ -88,6 +89,7 @@
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
   const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'glass'],calm:[60,'synth'],solemn:[60,'samples'],mystic:[76,'glass'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
+  DEFAULTS.casino=[116,'samples'];
   function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 

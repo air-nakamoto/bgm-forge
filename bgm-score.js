@@ -26,6 +26,7 @@
   // Each scene has three coherent accompaniment gestures. Times are in beats;
   // harmony moves independently of the four-bar phrase, including slow pedals.
   const SCENES={
+    casino: {inner:[[2/3,1,8/3,3],[1,5/3,2.5,11/3],[0,2/3,2,8/3,3.5]],comp:true,bass:['walk','march','fifth'],pad:[],padBars:1,hold:0,harmony:[1,1,2],high:74,gate:.22,drum:'swing'},
     bright: {inner:[[0,.75,2,2.75],[0,1.5,2.5],[.5,1,2.5,3]],bass:['fifth','walk','two'],pad:[0,2],padBars:2,hold:1.2,harmony:[1,1,2],high:72,gate:.48,drum:'light'},
     town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
     victory:{inner:[[0,1.5,2],[0,.5,2,3],[0,1,2.5]],bass:['march','fifth','march'],pad:[0,2],padBars:1,hold:1.5,harmony:[2,1,2],high:72,gate:.65,drum:'march'},
@@ -324,6 +325,7 @@
         const index=(order[k%4]+(phrase%2&&v===2?1:0))%inner.length;
         const q=inner[index];
         add(3,q,b+at,Math.min(c.gate,4-at),32+energy*17+(k===0?5:-2)+(phrase%2?-3:0),k%2?.3:-.3);
+        if(c.comp)add(3,inner[(index+1)%inner.length],b+at,Math.min(c.gate,4-at),28+energy*15,k%2?.15:-.15);
       });
     }
     if(s.moodId==='wonder'&&turn){
