@@ -32,7 +32,7 @@
     victory:{inner:[[0,1.5,2],[0,.5,2,3],[0,1,2.5]],bass:['march','fifth','march'],pad:[0,2],padBars:1,hold:1.5,harmony:[2,1,2],high:72,gate:.65,drum:'march'},
     wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:2,hold:2.6,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
     night:  {inner:[[.5,1.75,3.25],[0,1.25,2.75],[.75,2,3.5]],bass:['fifth','two','hold'],bassHold:2.1,pad:[2],padBars:1,hold:1.2,harmony:[2,1,2],high:73,gate:.5,drum:'none'},
-    calm:   {inner:[[1.5],[.5,3],[2.5]],bass:['hold','pedal','hold'],pad:[0],padBars:2,hold:7.8,harmony:[2,4,2],high:65,gate:1.4,drum:'none'},
+    calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
     solemn: {inner:[[],[],[]],bass:['hold','pedal','fifth'],pad:[0],padBars:1,hold:3.85,harmony:[2,4,1],high:69,gate:1,drum:'none'},
     mystic: {inner:[[.75,3.25],[1.5,2.75],[.25,2.5]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:6.8,harmony:[4,2,4],high:76,gate:.7,drum:'none'},
     sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
@@ -297,7 +297,7 @@
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,add}){
     const c=SCENES[s.moodId],v=s.arrangementVariant||0,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
-    const sparse=['wonder','calm','mystic','dark','horror'].includes(s.moodId);
+    const sparse=['wonder','mystic','dark','horror'].includes(s.moodId);
     const breath=sparse&&local%4===(v===1?1:3);
     const n=raw.length,vel=43+energy*17;
     if(bar%c.padBars===0){

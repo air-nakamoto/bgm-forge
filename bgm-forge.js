@@ -18,11 +18,11 @@
     {id:'victory',style:'drive',desc:'依頼の達成、街への凱旋、名乗りを上げる瞬間。セッションの締めやエンディングにも。',name:'🏆 凱旋',mode:'ionian',roots:[0,5,7],wave:'sawtooth',progs:[[0,3,4,0],[0,4,5,3],[0,5,3,4],[3,4,0,0],[0,2,3,4],[4,5,3,0]],drums:'drive',energy:1,density:.85},
     {id:'wonder',style:'drift',desc:'夢や異世界、精霊との邂逅、神秘的な遺跡の探索。澄んだ鐘と浮遊する響きで、日常を離れる場面に。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
     {id:'night',style:'drift',desc:'涼しい夜風、星空の下の散歩、月明かりの街道。静かでも暗くならない、すっきりした夜のひとときに。',name:'🌌 夜空',mode:'lydian',roots:[5,0,7],wave:'sine',progs:[[0,4,1,0],[0,2,1,4],[3,0,4,1],[0,1,4,2],[2,4,0,1],[0,4,2,3]],drums:'none',energy:.38,density:.35},
-    {id:'calm',style:'hush',desc:'宿での休息、荷物の整理、キャラクター同士の何気ない会話。長く流しっぱなしにしても疲れません。',name:'🛏️ 穏やか',mode:'aeolian',roots:[2,9,4],wave:'sine',progs:[[0,5,2,4],[0,3,5,4],[5,2,0,6],[0,2,5,3],[3,5,0,4],[5,3,0,4]],drums:'none',energy:.5,density:.5},
+    {id:'calm',style:'walk',desc:'朝の畑と家畜の鈴、開いた窓、出発前の身支度。日が高くなる前ののんびりした時間に。',name:'🌾 のどか',mode:'mixolydian',roots:[0,7,5],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,3,0,4],[3,0,4,0],[0,6,0,3],[4,3,0,0]],drums:'swing',energy:.55,density:.6},
     {id:'solemn',style:'hymn',desc:'神殿、宣誓、王の間での謁見、葬送。重い決断を下す前の静けさに。',name:'⛪ 荘厳',mode:'ionian',roots:[9,4,2],wave:'sine',progs:[[0,3,0,4],[0,5,3,0],[3,0,4,0],[0,4,3,0],[0,2,3,4],[5,0,3,4]],drums:'none',energy:.45,density:.4},
     {id:'sorrow',style:'hush',desc:'別れ、喪失、回想、看取り。取り返しのつかないことが起きたあとの場面に。',name:'💧 悲哀',mode:'aeolian',roots:[9,4,7],wave:'sine',progs:[[0,5,3,4],[0,2,5,4],[0,3,0,5],[5,3,0,4],[0,4,5,3],[2,5,0,4]],drums:'none',energy:.4,density:.45},
     {id:'memory',style:'walk',desc:'古い記録、子供の頃の記憶、もう戻れない日々。悲哀が取り返しのつかない喪失なら、こちらは温かい懐かしさ。',name:'📻 回想',mode:'mixolydian',roots:[5,10,0],wave:'sine',progs:[[0,5,3,6],[0,6,5,0],[5,0,6,3],[0,3,5,6],[6,5,0,3],[3,6,0,5]],drums:'none',energy:.45,density:.5},
-    {id:'lullaby',style:'rock',desc:'眠りの入口、子供部屋、人形の並ぶ棚、夢のはじまり。穏やかより高く小さく、揺りかごのように同じ形を繰り返します。',name:'🎠 まどろみ',mode:'ionian',roots:[7,0,5],wave:'sine',progs:[[0,3,0,5],[0,4,0,3],[5,0,3,0],[0,3,5,0],[4,0,5,3],[0,0,3,4]],drums:'none',energy:.3,density:.4},
+    {id:'lullaby',style:'rock',desc:'眠りの入口、子供部屋、人形の並ぶ棚、夢のはじまり。高く小さく、揺りかごのように同じ形を繰り返します。',name:'🎠 まどろみ',mode:'ionian',roots:[7,0,5],wave:'sine',progs:[[0,3,0,5],[0,4,0,3],[5,0,3,0],[0,3,5,0],[4,0,5,3],[0,0,3,4]],drums:'none',energy:.3,density:.4},
     {id:'requiem',style:'hymn',desc:'葬送、慰霊、鎮魂、終幕。悲哀が個人の悲しみなら、こちらは儀式としての弔い。持続音で場を埋めます。',name:'🕊️ 鎮魂',mode:'aeolian',roots:[7,0,5],wave:'sine',progs:[[0,5,2,6],[0,2,5,6],[5,6,0,2],[0,6,5,2],[2,6,0,5],[0,5,6,0]],drums:'none',energy:.35,density:.35},
     {id:'puzzle',style:'walk',desc:'推理、議論、盤面を睨む時間、調査パート。神秘が謎めいた探索なら、こちらは頭を使う時間。同じ形を回しながら考えます。',name:'🧩 思索',mode:'dorian',roots:[7,0,2],wave:'triangle',progs:[[0,3,0,6],[3,6,3,0],[3,0,6,3],[0,3,6,0],[6,0,3,6],[0,6,0,3]],drums:'light',energy:.6,density:.6},
     {id:'dark',style:'stab',desc:'地下道、夜の路地、尾行されている気配。まだ何も起きていないのに安心できない場面に。',name:'🌙 暗い',mode:'phrygian',roots:[0,2,6],wave:'sine',progs:[[0,1,0,4],[0,6,1,0],[1,0,3,6],[0,1,6,0],[0,3,1,0],[6,0,1,0]],drums:'pulse',energy:.55,density:.55},
@@ -91,7 +91,7 @@
   // The mood's waveform still tilts how bright the preset sounds.
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
-  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[60,'synth'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
+  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[92,'pluck'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
   function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
@@ -584,7 +584,7 @@
   const MODE_JA={ionian:'イオニア（長調）',dorian:'ドリア',aeolian:'エオリア（自然短調）',phrygian:'フリギア',
     locrian:'ロクリア',harmonic:'和声的短音階',lydian:'リディア',mixolydian:'ミクソリディア'};
   const densityWord=d=>d<.5?'少なめ':d>.75?'多め':'ふつう';
-  const DRUM_JA={none:'なし',light:'軽い（2・4拍）',pulse:'鼓動（1拍）',heart:'心音（二連）',drive:'ドライブ（8分＋太鼓）'};
+  const DRUM_JA={none:'なし',swing:'シャッフル（三連）',light:'軽い（2・4拍）',pulse:'鼓動（1拍）',heart:'心音（二連）',drive:'ドライブ（8分＋太鼓）'};
   // The mood card sells the scene; the build panel confirms the spec just before generating.
   function renderBrief(){
     const m=state.mood,tempo=TEMPOS.find(t=>t.bpm===state.bpm),sound=SOUNDS.find(x=>x.id===state.sound);
