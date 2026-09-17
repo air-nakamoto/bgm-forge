@@ -38,6 +38,7 @@
     {id:'synth',name:'やわらかい',note:'丸い電子音'},
     {id:'glass',name:'ガラス・鐘',note:'澄んだ余韻'},
     {id:'pluck',name:'爪弾き',note:'減衰する弦'},
+    {id:'steel',name:'スチール弦',note:'弾けて長く鳴る金属弦'},
     {id:'wood',name:'木のマレット',note:'丸い木の響き'},
     {id:'musicbox',name:'オルゴール',note:'高く小さい減衰音'},
     {id:'organ',name:'オルガン',note:'まっすぐな持続音'},
@@ -63,6 +64,12 @@
       key :{wave:'sawtooth',parts:[[1,0,.5],[2,3,.24],[3,-4,.12],[4,6,.05]],a:.003,r:.14,decay:.04,filt:[14,3],floor:900},
       pad :{wave:'triangle',parts:[[1,-5,.34],[1,5,.34],[2,0,.1]],a:.006,r:.34,decay:.06,filt:[10,3],floor:800},
       bass:{wave:'triangle',parts:[[1,0,.85],[2,0,.12]],a:.005,r:.22,decay:.06,filt:[8,3],floor:500}},
+    // スチール弦のアコースティックギター。倍音ごとに数セントずらして弦のうなりを出し、
+    // 爪弾きより減衰を遅く、余韻を長くする。撥弦の瞬間だけ高域を開く。
+    steel:{wet:[.28,.36],drums:1,gains:[.26,.07,.1,.08],
+      key :{wave:'triangle',parts:[[1,0,.48],[2,4,.20],[3,-5,.13],[4,7,.07],[5,-9,.035],[6,11,.02]],a:.002,r:.38,decay:.09,filt:[18,4],floor:1100},
+      pad :{wave:'triangle',parts:[[1,-6,.3],[1,6,.3],[2,3,.12],[3,-4,.06]],a:.004,r:.5,decay:.1,filt:[12,3],floor:700},
+      bass:{wave:'triangle',parts:[[1,0,.82],[2,2,.12],[3,0,.03]],a:.004,r:.3,decay:.07,filt:[9,3],floor:420}},
     // マリンバに近い木の響き。4倍音（2オクターブ上）を強めに混ぜ、減衰を速くする。
     wood:{wet:[.3,.38],drums:1,gains:[.27,.06,.1,.075],
       key :{wave:'sine',parts:[[1,0,.58],[4,0,.22],[10,0,.05],[2,4,.05]],a:.002,r:.2,decay:.03,filt:[14,4],floor:800},
@@ -91,7 +98,7 @@
   // The mood's waveform still tilts how bright the preset sounds.
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
-  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[92,'pluck'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
+  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[92,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
   function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
