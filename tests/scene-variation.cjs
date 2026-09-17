@@ -70,4 +70,4 @@ for(const seed of [1,7,42]){
  assert.equal(new Set(signatures).size,MOODS.length,'scene rhythm collision');
 }
 assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),/function selectMood\(mood\)[^\n]*state\.lead=false/);
-console.log(`PASS: ${tested} scene cases; 18 distinct scene rhythms, 3 arrangements each, melody off, determinism, remix, previews, manual patterns and note bounds.`);
+console.log(`PASS: ${tested} scene cases; ${MOODS.length} distinct scene rhythms, 3 arrangements each, melody off, determinism, remix, previews, manual patterns and note bounds.`);

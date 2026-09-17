@@ -30,6 +30,7 @@
     town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
     victory:{inner:[[0,1.5,2],[0,.5,2,3],[0,1,2.5]],bass:['march','fifth','march'],pad:[0,2],padBars:1,hold:1.5,harmony:[2,1,2],high:72,gate:.65,drum:'march'},
     wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:2,hold:2.6,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
+    night:  {inner:[[.5,1.75,3.25],[0,1.25,2.75],[.75,2,3.5]],bass:['fifth','two','hold'],bassHold:2.1,pad:[2],padBars:1,hold:1.2,harmony:[2,1,2],high:73,gate:.5,drum:'none'},
     calm:   {inner:[[1.5],[.5,3],[2.5]],bass:['hold','pedal','hold'],pad:[0],padBars:2,hold:7.8,harmony:[2,4,2],high:65,gate:1.4,drum:'none'},
     solemn: {inner:[[],[],[]],bass:['hold','pedal','fifth'],pad:[0],padBars:1,hold:3.85,harmony:[2,4,1],high:69,gate:1,drum:'none'},
     mystic: {inner:[[.75,3.25],[1.5,2.75],[.25,2.5]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:6.8,harmony:[4,2,4],high:76,gate:.7,drum:'none'},
