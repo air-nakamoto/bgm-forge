@@ -36,7 +36,7 @@
     sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
     memory: {inner:[[0,1.5,3],[.5,2,3.5],[0,.75,2.5]],bass:['fifth','two','walk'],pad:[2],padBars:2,hold:1.7,harmony:[1,2,2],high:69,gate:.6,drum:'none'},
     lullaby:{inner:[[0,1,2.5],[.5,2,3],[0,1.5,3]],bass:['fifth','hold','two'],pad:[],padBars:1,hold:0,harmony:[2,2,4],high:76,gate:.85,drum:'none'},
-    requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:7.8,harmony:[4,2,4],high:64,gate:1,drum:'none'},
+    requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:2.6,pad:[0],padBars:1,hold:2.4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
     dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
     ritual: {inner:[[0,1.5,3],[0,1,2.5],[.5,2,3.5]],bass:['pedal','ritual','pedal'],pad:[0],padBars:2,hold:7.8,harmony:[4,2,4],high:65,gate:.65,drum:'ritual'},
@@ -307,8 +307,8 @@
     const root=base-12+pitch(s.scale,d),fifth=base-12+pitch(s.scale,d+4);
     const bass=c.bass[v],bv=53+energy*18;
     if(bass==='pedal'){
-      if(local%2===0)add(2,base-12,b,7.8,bv-8);
-    }else if(bass==='hold')add(2,root,b,3.85,bv);
+      if(local%(c.bassBars||2)===0)add(2,base-12,b,c.bassHold||7.8,bv-8);
+    }else if(bass==='hold')add(2,root,b,c.bassHold||3.85,bv);
     else if(bass==='walk'){
       [root,base-12+pitch(s.scale,d+2),fifth,base-12+pitch(s.scale,chordFor(bar+1))].forEach((q,k)=>add(2,q,b+k,.82,bv-(k?7:0)));
     }else{

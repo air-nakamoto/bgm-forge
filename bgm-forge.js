@@ -244,9 +244,9 @@
     for(let i=0;i<nd.length;i++)nd[i]=noiseRandom()*2-1;
     for(const n of events){
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
-      // Wonder's sustained harmony breathes out instead of sitting at a fixed
+      // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
-      if(score.moodId==='wonder'&&(n.part===1||n.part===2)){
+      if(['wonder','requiem'].includes(score.moodId)&&(n.part===1||n.part===2)){
         const fade=ctx.createGain(),at=n.beat*beat,duration=n.duration*beat;
         fade.gain.setValueAtTime(1,at);
         fade.gain.setValueAtTime(1,at+Math.min(.2,duration*.1));
@@ -282,7 +282,7 @@
     // A loop wraps its tail to the head; a cadence has nowhere to put one, so it is closed
     // with a short fade instead of being cut mid-ring.
     else{const f=Math.min(Math.floor(SR*.3),n);for(let i=0;i<f;i++){const w=.5+.5*Math.cos(Math.PI*i/f),k=n-f+i;L[k]*=w;R[k]*=w}}
-    let sum=0,peak=0;for(let i=0;i<n;i++){sum+=L[i]*L[i]+R[i]*R[i]}let rms=Math.sqrt(sum/(2*n)),gain=rms>1e-9?.075*(score.level||1)/rms:1;
+    let sum=0,peak=0;for(let i=0;i<n;i++){sum+=L[i]*L[i]+R[i]*R[i]}let rms=Math.sqrt(sum/(2*n)),gain=rms>1e-9?(score.moodId==='requiem'?.045:.075)*(score.level||1)/rms:1;
     for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain);R[i]=Math.tanh(R[i]*gain);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
     if(peak>.95){gain=.95/peak;for(let i=0;i<n;i++){L[i]*=gain;R[i]*=gain}peak=.95}
     const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));return{L,R,length:n,peak,step,score};
