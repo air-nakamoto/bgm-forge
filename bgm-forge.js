@@ -308,14 +308,17 @@
     let sum=0,peak=0;for(let i=0;i<n;i++){sum+=L[i]*L[i]+R[i]*R[i]}let rms=Math.sqrt(sum/(2*n)),gain=rms>1e-9?(score.moodId==='requiem'?.045:.075)*(score.level||1)/rms:1;
     for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain);R[i]=Math.tanh(R[i]*gain);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
     if(peak>.95){gain=.95/peak;for(let i=0;i<n;i++){L[i]*=gain;R[i]*=gain}peak=.95}
-    const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));return{L,R,length:n,peak,step,score};
+    const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));return{L,R,length:n,peak,step,score,at:Date.now()};
   }
 
   // One audio context for the whole page, built on the first real gesture. A context created later,
   // in the middle of an await, starts suspended under the autoplay policy and its resume() can hang
   // forever — which is why the first sound a page tried to make used to be swallowed silently.
-  function audioContext(){if(!state.audio)state.audio=new AudioContext();return state.audio}
-  function unlockAudio(){const c=audioContext();if(c.state==='suspended'&&c.resume)void c.resume()}
+  // iOS 14.5より前のSafariには接頭辞つきしかない。またiOSは着信や他アプリで 'interrupted' という
+  // 状態を取るので、'suspended' だけを見ていると割り込みのあと復帰できない。
+  const AudioCtor=window.AudioContext||window.webkitAudioContext;
+  function audioContext(){if(!state.audio)state.audio=new AudioCtor();return state.audio}
+  function unlockAudio(){const c=audioContext();if(c.state!=='running'&&c.resume)void c.resume()}
   async function stopPlayback(){
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
@@ -337,14 +340,14 @@
     // Creating the context after an await can leave it suspended on strict autoplay policies.
     // A context created after an await starts suspended under strict autoplay policy, and resume()
     // can stay pending forever until the page gets a real click — so never block setup on it.
-    if(c.state==='suspended'){try{await Promise.race([c.resume(),new Promise(r=>setTimeout(r,400))])}catch{}}
+    if(c.state!=='running'){try{await Promise.race([c.resume(),new Promise(r=>setTimeout(r,400))])}catch{}}
     // Something newer took over while we waited: drop this source instead of layering it on top.
     if(revision!==state.playRevision||state.playSource!==s){try{s.stop()}catch{}try{s.disconnect()}catch{}return}
     state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
     $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;startMeter();guide();
-    if(c.state==='suspended'){
+    if(c.state!=='running'){
       status('ブラウザが音を止めています。画面のどこかをクリックすると再生が始まります','error');
       c.onstatechange=()=>{if(c.state==='running'&&state.playCtx===c){state.playStartedAt=(c.currentTime||0)-from;status('再生しています','')}};
     }
@@ -401,7 +404,7 @@
     const changed=$('editAccompaniment').checked||JSON.stringify(score)!==JSON.stringify(state.take.score);
     state.tourPending=changed;
     $('applyEdits').disabled=state.busy||!changed;$('resetEdits').disabled=state.busy||!changed;
-    $('editPending').textContent=changed?'設定を変更しました。下のボタンで曲に反映してください。':'';
+    $('editPending').textContent=changed?'設定を変更しました。このボタンを押すと、調整した曲ができます。':'設定を変えただけでは曲は変わりません。最後にこのボタンを押すと、調整した曲ができます。';
     $('editPending').parentElement.classList.toggle('has-changes',changed);
     $('editPhrasing').disabled=!settings.lead||state.busy;
     previewLengths();guide();
@@ -696,6 +699,7 @@
     readout.className='fingerprint';readout.innerHTML=fingerprint(t.score,t);readout.hidden=!state.logOpen;
     renderMeter(state.playCtx?0:-1);
     $('takes').innerHTML='';
+    const counter=$('takeCount');if(counter)counter.textContent=state.takes.length+' / 6';
     const pick=async x=>{
       if(state.busy)return;
       // Clicking a take is what asks for its details — and for hearing it.
@@ -714,8 +718,11 @@
       const d=document.createElement('div');d.className='take '+(x===t?'active':'');
       d.setAttribute('role','radio');d.setAttribute('aria-checked',x===t?'true':'false');
       d.tabIndex=x===t?0:-1;
+      const made=x.at?new Date(x.at):null;
+      const clock=made?String(made.getHours()).padStart(2,'0')+':'+String(made.getMinutes()).padStart(2,'0'):'';
       d.innerHTML='<span class="dot"></span><div><strong>'+(x.score.sceneName||'テーマ')+' · '+x.score.moodName+' / SEED '+x.score.seed+'</strong>'+
-        '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+'</p></div>'+
+        '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
+        (clock?'<span class="take-time">'+clock+' に作成</span>':'')+'</p></div>'+
         '<span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{

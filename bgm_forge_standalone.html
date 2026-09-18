@@ -8,7 +8,7 @@
 :root{
   color-scheme:dark;
   --bg:#000205;--ink:#e8eef4;--dim:#9db0c0;--faint:#7a8b9c;
-  --cyan:#71c4d5;--cyan-lit:#a6e6f4;--gold:#e4ad65;--bad:#e37b71;
+  --cyan:#71c4d5;--cyan-lit:#a6e6f4;--gold:#e4ad65;--bad:#e37b71;--edit:#e0705f;--edit-lit:#ff9c8a;
   --line:rgba(122,190,208,.13);--line-lit:rgba(226,244,250,.42);
   --sans:system-ui,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
   --mincho:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
@@ -112,7 +112,12 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .transport button.play:hover:not(:disabled){box-shadow:0 0 28px -8px rgba(166,230,244,.75)}
 .saves{margin-top:10px}
 .saves::before{content:"SAVE";font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);margin-right:4px}
-.saves button{border-color:rgba(228,173,101,.34);color:#f0cfa2}
+/* 保存はこの画面の目的地なので、作る・聴くと同じ重さで出す。 */
+.saves button{border:1px solid rgba(228,173,101,.55);color:#ffd9a4;font-weight:500;font-size:14px;letter-spacing:.1em;
+  padding:12px 22px;background:linear-gradient(180deg,rgba(228,173,101,.16),rgba(228,173,101,.06));
+  box-shadow:inset 0 0 26px -16px rgba(255,214,150,.9)}
+.saves button:hover:not(:disabled){border-color:rgba(255,214,150,.9);background:rgba(228,173,101,.22);
+  box-shadow:0 0 30px -8px rgba(255,196,120,.8)}
 .acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:6px}
 .acts button{text-align:left;padding:9px 12px}
 .acts button small{display:block;color:var(--faint);font:10px/1.5 var(--mono);letter-spacing:.04em;margin-top:3px}
@@ -147,6 +152,9 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .take.active .dot{background:var(--cyan);box-shadow:0 0 9px 1px rgba(113,196,213,.9)}
 .take strong{font:400 12px var(--mono);letter-spacing:.06em;color:#dce7ef}
 .take p{margin:2px 0 0;color:var(--dim);font:10.5px var(--mono);letter-spacing:.05em}
+.take-time{margin-left:10px;padding-left:10px;border-left:1px solid var(--line-lit);color:var(--faint)}
+.takecount{margin-left:10px;padding:1px 9px;border:1px solid var(--line);border-radius:999px;
+  font:10px var(--mono);letter-spacing:.1em;color:var(--dim);vertical-align:2px}
 
 .note{font:11px/1.75 var(--sans);color:var(--faint);margin:8px 0 0;letter-spacing:.01em}
 a{color:var(--cyan)}
@@ -218,7 +226,17 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 @media(max-width:860px){.mood-layout{grid-template-columns:1fr}.brief{order:2}.build{grid-template-columns:1fr}}
 @media(max-width:640px){.log-body{grid-template-columns:auto 1fr}.primary{width:100%}}
 @media(prefers-reduced-motion:reduce){.log-cursor{animation:none}}
-.advanced{margin-top:12px}.advanced summary{cursor:pointer;padding:14px;border:1px solid var(--line);color:var(--cyan-lit)}
+.advanced{margin-top:12px;border:1px solid transparent;border-radius:3px;transition:border-color .25s,background .25s}
+/* 調整は寄り道なので、閉じているあいだは控えめに置く。 */
+.advanced summary{cursor:pointer;padding:11px 14px;border:1px solid var(--line);color:var(--dim);font-size:13px}
+.advanced summary:hover{color:var(--ink)}
+/* 開いているあいだは、この枠の中だけが「調整中」だと分かる色にする。 */
+.advanced[open]{border-color:var(--edit);background:rgba(224,112,95,.05);padding:0 10px 10px}
+.advanced[open] summary{color:var(--edit-lit);border-color:rgba(224,112,95,.5);background:rgba(224,112,95,.08);
+  font-size:14px;font-weight:500;margin:0 -10px}
+.editing{display:none;margin-left:10px;padding:1px 9px;border:1px solid var(--edit);border-radius:999px;
+  font:10px var(--sans);letter-spacing:.12em;color:var(--edit-lit)}
+.advanced[open] .editing{display:inline-block}
 .volume{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.volume input{width:min(240px,50vw);accent-color:var(--cyan)}
 :focus-visible{outline:2px solid var(--cyan-lit);outline-offset:4px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -258,8 +276,14 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 .option-switch input:checked::after{transform:translateX(17px);background:var(--cyan-lit)}
 .option-notes{margin:10px 0 0}
 @media(max-width:720px){.option-pair{grid-template-columns:1fr}}
-.edit-submit{margin-top:12px;padding:12px;border:1px solid var(--line);background:#0b141b}
-.edit-submit.has-changes{border-color:var(--gold);background:#191710}
+.edit-submit{margin-top:12px;padding:12px;border:1px solid rgba(224,112,95,.4);background:#160e0d}
+.edit-submit.has-changes{border-color:var(--edit);background:#1d100e;box-shadow:0 0 32px -14px rgba(255,140,120,.7)}
+/* 調整の仕上げはこのボタン。枠と同じ色にして、どこを押せば終わるのかを1目で示す。 */
+#applyEdits{border-color:rgba(224,112,95,.6);color:#ffc5b8;
+  background:linear-gradient(180deg,rgba(224,112,95,.18),rgba(224,112,95,.06))}
+#applyEdits:hover:not(:disabled){border-color:var(--edit-lit);background:rgba(224,112,95,.26);
+  box-shadow:0 0 30px -8px rgba(255,150,130,.8)}
+.is-now>.nowtag.edit-tag{border-color:var(--edit);color:var(--edit-lit)}
 .edit-submit-buttons{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
 
 #applyEdits{min-height:42px;padding:10px 22px;font:600 14px var(--sans)}
@@ -362,8 +386,8 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
     </div>
     <p class="note">気に入った曲は保存してください。ページを閉じると作った曲は消えます。</p>
     <details class="advanced" id="adjustments">
-      <summary id="stepAdjust">この曲を調整<button type="button" class="more" data-more="d-edit" aria-label="編集に関する詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">変えたいときは ここ</span></summary>
-      <p class="note">今選んでいる曲を変更します。設定を選び「この設定で曲を作り直す」を押すと、同じテーマで新しい曲を作ります。</p>
+      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><button type="button" class="more" data-more="d-edit" aria-label="編集に関する詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">変えたいときは ここ</span></summary>
+      <p class="note">ここで変えた設定は、下の「この設定で曲を作り直す」を押すまで曲に反映されません。押すと、同じテーマのまま新しい曲ができます。</p>
       <fieldset id="editFields" disabled style="border:0;padding:0;margin:10px 0">
       <div class="option-rows">
         <div class="option-pair">
@@ -386,9 +410,9 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
         <div class="preview" data-preview="current"><button type="button" class="try">▶ 変更した設定で2小節聴く</button><div class="seek" role="button" tabindex="0" aria-label="試聴の位置"><i></i></div><span class="seek-time">—</span></div>
       </div>
         <p id="editSummary" class="note option-notes" role="status">曲を作ると調整できます。</p>
-        <div class="edit-submit" id="stepApply"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">上記の設定で作り直すならここ</span>
+        <div class="edit-submit" id="stepApply"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag edit-tag" aria-hidden="true">上記の設定で作り直すならここ</span>
           <div class="edit-submit-buttons"><button id="applyEdits" class="primary" disabled>この設定で曲を作り直す</button><button id="resetEdits" disabled>未適用の変更を戻す</button>
-            <div id="editPending" class="note" role="status">設定を変更すると、ここから曲を作り直せます。</div></div>
+            <div id="editPending" class="note" role="status">設定を変えただけでは曲は変わりません。最後にこのボタンを押すと、調整した曲ができます。</div></div>
         </div>
       </fieldset>
       <p class="note">もっと詳しく：<button type="button" class="more" data-more="d-sound">音づくり</button> <button type="button" class="more" data-more="d-form">曲の形</button></p>
@@ -401,7 +425,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   </section>
 
   <section class="panel" id="stepTakes"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">前の曲を聴くなら ここ</span>
-    <h2><i>■</i>テイク<button class="more" data-more="d-save">詳細</button></h2>
+    <h2><i>■</i>テイク<span class="takecount"><span id="takeCount">0 / 6</span> 曲</span><button class="more" data-more="d-save">詳細</button></h2>
     <div id="takes" class="takes" role="radiogroup" aria-label="作った曲"></div>
     <div id="fingerprint" class="fingerprint empty" role="note" aria-label="選んだ曲の内訳" hidden>まだ曲がありません</div>
     <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。最大6テイク（長い曲では自動的に減ります）を保持し、ページを再読み込みすると消えます。</p>
@@ -2287,14 +2311,17 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     let sum=0,peak=0;for(let i=0;i<n;i++){sum+=L[i]*L[i]+R[i]*R[i]}let rms=Math.sqrt(sum/(2*n)),gain=rms>1e-9?(score.moodId==='requiem'?.045:.075)*(score.level||1)/rms:1;
     for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain);R[i]=Math.tanh(R[i]*gain);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
     if(peak>.95){gain=.95/peak;for(let i=0;i<n;i++){L[i]*=gain;R[i]*=gain}peak=.95}
-    const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));return{L,R,length:n,peak,step,score};
+    const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));return{L,R,length:n,peak,step,score,at:Date.now()};
   }
 
   // One audio context for the whole page, built on the first real gesture. A context created later,
   // in the middle of an await, starts suspended under the autoplay policy and its resume() can hang
   // forever — which is why the first sound a page tried to make used to be swallowed silently.
-  function audioContext(){if(!state.audio)state.audio=new AudioContext();return state.audio}
-  function unlockAudio(){const c=audioContext();if(c.state==='suspended'&&c.resume)void c.resume()}
+  // iOS 14.5より前のSafariには接頭辞つきしかない。またiOSは着信や他アプリで 'interrupted' という
+  // 状態を取るので、'suspended' だけを見ていると割り込みのあと復帰できない。
+  const AudioCtor=window.AudioContext||window.webkitAudioContext;
+  function audioContext(){if(!state.audio)state.audio=new AudioCtor();return state.audio}
+  function unlockAudio(){const c=audioContext();if(c.state!=='running'&&c.resume)void c.resume()}
   async function stopPlayback(){
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
@@ -2316,14 +2343,14 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     // Creating the context after an await can leave it suspended on strict autoplay policies.
     // A context created after an await starts suspended under strict autoplay policy, and resume()
     // can stay pending forever until the page gets a real click — so never block setup on it.
-    if(c.state==='suspended'){try{await Promise.race([c.resume(),new Promise(r=>setTimeout(r,400))])}catch{}}
+    if(c.state!=='running'){try{await Promise.race([c.resume(),new Promise(r=>setTimeout(r,400))])}catch{}}
     // Something newer took over while we waited: drop this source instead of layering it on top.
     if(revision!==state.playRevision||state.playSource!==s){try{s.stop()}catch{}try{s.disconnect()}catch{}return}
     state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
     $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;startMeter();guide();
-    if(c.state==='suspended'){
+    if(c.state!=='running'){
       status('ブラウザが音を止めています。画面のどこかをクリックすると再生が始まります','error');
       c.onstatechange=()=>{if(c.state==='running'&&state.playCtx===c){state.playStartedAt=(c.currentTime||0)-from;status('再生しています','')}};
     }
@@ -2380,7 +2407,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     const changed=$('editAccompaniment').checked||JSON.stringify(score)!==JSON.stringify(state.take.score);
     state.tourPending=changed;
     $('applyEdits').disabled=state.busy||!changed;$('resetEdits').disabled=state.busy||!changed;
-    $('editPending').textContent=changed?'設定を変更しました。下のボタンで曲に反映してください。':'';
+    $('editPending').textContent=changed?'設定を変更しました。このボタンを押すと、調整した曲ができます。':'設定を変えただけでは曲は変わりません。最後にこのボタンを押すと、調整した曲ができます。';
     $('editPending').parentElement.classList.toggle('has-changes',changed);
     $('editPhrasing').disabled=!settings.lead||state.busy;
     previewLengths();guide();
@@ -2675,6 +2702,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     readout.className='fingerprint';readout.innerHTML=fingerprint(t.score,t);readout.hidden=!state.logOpen;
     renderMeter(state.playCtx?0:-1);
     $('takes').innerHTML='';
+    const counter=$('takeCount');if(counter)counter.textContent=state.takes.length+' / 6';
     const pick=async x=>{
       if(state.busy)return;
       // Clicking a take is what asks for its details — and for hearing it.
@@ -2693,8 +2721,11 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
       const d=document.createElement('div');d.className='take '+(x===t?'active':'');
       d.setAttribute('role','radio');d.setAttribute('aria-checked',x===t?'true':'false');
       d.tabIndex=x===t?0:-1;
+      const made=x.at?new Date(x.at):null;
+      const clock=made?String(made.getHours()).padStart(2,'0')+':'+String(made.getMinutes()).padStart(2,'0'):'';
       d.innerHTML='<span class="dot"></span><div><strong>'+(x.score.sceneName||'テーマ')+' · '+x.score.moodName+' / SEED '+x.score.seed+'</strong>'+
-        '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+'</p></div>'+
+        '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
+        (clock?'<span class="take-time">'+clock+' に作成</span>':'')+'</p></div>'+
         '<span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{
