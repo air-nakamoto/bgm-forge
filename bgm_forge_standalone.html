@@ -108,7 +108,7 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 
 .transport{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .transport button.play{border-color:rgba(113,196,213,.5);background:rgba(113,196,213,.1);color:var(--cyan-lit);
-  font-size:14px;letter-spacing:.16em;padding:11px 30px;box-shadow:inset 0 0 24px -14px rgba(166,230,244,.9)}
+  font-weight:500;font-size:15px;letter-spacing:.14em;padding:13px 30px;box-shadow:inset 0 0 24px -14px rgba(166,230,244,.9)}
 .transport button.play:hover:not(:disabled){box-shadow:0 0 28px -8px rgba(166,230,244,.75)}
 .saves{margin-top:10px}
 .saves::before{content:"SAVE";font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);margin-right:4px}
@@ -237,8 +237,8 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 #editFields select:disabled{opacity:.45}
 /* Listen row: the button, how far the sample has run, and how long it lasts. */
 .preview{display:flex;align-items:center;gap:9px;min-height:24px}
-.try{flex:none;padding:3px 10px;border:1px solid var(--line-lit);border-radius:2px;background:rgba(113,196,213,.06);
-  color:var(--cyan-lit);font:11px var(--sans);cursor:pointer;letter-spacing:.02em;white-space:nowrap}
+.try{flex:none;padding:7px 14px;border:1px solid rgba(113,196,213,.45);border-radius:2px;background:rgba(113,196,213,.1);
+  color:var(--cyan-lit);font:12px var(--sans);cursor:pointer;letter-spacing:.02em;white-space:nowrap}
 .try:hover:not(:disabled){border-color:var(--cyan);background:rgba(113,196,213,.14)}
 .try:disabled{opacity:.4;cursor:default}
 .preview.is-loading .try{color:var(--dim)}
@@ -383,10 +383,10 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
           <label class="option-switch" for="editAccompaniment"><input id="editAccompaniment" type="checkbox"><span>伴奏を作り直す</span></label>
         </div>
         <p class="option-help">ループ用をオフにすると終止をつけます。伴奏を作り直すと、メロディと和音はそのままで伴奏の形だけ変わります。</p>
-        <div class="preview" data-preview="current"><button type="button" class="try">▶ 今の設定で2小節聴く</button><div class="seek" role="button" tabindex="0" aria-label="試聴の位置"><i></i></div><span class="seek-time">—</span></div>
+        <div class="preview" data-preview="current"><button type="button" class="try">▶ 変更した設定で2小節聴く</button><div class="seek" role="button" tabindex="0" aria-label="試聴の位置"><i></i></div><span class="seek-time">—</span></div>
       </div>
         <p id="editSummary" class="note option-notes" role="status">曲を作ると調整できます。</p>
-        <div class="edit-submit" id="stepApply"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">作り直すなら ここ</span>
+        <div class="edit-submit" id="stepApply"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">上記の設定で作り直すならここ</span>
           <div class="edit-submit-buttons"><button id="applyEdits" class="primary" disabled>この設定で曲を作り直す</button><button id="resetEdits" disabled>未適用の変更を戻す</button>
             <div id="editPending" class="note" role="status">設定を変更すると、ここから曲を作り直せます。</div></div>
         </div>
@@ -1085,7 +1085,7 @@ That&#x27;s all there is to it!
       <dt>伴奏を作り直す</dt><dd>メロディと和音進行は保ったまま、伴奏の形と配置だけ変えます。オンにすると試聴がその伴奏に変わり、<b>押し直すたびに別の案</b>になります。気に入った案のまま作り直せます。</dd>
     </dl>
     <h4>試聴（▶ 試聴）</h4>
-    <p>「今の設定で2小節聴く」は、<b>まだ作り直していない設定のまま2小節だけ</b>鳴らします。保存する曲は変わりません。音色・テンポ・曲の音量・メロディ・打楽器・伴奏を作り直すを変えると自動で鳴るので、切り替えて聴き比べられます。右のバーは再生位置、右端の数字はその2小節の長さです。ループ用はテーマ1周より短くできません。</p>
+    <p>「変更した設定で2小節聴く」は、<b>まだ作り直していない設定のまま2小節だけ</b>鳴らします。保存する曲は変わりません。音色・テンポ・曲の音量・メロディ・打楽器・伴奏を作り直すを変えると自動で鳴るので、切り替えて聴き比べられます。右のバーは再生位置、右端の数字はその2小節の長さです。ループ用はテーマ1周より短くできません。</p>
     <h4>変更前との比較・取り消し</h4>
     <p>作り直したあと「変更前を試聴」で元の曲を、「現在の曲を試聴」で変更後を聴けます。比較中も保存対象は変更後の曲です。</p>
   </div>
@@ -2441,7 +2441,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
       const b=el.querySelector&&el.querySelector('.try');
       if(!b)return;
       b.disabled=state.busy||!state.take||(!!loading&&!busy);
-      b.textContent=busy?'準備中':playing?'■ 停止':'▶ 試聴';
+      b.textContent=busy?'準備中':playing?'■ 停止':'▶ 変更した設定で2小節聴く';
       if(b.classList)b.classList.toggle('is-stop',playing);
     });
   }

@@ -462,7 +462,7 @@
       const b=el.querySelector&&el.querySelector('.try');
       if(!b)return;
       b.disabled=state.busy||!state.take||(!!loading&&!busy);
-      b.textContent=busy?'準備中':playing?'■ 停止':'▶ 試聴';
+      b.textContent=busy?'準備中':playing?'■ 停止':'▶ 変更した設定で2小節聴く';
       if(b.classList)b.classList.toggle('is-stop',playing);
     });
   }
