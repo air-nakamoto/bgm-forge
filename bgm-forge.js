@@ -35,6 +35,7 @@
   const SOUNDS=[
     {id:'samples',name:'室内楽',note:'録音したピアノ・弦・打楽器'},
     {id:'softpiano',name:'柔らかいピアノ',note:'弱く弾いた音・控えめな余韻'},
+    {id:'flute',name:'フルート',note:'旋律用。伴奏は弦とピアノ'},
     {id:'synth',name:'やわらかい',note:'丸い電子音'},
     {id:'glass',name:'ガラス・鐘',note:'澄んだ余韻'},
     {id:'pluck',name:'爪弾き',note:'減衰する弦'},
@@ -222,28 +223,32 @@
       return {meta,buffer};
     });return sampleCache;
   }
-  function sampleNote(ctx,bus,n,beat,bank,soft=false,trim=1){
-    const kind=n.part===4?'drums':n.part===1&&!soft?'strings':'piano';
+  // kinds: パートごとに使う音源の種類。渡されない場合は室内楽／柔らかいピアノの割り当て。
+  function sampleNote(ctx,bus,n,beat,bank,soft=false,trim=1,kinds=null){
+    const kind=kinds?kinds[n.part]:n.part===4?'drums':n.part===1&&!soft?'strings':'piano';
     let choices=bank.filter(x=>x.meta.kind===kind&&(kind!=='piano'||x.meta.velocity===(soft||n.velocity<65?'pp':'mf')));
     if(!choices.length)choices=bank.filter(x=>x.meta.kind===kind);
     if(!choices.length)choices=bank;
     if(!choices.length)return;
     const sample=choices.reduce((a,b)=>Math.abs(b.meta.root-n.pitch)<Math.abs(a.meta.root-n.pitch)?b:a);
-    const at=n.beat*beat,duration=n.duration*beat,release=kind==='strings'?.3:kind==='drums'?.15:soft?.35:.2;
+    const at=n.beat*beat,duration=n.duration*beat,release=kind==='strings'?.3:kind==='flute'?.26:kind==='drums'?.15:soft?.35:.2;
     const end=Math.min(at+duration+release,ctx.length/SR-.001);if(end-at<.01)return;
     const source=ctx.createBufferSource(),g=ctx.createGain(),p=ctx.createStereoPanner(),f=ctx.createBiquadFilter();
     source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(n.pitch-sample.meta.root)/12);
-    if(kind==='strings'&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
+    if((kind==='strings'||kind==='flute')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
     const gain=[.24,.095,.18,.10,.22][n.part]*trim*Math.pow(n.velocity/80,1.3);
-    const attack=kind==='strings'?Math.min(.16,duration*.2):soft?Math.min(.018,duration*.2):.003;
+    const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):soft?Math.min(.018,duration*.2):.003;
     g.gain.setValueAtTime(.00001,at);g.gain.linearRampToValueAtTime(gain,at+attack);
     g.gain.setValueAtTime(gain,Math.max(at+attack,end-release));g.gain.exponentialRampToValueAtTime(.00001,end);
-    p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='drums'?9000:soft?1800+n.velocity*10:2500+n.velocity*60;f.Q.value=.4;
+    p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='flute'?6200:kind==='drums'?9000:soft?1800+n.velocity*10:2500+n.velocity*60;f.Q.value=.4;
     source.connect(f);f.connect(g);g.connect(p);p.connect(bus);source.start(at);source.stop(end);
   }
   async function render(score,onProgress,isCancelled){
     const tail=3,total=score.length+tail,ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
-    const chip=score.sound==='chip',soft=score.sound==='softpiano',bank0=score.sound==='samples'||soft;
+    const chip=score.sound==='chip',soft=score.sound==='softpiano',flute=score.sound==='flute',bank0=score.sound==='samples'||soft||flute;
+    // フルートは旋律だけを吹く。内声は旋律の下に置かれるため、実際のフルートの最低音
+    // （C4）より低くなることが多く、引き伸ばすと濁る。内声と低音はピアノ、和音は弦。
+    const sampleKinds=flute?['flute','strings','piano','piano','drums']:null;
     const V=VOICES[score.sound]||VOICES.synth,bright=BRIGHT[score.instrument]||1;
     const dim=['mystic','dark','horror','wonder','solemn','ritual'].includes(score.moodId);
     const wet=chip?.14:soft?.24:bank0?(dim?.42:.32):V.wet[dim?1:0];
@@ -278,7 +283,7 @@
         else noiseSource(ctx,noiseBuffer,bus,n.beat*beat,n.duration*beat,.045*drumGain*n.velocity/80,n.pitch===38?900:2800,n.pan||0);
         continue;
       }
-      if(bank){sampleNote(ctx,bus,n,beat,bank,soft,trim);continue}
+      if(bank){sampleNote(ctx,bus,n,beat,bank,soft,trim,sampleKinds);continue}
       if(chip){chipTone(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,[.11,.05,.095,.045][n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan);continue}
       synthNote(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,V.gains[n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan||0,V,bright);
     }

@@ -244,6 +244,42 @@
       "path": "Percussion/cymbal-crash1_pp_rr1.wav",
       "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Percussion/cymbal-crash1_pp_rr1.wav",
       "source_sha256": "4b4f1f76ba77877a67bb5969fde058dfd57cc455f92979d96b8e051419be1a3a"
+    },
+    {
+      "id": "flute-C3",
+      "kind": "flute",
+      "root": 60,
+      "velocity": "mf",
+      "path": "Woodwinds/Flute/susvib/LDFlute_susvib_C3_v1_1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Woodwinds/Flute/susvib/LDFlute_susvib_C3_v1_1.wav",
+      "source_sha256": "073631c8442b275d803e608e840c2ce6cad3b08320018e08510cf3cb57373154"
+    },
+    {
+      "id": "flute-A3",
+      "kind": "flute",
+      "root": 69,
+      "velocity": "mf",
+      "path": "Woodwinds/Flute/susvib/LDFlute_susvib_A3_v1_1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Woodwinds/Flute/susvib/LDFlute_susvib_A3_v1_1.wav",
+      "source_sha256": "4ea04a7a2ba152752e1b475798619a62f2546f54972caa6ddcd88f29a2046c81"
+    },
+    {
+      "id": "flute-E4",
+      "kind": "flute",
+      "root": 76,
+      "velocity": "mf",
+      "path": "Woodwinds/Flute/susvib/LDFlute_susvib_E4_v1_1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Woodwinds/Flute/susvib/LDFlute_susvib_E4_v1_1.wav",
+      "source_sha256": "83d4eed0c54ebfe25fe9dfb0475fb90a88a43d11777bc2afac879b8b695e494c"
+    },
+    {
+      "id": "flute-C5",
+      "kind": "flute",
+      "root": 84,
+      "velocity": "mf",
+      "path": "Woodwinds/Flute/susvib/LDFlute_susvib_C5_v1_1.wav",
+      "url": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/440300901dfe9275fd84e0b7763af1f8443ae62e/Woodwinds/Flute/susvib/LDFlute_susvib_C5_v1_1.wav",
+      "source_sha256": "ecb78c59069866ea7c3327594851827cd2f50c5d411aad422269a88e53614fbe"
     }
   ]
 }
