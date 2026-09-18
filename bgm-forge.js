@@ -269,7 +269,7 @@
         const fade=ctx.createGain(),at=n.beat*beat,duration=n.duration*beat;
         fade.gain.setValueAtTime(1,at);
         fade.gain.setValueAtTime(1,at+Math.min(.2,duration*.1));
-        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:score.moodId==='doubt'?.16:.12);
+        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:score.moodId==='doubt'?.16:score.moodId==='wonder'?.26:.12);
         // Requiem settles into a quiet bed until the next chord, rather than
         // finishing the note early and leaving a silent part of each bar.
         fade.gain.exponentialRampToValueAtTime(floor,at+(requiem?Math.min(duration*.9,2.4*beat):duration*.9));
