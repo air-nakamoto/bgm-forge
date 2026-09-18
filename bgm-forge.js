@@ -10,7 +10,7 @@
   };
   // Mood-level accompaniment trim for parts 1-3 (pad / bass / inner voice).
   // 1 = unchanged. Lower = quieter backing under the melody.
-  const ACCOMP_TRIM = { wonder: .72, night: .62 };
+  const ACCOMP_TRIM = { wonder: .72, night: .62, doubt: .68 };
   const MOODS = [
     {id:'bright',style:'full',desc:'朝の街道、報酬の受け取り、無事に切り抜けたあとの一息。日常に戻ってきた場面に。',name:'☀️ 明るい',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,4,5,3],[0,3,4,0],[0,5,3,4],[0,2,3,4],[3,4,0,5],[5,3,0,4]],drums:'light',energy:.75,density:.8},
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
@@ -22,7 +22,7 @@
     {id:'solemn',style:'hymn',desc:'神殿、宣誓、王の間での謁見、葬送。重い決断を下す前の静けさに。',name:'⛪ 荘厳',mode:'ionian',roots:[9,4,2],wave:'sine',progs:[[0,3,0,4],[0,5,3,0],[3,0,4,0],[0,4,3,0],[0,2,3,4],[5,0,3,4]],drums:'none',energy:.45,density:.4},
     {id:'sorrow',style:'hush',desc:'別れ、喪失、回想、看取り。取り返しのつかないことが起きたあとの場面に。',name:'💧 悲哀',mode:'aeolian',roots:[9,4,7],wave:'sine',progs:[[0,5,3,4],[0,2,5,4],[0,3,0,5],[5,3,0,4],[0,4,5,3],[2,5,0,4]],drums:'none',energy:.4,density:.45},
     {id:'memory',style:'walk',desc:'古い記録、子供の頃の記憶、もう戻れない日々。悲哀が取り返しのつかない喪失なら、こちらは温かい懐かしさ。',name:'📻 回想',mode:'mixolydian',roots:[5,10,0],wave:'sine',progs:[[0,5,3,6],[0,6,5,0],[5,0,6,3],[0,3,5,6],[6,5,0,3],[3,6,0,5]],drums:'none',energy:.45,density:.5},
-    {id:'lullaby',style:'rock',desc:'眠りの入口、子供部屋、人形の並ぶ棚、夢のはじまり。高く小さく、揺りかごのように同じ形を繰り返します。',name:'🎠 まどろみ',mode:'ionian',roots:[7,0,5],wave:'sine',progs:[[0,3,0,5],[0,4,0,3],[5,0,3,0],[0,3,5,0],[4,0,5,3],[0,0,3,4]],drums:'none',energy:.3,density:.4},
+    {id:'doubt',style:'drift',desc:'辻褄の合わない証言、閉じたはずの扉、視線の気配。まだ何も起きていない調査の時間に、長く敷いておけます。',name:'🔍 疑惑',mode:'dorian',roots:[2,9,7],wave:'sine',progs:[[0,1,0,6],[0,6,0,1],[1,0,6,0],[0,3,6,0],[6,1,0,6],[0,1,3,6]],drums:'ticks',energy:.42,density:.4},
     {id:'requiem',style:'hymn',desc:'葬送、慰霊、鎮魂、終幕。悲哀が個人の悲しみなら、こちらは儀式としての弔い。持続音で場を埋めます。',name:'🕊️ 鎮魂',mode:'aeolian',roots:[7,0,5],wave:'sine',progs:[[0,5,2,6],[0,2,5,6],[5,6,0,2],[0,6,5,2],[2,6,0,5],[0,5,6,0]],drums:'none',energy:.35,density:.35},
     {id:'puzzle',style:'walk',desc:'推理、議論、盤面を睨む時間、調査パート。神秘が謎めいた探索なら、こちらは頭を使う時間。同じ形を回しながら考えます。',name:'🧩 思索',mode:'dorian',roots:[7,0,2],wave:'triangle',progs:[[0,3,0,6],[3,6,3,0],[3,0,6,3],[0,3,6,0],[6,0,3,6],[0,6,0,3]],drums:'light',energy:.6,density:.6},
     {id:'dark',style:'stab',desc:'地下道、夜の路地、尾行されている気配。まだ何も起きていないのに安心できない場面に。',name:'🌙 暗い',mode:'phrygian',roots:[0,2,6],wave:'sine',progs:[[0,1,0,4],[0,6,1,0],[1,0,3,6],[0,1,6,0],[0,3,1,0],[6,0,1,0]],drums:'pulse',energy:.55,density:.55},
@@ -98,7 +98,7 @@
   // The mood's waveform still tilts how bright the preset sounds.
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
-  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[92,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],lullaby:[46,'musicbox'],requiem:[46,'organ'],puzzle:[76,'wood']};
+  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[92,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood']};
   function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
@@ -260,11 +260,11 @@
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
       // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
-      if(['wonder','requiem','night'].includes(score.moodId)&&(n.part===1||n.part===2)){
+      if(['wonder','requiem','night','doubt'].includes(score.moodId)&&(n.part===1||n.part===2)){
         const fade=ctx.createGain(),at=n.beat*beat,duration=n.duration*beat;
         fade.gain.setValueAtTime(1,at);
         fade.gain.setValueAtTime(1,at+Math.min(.2,duration*.1));
-        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:.12);
+        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:score.moodId==='doubt'?.16:.12);
         // Requiem settles into a quiet bed until the next chord, rather than
         // finishing the note early and leaving a silent part of each bar.
         fade.gain.exponentialRampToValueAtTime(floor,at+(requiem?Math.min(duration*.9,2.4*beat):duration*.9));
@@ -591,7 +591,7 @@
   const MODE_JA={ionian:'イオニア（長調）',dorian:'ドリア',aeolian:'エオリア（自然短調）',phrygian:'フリギア',
     locrian:'ロクリア',harmonic:'和声的短音階',lydian:'リディア',mixolydian:'ミクソリディア'};
   const densityWord=d=>d<.5?'少なめ':d>.75?'多め':'ふつう';
-  const DRUM_JA={none:'なし',swing:'シャッフル（三連）',light:'軽い（2・4拍）',pulse:'鼓動（1拍）',heart:'心音（二連）',drive:'ドライブ（8分＋太鼓）'};
+  const DRUM_JA={none:'なし',swing:'シャッフル（三連）',ticks:'時計（まばら）',light:'軽い（2・4拍）',pulse:'鼓動（1拍）',heart:'心音（二連）',drive:'ドライブ（8分＋太鼓）'};
   // The mood card sells the scene; the build panel confirms the spec just before generating.
   function renderBrief(){
     const m=state.mood,tempo=TEMPOS.find(t=>t.bpm===state.bpm),sound=SOUNDS.find(x=>x.id===state.sound);
