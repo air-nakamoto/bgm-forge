@@ -33,7 +33,7 @@
     {id:'horror',style:'stab',desc:'怪異の接近、正気度判定、開けてはいけない扉の前。逃げ場がないと分かる場面に。',name:'🩸 恐怖',mode:'locrian',roots:[0,2,6],wave:'sine',progs:[[0,1,4,1],[0,4,1,0],[1,0,3,4],[0,3,1,4],[4,1,0,3],[1,4,0,1]],drums:'heart',energy:.5,density:.45}
   ];
   const SOUNDS=[
-    {id:'samples',name:'生楽器',note:'ピアノ・弦・打楽器'},
+    {id:'samples',name:'室内楽',note:'録音したピアノ・弦・打楽器'},
     {id:'softpiano',name:'柔らかいピアノ',note:'弱く弾いた音・控えめな余韻'},
     {id:'synth',name:'やわらかい',note:'丸い電子音'},
     {id:'glass',name:'ガラス・鐘',note:'澄んだ余韻'},
