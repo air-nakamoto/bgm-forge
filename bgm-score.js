@@ -37,6 +37,8 @@
     mystic: {inner:[[.75,3.25],[1.5,2.75],[.25,2.5]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:6.8,harmony:[4,2,4],high:76,gate:.7,drum:'none'},
     sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
     memory: {inner:[[0,1.5,3],[.5,2,3.5],[0,.75,2.5]],bass:['fifth','two','walk'],pad:[2],padBars:2,hold:1.7,harmony:[1,2,2],high:69,gate:.6,drum:'none'},
+    // 疑惑は autoPattern:'wave' を使うので、この行から効くのは harmony（和音の移り変わり）と
+    // high（内声の音域）だけ。inner・bass・pad・gate・drum は伴奏を手動で場面型にしない限り使われない。
     doubt:  {inner:[[.75,2.25,3.25],[.5,1.75,2.75],[.25,1.5,2.5,3.75]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:3.6,pad:[0],padBars:2,hold:5.2,harmony:[2,4,2],high:74,gate:.7,drum:'ticks'},
     requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
@@ -47,7 +49,9 @@
     tense:  {inner:[[0,.75,1.5,2.5,3],[0,.5,1.75,2.5,3.5],[0,1.5,2,2.75]],bass:['ritual','motor','march'],pad:[0,2.5],padBars:1,hold:.7,harmony:[1,2,1],high:67,gate:.35,drum:'battle'},
     horror: {inner:[[1.75],[3.25],[.5,2.75]],bass:['pedal','pedal','hold'],pad:[1.5],padBars:2,hold:5.8,harmony:[4,4,2],high:78,gate:.55,drum:'broken'}
   };
-  const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:SCENES[s.moodId]?'scene':'legacy';
+  // 「場面におまかせ」の行き先。場面が autoPattern を持つときは、場面専用の伴奏より
+  // その決まった型を優先する。持たない場合は今まで通り場面専用、それも無ければ legacy。
+  const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:s.autoPattern?s.autoPattern:SCENES[s.moodId]?'scene':'legacy';
   const arrangementKey=s=>[s.moodId,s.arrangementVariant,s.harmonyEvery,s.accompaniment||'auto'].join(':');
   // Registers: the inner voice stays under the melody, the pad stays inside the sampled string range.
   const INNER_GAP=4,INNER_SPAN=11,PAD_LOW=55,PAD_HIGH=79;
@@ -94,7 +98,7 @@
       drums:m.drums,defaultDrums:m.drums==='none'?'light':m.drums,bpm:settings.bpm,length:settings.length,
       themeBars:themeBarsFor(settings.bpm,settings.length),ending:settings.ending==='cadence'?'cadence':'loop',
       baseDensity:m.density||.55,density:densityFor(m.density,settings.phrasing),phrasing:settings.phrasing||'auto',lead:settings.lead!==false,
-      accompaniment:settings.accompaniment||'auto',moodId:m.id,moodName:m.name,style:m.style||'full',sound:settings.sound||'samples',level:1,energy:typeof m.energy==='number'?m.energy:.55,scene:'theme',sceneName:'テーマ'};
+      accompaniment:settings.accompaniment||'auto',autoPattern:m.autoPattern||null,moodId:m.id,moodName:m.name,style:m.style||'full',sound:settings.sound||'samples',level:1,energy:typeof m.energy==='number'?m.energy:.55,scene:'theme',sceneName:'テーマ'};
     const profile=SCENES[m.id],variant=Math.floor(rng(seed^0x5343454E)()*3);
     s.arrangementVariant=variant;s.harmonyEvery=profile?profile.harmony[variant]:1;
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
