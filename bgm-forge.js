@@ -99,7 +99,7 @@
   // The mood's waveform still tilts how bright the preset sounds.
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
-  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[92,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood']};
+  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'samples'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[96,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood']};
   function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
