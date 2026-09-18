@@ -718,11 +718,13 @@
       const d=document.createElement('div');d.className='take '+(x===t?'active':'');
       d.setAttribute('role','radio');d.setAttribute('aria-checked',x===t?'true':'false');
       d.tabIndex=x===t?0:-1;
-      const made=x.at?new Date(x.at):null;
-      const clock=made?String(made.getHours()).padStart(2,'0')+':'+String(made.getMinutes()).padStart(2,'0'):'';
-      d.innerHTML='<span class="dot"></span><div><strong>'+(x.score.sceneName||'テーマ')+' · '+x.score.moodName+' / SEED '+x.score.seed+'</strong>'+
+      // 見出しは「いつ作ったか」。同じ場面を続けて作ると見分けがつかないので、時刻を先に出す。
+      const made=x.at?new Date(x.at):null,p2=n=>String(n).padStart(2,'0');
+      const stamp=made?(made.getMonth()+1)+'/'+made.getDate()+' '+p2(made.getHours())+':'+p2(made.getMinutes()):'';
+      d.innerHTML='<span class="dot"></span><div><strong>'+(x.score.sceneName||'テーマ')+' · '+x.score.moodName+
+        (stamp?' / '+stamp:'')+'</strong>'+
         '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
-        (clock?'<span class="take-time">'+clock+' に作成</span>':'')+'</p></div>'+
+        '<span class="take-meta">SEED '+x.score.seed+'</span></p></div>'+
         '<span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{
