@@ -37,7 +37,7 @@
     mystic: {inner:[[.75,3.25],[1.5,2.75],[.25,2.5]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:6.8,harmony:[4,2,4],high:76,gate:.7,drum:'none'},
     sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
     memory: {inner:[[0,1.5,3],[.5,2,3.5],[0,.75,2.5]],bass:['fifth','two','walk'],pad:[2],padBars:2,hold:1.7,harmony:[1,2,2],high:69,gate:.6,drum:'none'},
-    doubt:  {inner:[[1.25],[.5,2.75],[2.25,3.5]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:3.6,pad:[0],padBars:2,hold:5.2,harmony:[2,4,2],high:74,gate:.9,drum:'ticks'},
+    doubt:  {inner:[[.75,2.25,3.25],[.5,1.75,2.75],[.25,1.5,2.5,3.75]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:3.6,pad:[0],padBars:2,hold:5.2,harmony:[2,4,2],high:74,gate:.7,drum:'ticks'},
     requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
     dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
