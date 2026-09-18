@@ -154,6 +154,8 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .take p{margin:2px 0 0;color:var(--dim);font:10.5px var(--mono);letter-spacing:.05em}
 .take-meta{margin-left:10px;padding-left:10px;border-left:1px solid var(--line-lit);color:var(--faint)}
 .takenote{font:11px var(--sans);letter-spacing:0;color:var(--faint)}
+.nowplaying{padding:2px 10px;border:1px solid var(--line);border-radius:999px;
+  font:11px var(--mono);letter-spacing:.04em;color:var(--cyan-lit);background:rgba(113,196,213,.07)}
 .takecount{margin-left:10px;padding:1px 9px;border:1px solid var(--line);border-radius:999px;
   font:10px var(--mono);letter-spacing:.1em;color:var(--dim);vertical-align:2px}
 
@@ -372,7 +374,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   </section>
 
   <section class="panel listen">
-    <h2><i>02</i>聴いて確かめる<button class="more" data-more="d-listen">詳細</button></h2>
+    <h2><i>02</i>聴いて確かめる<span id="nowPlaying" class="nowplaying" role="status" hidden></span><button class="more" data-more="d-listen">詳細</button></h2>
     <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">聴いてみる</span>
       <button id="play" class="play" disabled>再生</button>
       <button id="stop" disabled>停止</button>
@@ -536,6 +538,6 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 <script src="vendor/lamejs/lame.min.js?v=20260916k"></script>
 <script src="samples/vsco2/bank.js?v=20260916g"></script>
 <script src="bgm-score.js?v=20260919-wonderloop"></script>
-<script src="bgm-forge.js?v=20260919-tempo"></script>
+<script src="bgm-forge.js?v=20260919-nowplaying"></script>
 </body>
 </html>

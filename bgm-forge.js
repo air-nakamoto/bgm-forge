@@ -334,7 +334,7 @@
     const s=c.createBufferSource(),gain=c.createGain();s.buffer=b;s.loop=!once&&t.score?.ending!=='cadence';
     gain.gain.value=state.volume;s.connect(gain);gain.connect(c.destination);state.playGain=gain;
     s.onended=()=>{if(state.playSource===s&&!s.loop)void stopPlayback()};
-    state.playCtx=c;state.playSource=s;state.playTake=t;comparisonUI();
+    state.playCtx=c;state.playSource=s;state.playTake=t;comparisonUI();nowPlayingLabel();
     const from=Math.max(0,Math.min(offset,t.length/SR-.01));
     try{s.start(0,from)}catch{s.start()}
     // Creating the context after an await can leave it suspended on strict autoplay policies.
@@ -540,6 +540,7 @@
     status('直前の変更を取り消しました。変更後の曲はテイク一覧に残っています。','');
   }
   function comparisonUI(){
+    nowPlayingLabel();
     const preview=!!state.comparison&&state.playTake===state.comparison.before;
     const button=$('compare'),info=$('comparisonStatus');
     if(button)button.textContent=preview?'現在の曲を試聴':'変更前を試聴';
@@ -688,6 +689,22 @@
   }
   function startMeter(){if(typeof requestAnimationFrame!=='function'||!smooth()){renderMeter(0);return}if(!state.meterRaf)state.meterRaf=requestAnimationFrame(meterTick)}
   function stopMeter(){if(state.meterRaf&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(state.meterRaf);state.meterRaf=0}
+  // テイクの見出し。一覧と「聴いて確かめる」の両方で同じ文字列を使う。
+  function takeTitle(x){
+    if(!x||!x.score)return '';
+    const p2=n=>String(n).padStart(2,'0'),made=x.at?new Date(x.at):null;
+    const stamp=made?(made.getMonth()+1)+'/'+made.getDate()+' '+p2(made.getHours())+':'+p2(made.getMinutes()):'';
+    return (x.score.sceneName||'テーマ')+' · '+x.score.moodName+(stamp?' / 作成日時：'+stamp:'');
+  }
+  // どのテイクを鳴らしているのかは、聴く欄の見出しにも出す。再生していないあいだは
+  // 選んでいる曲（保存と調整の対象）を出す。
+  function nowPlayingLabel(){
+    const el=$('nowPlaying');if(!el)return;
+    const playing=state.playSource?state.playTake:null,x=playing||state.take;
+    const before=state.comparison&&x===state.comparison.before;
+    el.textContent=x?takeTitle(x)+(before?'（変更前）':''):'';
+    el.hidden=!x;
+  }
   function draw(){
     const t=state.take;
     guide();syncEdits();
@@ -700,6 +717,7 @@
     renderMeter(state.playCtx?0:-1);
     $('takes').innerHTML='';
     const counter=$('takeCount');if(counter)counter.textContent=state.takes.length+' / 6';
+    nowPlayingLabel();
     const pick=async x=>{
       if(state.busy)return;
       // Clicking a take is what asks for its details — and for hearing it.
@@ -719,10 +737,7 @@
       d.setAttribute('role','radio');d.setAttribute('aria-checked',x===t?'true':'false');
       d.tabIndex=x===t?0:-1;
       // 見出しは「いつ作ったか」。同じ場面を続けて作ると見分けがつかないので、時刻を先に出す。
-      const made=x.at?new Date(x.at):null,p2=n=>String(n).padStart(2,'0');
-      const stamp=made?(made.getMonth()+1)+'/'+made.getDate()+' '+p2(made.getHours())+':'+p2(made.getMinutes()):'';
-      d.innerHTML='<span class="dot"></span><div><strong>'+(x.score.sceneName||'テーマ')+' · '+x.score.moodName+
-        (stamp?' / 作成日時：'+stamp:'')+'</strong>'+
+      d.innerHTML='<span class="dot"></span><div><strong>'+takeTitle(x)+'</strong>'+
         '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
         '<span class="take-meta">SEED '+x.score.seed+'</span></p></div>'+
         '<span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
