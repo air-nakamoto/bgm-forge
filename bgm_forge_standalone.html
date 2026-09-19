@@ -388,7 +388,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 
   <section class="panel listen">
     <h2><i>02</i>聴いて確かめる<span id="nowPlaying" class="nowplaying" role="status" hidden></span><button class="more" data-more="d-listen">詳細</button></h2>
-    <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">作り直した曲を　聴いてみる</span>
+    <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" id="playGuide" aria-hidden="true">聴いてみる</span>
       <button id="play" class="play" disabled>再生</button>
       <button id="stop" disabled>停止</button>
     </div>
@@ -2395,7 +2395,9 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
         report(0);
         await new Promise(resolve=>setTimeout(resolve,20));
         if(state.cancel)throw Object.assign(Error('中止しました'),{cancelled:true});
-        rendered.push(await render(scores[i],report,()=>state.cancel));
+        const take=await render(scores[i],report,()=>state.cancel);
+        take.adjusted=!!before;
+        rendered.push(take);
       }
       overlayProgress(message,100,'仕上げています','');
       state.takes=[...rendered,...(before?[before]:[]),...state.takes.filter(t=>t!==before)].slice(0,6);
@@ -2844,7 +2846,9 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     guide();
   }
   const panelOpen=()=>{const d=$('adjustments');return !!(d&&d.open)};
+  function playGuideLabel(take){return take&&take.adjusted?'作り直した曲を　聴いてみる':'聴いてみる'}
   function guide(){
+    const playGuide=$('playGuide');if(playGuide)playGuide.textContent=playGuideLabel(state.take);
     const lit=[];
     if(!state.busy&&!state.tourSaved){
       if(!state.take||state.tourRemake){lit.push('stepScene');if(state.tourReady||state.take)lit.push('stepBuild')}
@@ -2870,7 +2874,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     const events=BGMScore.events(a),melody=events.filter(n=>n.part===0).map(n=>n.pitch),inner=events.filter(n=>n.part===3).map(n=>n.pitch);
     if(inner.length&&Math.min.apply(null,melody)<=Math.max.apply(null,inner))throw Error('Register overlap failed');
   }
-  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,midiFile,wav,encodeMp3,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
+  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,midiFile,wav,encodeMp3,playGuideLabel,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
   choiceGroup('moods',MOODS,x=>x.name,x=>x.id,m=>{
     // Browsing scenes is not a step you finish — 作る simply becomes available beside it.
     state.tourReady=true;if(state.take)state.tourRemake=true;
