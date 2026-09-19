@@ -12,13 +12,13 @@
   // 1 = unchanged. Lower = quieter backing under the melody.
   const ACCOMP_TRIM = { wonder: .72, night: .62, doubt: .68 };
   const MOODS = [
-    {id:'bright',style:'full',desc:'朝の街道、報酬の受け取り、無事に切り抜けたあとの一息。日常に戻ってきた場面に。',name:'☀️ 明るい',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,4,5,3],[0,3,4,0],[0,5,3,4],[0,2,3,4],[3,4,0,5],[5,3,0,4]],drums:'light',energy:.75,density:.8},
+    {id:'bright',style:'full',desc:'街道の移動、買い物や聞き込み、無事に切り抜けたあとの一息。特に何も起きていない、明るい時間に。',name:'☀️ 明るい',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,4,5,3],[0,3,4,0],[0,5,3,4],[0,2,3,4],[3,4,0,5],[5,3,0,4]],drums:'light',energy:.75,density:.8},
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
     {id:'casino',style:'walk',desc:'ルーレット、カード勝負、華やかな遊技場。跳ねるピアノと軽快な低音で、陽気な駆け引きやコミカルな騒動に。',name:'🎲 カジノ',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,5,1,4],[0,2,5,4],[3,0,1,4],[0,5,3,4],[0,3,1,4],[5,1,4,0]],drums:'light',energy:.72,density:.65},
     {id:'victory',style:'drive',desc:'依頼の達成、街への凱旋、名乗りを上げる瞬間。セッションの締めやエンディングにも。',name:'🏆 凱旋',mode:'ionian',roots:[0,5,7],wave:'sawtooth',progs:[[0,3,4,0],[0,4,5,3],[0,5,3,4],[3,4,0,0],[0,2,3,4],[4,5,3,0]],drums:'drive',energy:1,density:.85},
     {id:'wonder',style:'drift',desc:'夢や異世界、精霊との邂逅、神秘的な遺跡の探索。澄んだ鐘と浮遊する響きで、日常を離れる場面に。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
     {id:'night',style:'drift',desc:'涼しい夜風、星空の下の散歩、月明かりの街道。静かでも暗くならない、すっきりした夜のひとときに。',name:'🌌 夜空',mode:'lydian',roots:[5,0,7],wave:'sine',progs:[[0,4,1,0],[0,2,1,4],[3,0,4,1],[0,1,4,2],[2,4,0,1],[0,4,2,3]],drums:'none',energy:.38,density:.35},
-    {id:'calm',style:'walk',desc:'朝の畑と家畜の鈴、開いた窓、出発前の身支度。日が高くなる前ののんびりした時間に。',name:'🌾 のどか',mode:'mixolydian',roots:[0,7,5],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,3,0,4],[3,0,4,0],[0,6,0,3],[4,3,0,0]],drums:'swing',energy:.55,density:.6},
+    {id:'calm',style:'walk',desc:'畑と家畜の鈴、開いた窓、井戸端の立ち話。急ぐ用事のない、のんびりした時間に。',name:'🌾 のどか',mode:'mixolydian',roots:[0,7,5],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,3,0,4],[3,0,4,0],[0,6,0,3],[4,3,0,0]],drums:'swing',energy:.55,density:.6},
     {id:'solemn',style:'hymn',desc:'神殿、宣誓、王の間での謁見、葬送。重い決断を下す前の静けさに。',name:'⛪ 荘厳',mode:'ionian',roots:[9,4,2],wave:'sine',progs:[[0,3,0,4],[0,5,3,0],[3,0,4,0],[0,4,3,0],[0,2,3,4],[5,0,3,4]],drums:'none',energy:.45,density:.4},
     {id:'sorrow',style:'hush',desc:'別れ、喪失、回想、看取り。取り返しのつかないことが起きたあとの場面に。',name:'💧 悲哀',mode:'aeolian',roots:[9,4,7],wave:'sine',progs:[[0,5,3,4],[0,2,5,4],[0,3,0,5],[5,3,0,4],[0,4,5,3],[2,5,0,4]],drums:'none',energy:.4,density:.45},
     {id:'memory',style:'walk',desc:'古い記録、子供の頃の記憶、もう戻れない日々。悲哀が取り返しのつかない喪失なら、こちらは温かい懐かしさ。',name:'📻 回想',mode:'mixolydian',roots:[5,10,0],wave:'sine',progs:[[0,5,3,6],[0,6,5,0],[5,0,6,3],[0,3,5,6],[6,5,0,3],[3,6,0,5]],drums:'none',energy:.45,density:.5},
