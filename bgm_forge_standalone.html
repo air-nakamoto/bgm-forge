@@ -69,6 +69,14 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
 .version::before{content:"▚ "}
 h1{margin:8px 0 0;font:200 clamp(26px,4.6vw,42px)/1 var(--mono);letter-spacing:.17em;color:#f2f8fc}
 h1 span{color:var(--gold);font-weight:300}
+.title-lockup{display:flex;align-items:center;gap:12px;margin-top:8px}
+.title-lockup h1{margin:0}
+.title-mark{width:20px;height:32px;flex:none;fill:var(--cyan);opacity:.8;animation:mark-drift 6s ease-in-out infinite}
+@keyframes mark-drift{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(-2px);opacity:1}}
+.mark-upper{animation:mark-swap-upper 16s ease-in-out infinite}
+.mark-lower{animation:mark-swap-lower 16s ease-in-out infinite}
+@keyframes mark-swap-upper{0%,35%,85%,100%{transform:translate(0,0)}45%,75%{transform:translate(10px,16px)}}
+@keyframes mark-swap-lower{0%,35%,85%,100%{transform:translate(0,0)}45%,75%{transform:translate(-10px,-16px)}}
 .lead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 header p{color:var(--dim);margin:0;font:300 14px/1.7 var(--mincho);letter-spacing:.05em}
 .helpbtn{border:1px solid var(--line);background:rgba(160,205,225,.028);color:var(--cyan-lit);border-radius:2px;
@@ -227,7 +235,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   font:400 10px var(--mono);letter-spacing:.06em;color:var(--cyan);background:rgba(113,196,213,.08);position:relative;z-index:1}
 .step:not(:last-child)::before{content:"";position:absolute;left:13px;top:28px;bottom:2px;width:1px;
   background:linear-gradient(to bottom,rgba(113,196,213,.4),rgba(113,196,213,.1))}
-.step b{display:block;font:500 13px var(--sans);letter-spacing:.05em;color:#eaf3f8;margin:4px 0 3px}
+.step b{display:block;font:500 16px/26px "Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif CJK JP",serif;letter-spacing:.05em;color:#e4ad65;margin:0 0 3px}
 .step span{display:block;font:12px/1.8 var(--sans);color:#bacada}
 .help-body details{border-top:1px solid var(--line)}
 .help-body details:last-child{border-bottom:1px solid var(--line)}
@@ -387,7 +395,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   <header>
     <div>
       <div class="version">BGM FORGE / THEME &amp; SCENE EDITION</div>
-      <h1>BGM <span>FORGE</span></h1>
+      <div class="title-lockup"><svg class="title-mark" viewBox="0 0 20 32" aria-hidden="true" focusable="false"><rect class="mark-upper" width="10" height="16"/><rect class="mark-lower" x="10" y="16" width="10" height="16"/></svg><h1>BGM <span>FORGE</span></h1></div>
     </div>
     <div class="lead">
       <p>場面に合ったBGMを、ブラウザでつくれる。</p>
@@ -1189,11 +1197,11 @@ That&#x27;s all there is to it!
       <button id="helpClose" class="helpclose" aria-label="閉じる">閉じる</button></div>
     <div class="help-body">
       <ol class="steps">
-        <li class="step"><span class="no">01</span><div><b>場面を選ぶ</b><span>どんな場面で流すかを押すだけ。迷ったらそのままで大丈夫です。音色とテンポは場面に合わせて決まります。</span></div></li>
-        <li class="step"><span class="no">02</span><div><b>曲を作る</b><span>「新しい曲を作る」を押します。ボタンの右の欄が、これから作る曲の確認です。</span></div></li>
-        <li class="step"><span class="no">03</span><div><b>聴く</b><span>できたら「再生」。気に入らなければ「新しい曲を作る」をもう一度押すだけです。</span></div></li>
-        <li class="step"><span class="no">04</span><div><b>惜しければ直す</b><span>「この曲を調整」で音色やテンポを変え、「この設定で曲を作り直す」で反映します。作り直す前に2小節だけ試聴できます。元の曲はテイクに残ります。</span></div></li>
-        <li class="step"><span class="no">05</span><div><b>保存する</b><span>「WAVを保存」で完了。ダウンロードした曲は、TRPGのセッションや動画などのBGMに使えます。</span></div></li>
+        <li class="step"><span class="no">01</span><div><b>場面を選ぶ</b><span>どんな場面で流すかを押すだけ。迷ったらそのままで大丈夫です。<br>音色とテンポは場面に合わせて決まります。</span></div></li>
+        <li class="step"><span class="no">02</span><div><b>曲を作る</b><span>「新しい曲を作る」を押します。<br>ボタンの右の欄が、これから作る曲の確認です。</span></div></li>
+        <li class="step"><span class="no">03</span><div><b>聴く</b><span>できたら「再生」。気に入らなければ「新しい曲を作る」をもう一度押すと再作成されます。</span></div></li>
+        <li class="step"><span class="no">04</span><div><b>惜しければ直す</b><span>「この曲を調整」で音色やテンポを変え、「この設定で曲を作り直す」で反映します。<br>作り直す前に2小節だけ試聴できます。元の曲はテイクに残ります。（※最大１２個まで）</span></div></li>
+        <li class="step"><span class="no">05</span><div><b>保存する</b><span>「WAVを保存」「MP3を保存」から、好きな形式でダウンロードできます。<br>保存した曲は、TRPGのセッションや動画などのBGMに使えます。<br>（編集ソフトで曲を編集したい場合は「MIDIを保存（編集用）」を選択も可能）</span></div></li>
       </ol>
       <p class="help-foot">画面では、いま操作できる場所の枠が光ります。その枠をたどれば一通り作れます。<br>
       過去に作った曲は下の「テイク」に残ります。（最大12曲まで）行をクリックすると切り替わって再生されます。<br>
