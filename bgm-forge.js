@@ -883,7 +883,9 @@
   });
   const options=(id,items,value,label)=>items.forEach(item=>{const o=document.createElement('option');o.value=value(item);o.textContent=label(item);$(id).appendChild(o)});
   options('editPattern',BGMScore.ACCOMPANIMENTS,x=>x.id,x=>x.name);
-  options('editSound',SOUNDS,x=>x.id,x=>x.note?x.name+'（'+x.note+'）':x.name);options('editTempo',TEMPOS,x=>x.bpm,x=>x.name+' · '+x.bpm+' BPM');options('editLength',LENGTHS,x=>x,lengthLabel);options('editPhrasing',PHRASINGS,x=>x.id,x=>x.name);
+  // Mobile browsers show select options in a full-screen picker. Keep each row short;
+  // the detailed sound descriptions remain available in the sound-making detail sheet.
+  options('editSound',SOUNDS,x=>x.id,x=>x.name);options('editTempo',TEMPOS,x=>x.bpm,x=>x.name+' · '+x.bpm+' BPM');options('editLength',LENGTHS,x=>x,lengthLabel);options('editPhrasing',PHRASINGS,x=>x.id,x=>x.name);
   selectMood(state.mood);refresh();armChoice(6000);
   $('editFields').onchange=e=>{
     // Turning the tune on starts it at 少なめ: under a conversation that is the amount that works,

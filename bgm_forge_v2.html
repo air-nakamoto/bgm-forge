@@ -258,6 +258,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 .advanced summary:hover{color:var(--ink)}
 /* 開いているあいだは、この枠の中だけが「調整中」だと分かる色にする。 */
 .advanced[open]{border-color:var(--edit);background:rgba(224,112,95,.05);padding:0 10px 10px}
+.advanced{min-width:0;overflow:hidden}
 .advanced[open] summary{color:var(--edit-lit);border-color:rgba(224,112,95,.5);background:rgba(224,112,95,.08);
   font-size:14px;font-weight:500;margin:0 -10px}
 .editing{display:none;margin-left:10px;padding:1px 9px;border:1px solid var(--edit);border-radius:999px;
@@ -278,6 +279,8 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 .option-switches{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;min-height:32px}
 .option-switches #editPhrasing{flex:0 1 150px;min-width:110px}
 #editFields select{width:100%;min-height:32px;padding:5px 10px;background:#101b23;color:var(--ink);border:1px solid var(--line-lit);border-radius:4px;font:13px var(--sans)}
+#editFields{min-width:0;max-width:100%;box-sizing:border-box}
+#editFields select{box-sizing:border-box}
 #editFields select:disabled{opacity:.45}
 /* Listen row: the button, how far the sample has run, and how long it lasts. */
 .preview{display:flex;align-items:center;gap:9px;min-height:24px}
@@ -573,6 +576,6 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 <script src="vendor/lamejs/lame.min.js?v=20260916k-15d285e2"></script>
 <script src="samples/vsco2/bank.js?v=20260916g-86e68eb9"></script>
 <script src="bgm-score.js?v=20260919-clear-730bb2ba"></script>
-<script src="bgm-forge.js?v=20260920-clear-wood-642ab39d"></script>
+<script src="bgm-forge.js?v=20260920-mobile-select-a66a90ab"></script>
 </body>
 </html>
