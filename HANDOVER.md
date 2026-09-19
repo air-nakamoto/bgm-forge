@@ -199,6 +199,13 @@ const INNER_GAP=4, INNER_SPAN=11, PAD_LOW=55, PAD_HIGH=79;
 - `tests/scene-variation.cjs` に分割版の参照と単体版の埋め込み内容一致の検査を追加。646ケースPASS。
 - ヘッドレスChromeで16/32/64/192pxのアイコンと820px・390px幅の画面を撮影し、形状と折り返しを確認。作曲・音声処理の変更なし。
 
+### 2026-09-19 · OGP画像
+
+- 共有画像指定0件→分割版・単体版に各1件。`ogp.svg` を編集元とし、1200×630pxの `ogp.png`（129,592 bytes）を追加。画面と同じ黒・金・青、上段に「BGM FORGE / THEME & SCENE EDITION」、中央に大きな「BGM FORGE」を配置。
+- `og:title` / `og:description` / `og:url` / `og:image`・寸法・代替テキストと `twitter:card` を追加。画像URLはGitHub Pagesの絶対URL。公開後にSNSが取得する。ローカルの作曲・再生には通信不要。
+- PNGの寸法と両HTMLの画像参照を回帰検査に追加、646ケースPASS。画像の文字と余白を目視確認。単体版を再生成。
+- PNGの再生成: Nodeの `sharp` で `sharp('ogp.svg').png().toFile('ogp.png')` を実行（MenloフォントのあるMacで作成）。音声処理・画面本文の変更なし。
+
 ### 第1次（コードレビューの指摘への対応）
 
 | # | 内容 | 計測 |

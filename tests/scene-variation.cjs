@@ -9,6 +9,16 @@ assert.match(fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8'), /rel="
 const bundledIcon=fs.readFileSync(path.join(root,'bgm_forge_standalone.html'),'utf8').match(/rel="icon"[^>]+href="data:image\/svg\+xml;base64,([^"]+)"/);
 assert(bundledIcon,'standalone favicon must be embedded');
 assert.deepEqual(Buffer.from(bundledIcon[1],'base64'),icon);
+// 共有画像の参照先と寸法を、配布するPNGの実体に合わせる。
+const ogp=fs.readFileSync(path.join(root,'ogp.png'));
+assert.equal(ogp.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+assert.equal(ogp.readUInt32BE(16),1200);
+assert.equal(ogp.readUInt32BE(20),630);
+for(const file of ['bgm_forge_v2.html','bgm_forge_standalone.html']){
+ const html=fs.readFileSync(path.join(root,file),'utf8');
+ assert.match(html, /property="og:image" content="https:\/\/air-nakamoto\.github\.io\/bgm-forge\/ogp\.png"/);
+ assert.match(html, /name="twitter:card" content="summary_large_image"/);
+}
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
 vm.runInNewContext(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),context);

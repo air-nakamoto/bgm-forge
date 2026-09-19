@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow"><stop stop-color="#15303b"/><stop offset="1" stop-color="#000205"/></radialGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M60 0H0V60" fill="none" stroke="#71c4d5" stroke-opacity=".10"/></pattern>
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><path d="M0 0H4" stroke="#a6e6f4" stroke-opacity=".025"/></pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#000205"/>
+  <ellipse cx="600" cy="260" rx="790" ry="430" fill="url(#glow)"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect width="1200" height="630" fill="url(#scan)"/>
+  <path d="M64 96V64H96 M1104 64H1136V96 M64 534V566H96 M1104 566H1136V534" fill="none" stroke="#71c4d5" stroke-width="2" opacity=".75"/>
+  <text x="600" y="154" text-anchor="middle" fill="#71c4d5" font-family="Menlo,monospace" font-size="21" letter-spacing="5">BGM FORGE / THEME &amp; SCENE EDITION</text>
+  <text x="600" y="329" text-anchor="middle" font-family="Menlo,monospace" font-size="146" letter-spacing="7" fill="#e8eef4">BGM <tspan fill="#e4ad65">FORGE</tspan></text>
+  <path d="M120 391H1080" stroke="#71c4d5" opacity=".25"/>
+  <g fill="none" stroke="#71c4d5" stroke-width="3" opacity=".7">
+    <path d="M376 464H414 M428 454V474 M442 445V483 M456 457V471 M470 437V491 M484 449V479 M498 426V502 M512 441V487 M526 456V472 M540 432V496 M554 414V514 M568 434V494 M582 449V479 M596 439V489 M610 424V504 M624 447V481 M638 432V496 M652 451V477 M666 444V484 M680 456V472 M694 451V477 M708 459V469 M724 464H762"/>
+  </g>
+</svg>
