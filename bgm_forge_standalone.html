@@ -120,6 +120,7 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .transport{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .transport button.play{border-color:rgba(113,196,213,.5);background:rgba(113,196,213,.1);color:var(--cyan-lit);
   font-weight:500;font-size:15px;letter-spacing:.14em;padding:13px 30px;box-shadow:inset 0 0 24px -14px rgba(166,230,244,.9)}
+#generate,#play{width:184px;flex:none}
 .transport button.play:hover:not(:disabled){box-shadow:0 0 28px -8px rgba(166,230,244,.75)}
 .saves{margin-top:10px}
 .saves::before{content:"SAVE";font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);margin-right:4px}
@@ -238,7 +239,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 @keyframes pulse{50%{opacity:.28}}
 @media(prefers-reduced-motion:reduce){.card-head .led{animation:none}.bar i{transition:none}}
 @media(max-width:860px){.mood-layout{grid-template-columns:1fr}.brief{order:2}.build{grid-template-columns:1fr}}
-@media(max-width:640px){.log-body{grid-template-columns:auto 1fr}.primary{width:100%}}
+@media(max-width:640px){.log-body{grid-template-columns:auto 1fr}.primary{width:100%}#generate,#play{width:100%}#stepPlay.transport{padding-inline:0}}
 @media(prefers-reduced-motion:reduce){.log-cursor{animation:none}}
 .advanced{margin-top:12px;border:1px solid transparent;border-radius:3px;transition:border-color .25s,background .25s}
 /* 調整は寄り道なので、閉じているあいだは控えめに置く。 */
