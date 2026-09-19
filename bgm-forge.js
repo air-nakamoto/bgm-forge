@@ -320,9 +320,13 @@
   function audioContext(){if(!state.audio)state.audio=new AudioCtor();return state.audio}
   function unlockAudio(){const c=audioContext();if(c.state!=='running'&&c.resume)void c.resume()}
   function syncTakeTransport(){
-    const p=$('takePlay'),q=$('takeStop');
-    if(p){p.disabled=state.busy||!state.take;p.textContent=state.playSource&&state.playTake===state.take?'再生中':'再生'}
-    if(q)q.disabled=state.busy||!state.playSource;
+    document.querySelectorAll('[data-take-play]').forEach(p=>{
+      const take=state.takes[Number(p.dataset.takePlay)];
+      p.disabled=state.busy||!take;p.textContent=state.playSource&&state.playTake===take?'再生中':'再生';
+    });
+    document.querySelectorAll('[data-take-stop]').forEach(p=>{
+      p.disabled=state.busy||!state.playSource||state.playTake!==state.takes[Number(p.dataset.takeStop)];
+    });
   }
   function retainTakes(takes){let samples=0;return takes.slice(0,12).filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6})}
   async function stopPlayback(){
@@ -748,9 +752,12 @@
       d.innerHTML='<span class="dot"></span><div><strong>'+takeTitle(x)+'</strong>'+
         '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
         '<span class="take-meta">SEED '+x.score.seed+'</span></p></div>'+
-        '<span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
+        '<div class="take-actions"><span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span><button type="button" data-take-play="'+i+'" aria-label="テイク'+(i+1)+'を再生">再生</button><button type="button" data-take-stop="'+i+'" aria-label="テイク'+(i+1)+'を停止" disabled>停止</button></div>';
+      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(x===state.take)void play();else void pick(x)};
+      d.querySelector('[data-take-stop]').onclick=e=>{e.stopPropagation();if(state.playTake===x)void stopPlayback()};
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{
+        if(e.target!==d)return;
         if(e.key==='Enter'||e.key===' '||e.key==='Spacebar'){e.preventDefault();return void pick(x)}
         const step=e.key==='ArrowDown'||e.key==='ArrowRight'?1:e.key==='ArrowUp'||e.key==='ArrowLeft'?-1:0;
         if(!step)return;
@@ -760,6 +767,7 @@
       $('takes').appendChild(d);
       if(x===t&&readout)$('takes').appendChild(readout);
     });
+    syncTakeTransport();
   }
   function wav(t){const n=t.length,ab=new ArrayBuffer(44+n*4),v=new DataView(ab);let o=0;const str=s=>{for(const c of s)v.setUint8(o++,c.charCodeAt(0))},u16=x=>{v.setUint16(o,x,true);o+=2},u32=x=>{v.setUint32(o,x,true);o+=4};str('RIFF');u32(36+n*4);str('WAVEfmt ');u32(16);u16(1);u16(2);u32(SR);u32(SR*4);u16(4);u16(16);str('data');u32(n*4);for(let i=0;i<n;i++){v.setInt16(o,Math.max(-1,Math.min(1,t.L[i]))*32767,true);o+=2;v.setInt16(o,Math.max(-1,Math.min(1,t.R[i]))*32767,true);o+=2}return new Blob([ab],{type:'audio/wav'})}
   function download(blob,name,keep=5000){const a=document.createElement('a'),url=URL.createObjectURL(blob);a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),keep)}
@@ -908,7 +916,6 @@
   ['pointerdown','keydown'].forEach(type=>document.addEventListener(type,unlockAudio,{capture:true}));
   $('volume').oninput=e=>setVolume(Number(e.target.value)/100);
   $('play').onclick=()=>play();$('stop').onclick=()=>stopPlayback();
-  $('takePlay').onclick=()=>play();$('takeStop').onclick=()=>stopPlayback();
   const savers={wav:save,mp3:saveMp3,midi:saveMidi};
   document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{state.tourSaved=true;guide();return savers[b.dataset.save]()});
   $('compare').onclick=()=>compareEdit();$('undoEdit').onclick=()=>compareEdit(true);
