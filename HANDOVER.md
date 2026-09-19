@@ -75,6 +75,7 @@ TRPG（ココフォリア）のセッション中に流す用途が主目的で�
 | `tests/scene-variation.cjs` | 646ケースの回帰テスト。**仕様の実体はここ** | 高 |
 | `README.md` | 利用者向け説明 | 中 |
 | `AGENTS.md` | **AI向けの開発ルール。着手前に読ませる** | 中 |
+| `LICENSE` | コードのMIT。生成物はCC0相当（README参照） | なし |
 | `公開する.command` | ダブルクリックで `git push` する補助。場所に依存しない | なし |
 | `HANDOVER.md` | この文書 | 中 |
 

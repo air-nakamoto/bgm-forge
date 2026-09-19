@@ -117,7 +117,24 @@ console.log(score.events(s).length);
 
 ---
 
-## 6. やらないと決めたこと
+## 6. ライセンス（勝手に変えないこと）
+
+| 対象 | ライセンス | 置き場 |
+|---|---|---|
+| ソースコード | MIT（Copyright (c) 2026 air-nakamoto） | `LICENSE` |
+| **このツールで作った曲** | **CC0 1.0 相当・完全に自由** | `README.md` と画面の「テイクと保存」 |
+| 同梱音源 VSCO 2 CE | CC0 1.0 | `samples/vsco2/LICENSE` |
+| lamejs / LAME | LGPL 2.1（未改変・原本同梱） | `vendor/lamejs/` |
+| Groove MIDI Dataset | CC BY 4.0（統計のみ参照。データは非収録） | 画面のクレジット |
+
+- 生成物がCC0と言い切れるのは、**同梱音源がCC0だから**です。CC0でない音源を足すと前提が崩れます。
+  音源を追加するときは必ずライセンスを確認し、CC0以外なら生成物の表示から見直すこと。
+- LGPLは全文の同梱が必要です。`scripts/build_standalone.py` のクレジット埋め込みを消さないこと。
+- Groove MIDI のクレジットは画面から消さないこと。
+
+---
+
+## 7. やらないと決めたこと
 
 - DAW相当の編集、MIDI入力、歌声生成
 - 外部API・学習モデルの利用（ブラウザ単体で完結させる方針）
@@ -125,7 +142,7 @@ console.log(score.events(s).length);
 
 ---
 
-## 7. 引き継ぎの一言
+## 8. 引き継ぎの一言
 
 > `work/bgm-forge` のBGM Forgeを続けたい。`AGENTS.md` に開発ルール、`HANDOVER.md` に経緯と今後の案がある。
 > 作業前に `node tests/scene-variation.cjs` を回して現状を確認してほしい。
