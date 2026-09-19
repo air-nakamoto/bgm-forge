@@ -48,7 +48,7 @@
     requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
     dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
-    ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:2,hold:7.8,breathe:[2,1.5],harmony:[4,2,4],high:65,gate:.45,drum:'none'},
+    ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:2,hold:7.8,harmony:[4,2,4],high:65,gate:.45,drum:'none'},
     machine:{inner:[[0,.5,1,1.75,2.5,3],[0,.75,1.5,2,3,3.5],[0,.5,1.5,2.5,3.25]],bass:['motor','two','motor'],pad:[],padBars:1,hold:0,harmony:[2,4,2],high:66,gate:.22,drum:'motor'},
     chase:  {inner:[[0,.5,1,1.5,2,2.5,3,3.5],[0,.5,1.5,2,2.5,3.5],[0,.75,1.5,2,2.75,3.5]],bass:['motor','walk','motor'],pad:[0],padBars:2,hold:.9,harmony:[1,1,2],high:73,gate:.32,drum:'running'},
     tense:  {inner:[[0,.75,1.5,2.5,3],[0,.5,1.75,2.5,3.5],[0,1.5,2,2.75]],bass:['ritual','motor','march'],pad:[0,2.5],padBars:1,hold:.7,harmony:[1,2,1],high:67,gate:.35,drum:'battle'},
@@ -382,16 +382,7 @@
       const v=velocity+gauss()*14-(sub?8:0);
       return [Math.max(0,Math.min(total-1e-3,beat+ms*s.bpm/60000)),Math.max(1,v)];
     };
-    // 息継ぎ。breathe:[N小節ごと,M拍] で、その小節の最後のM拍を全パート無音にする。
-    // パッドだけ短くしても効かない：hold 7.8→6.0 で無音率は 1.2%→6.4% 止まりで、
-    // 最長連続はむしろ 8.0→10.7秒 に悪化した。内声と低音が隙間を埋めてしまうため。
-    // 全パートの唯一の入口であるここで切ると、前の小節から伸びてきた持続音も窓の手前で断てる。
-    // ループの継ぎ目の小節だけは除く（turnBar は継ぎ目に穴を空けないための小節なので）。
-    const breathe=(SCENES[s.moodId]||{}).breathe;
-    const breathWin=beat=>{const [every,beats]=breathe,B=Math.floor(beat/4);
-      for(let k=B;k<=B+every;k++){if(k%every!==every-1||k===turnBar)continue;const w1=k*4+4;if(beat<w1)return [w1-beats,w1]}return null};
-    const add=(part,pitch,beat,duration,velocity,pan=0)=>{if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;
-      if(breathe){const w=breathWin(beat);if(w){if(beat>=w[0])return;duration=Math.min(duration,w[0]-beat);if(duration<=0)return}}notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
+    const add=(part,pitch,beat,duration,velocity,pan=0)=>{if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
     const chordFor=bar=>(!loop&&bar>=lastBar)?0:chordAt(s,bar);
     // Weighted choice so each bar picks a figure instead of repeating one forever.
     const pickW=table=>{let t=0;for(const row of table)t+=row[0];let x=random()*t;for(const row of table){x-=row[0];if(x<=0)return row[1]}return table[table.length-1][1]};

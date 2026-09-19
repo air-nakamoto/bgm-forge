@@ -89,21 +89,6 @@ assert.equal(DEFAULTS.victory[1],'wood','clear should use the wood mallet');
 assert.equal(DEFAULTS.decision[2],true,'decision should start with melody');
 // 儀式：コーラス＋ごく少ない旋律が既定。
 assert.deepEqual(Array.from(DEFAULTS.ritual),[60,'choir',true,'minimal'],'ritual should default to a choir with a very sparse melody');
-// 息継ぎ：2小節ごとに全パートが黙る。パッドだけ短くしても内声と低音が埋めるので、
-// events() の add でまとめて切っている。ループの継ぎ目には音を残すこと。
-{
- const m=MOODS.find(x=>x.id==='ritual');
- const s=score.compose({mood:m,scale:MODES[m.mode],bpm:DEFAULTS.ritual[0],sound:DEFAULTS.ritual[1],
-   length:60,ending:'loop',lead:true,phrasing:'minimal'},20260920);
- const ev=score.events(s),total=Math.round(s.length*s.bpm/60);
- const on=new Uint8Array(Math.ceil(total*100));
- for(const n of ev)for(let i=Math.floor(n.beat*100);i<Math.min(on.length,Math.ceil((n.beat+n.duration)*100));i++)on[i]=1;
- let cur=0,longest=0;
- for(let i=0;i<on.length;i++){if(on[i]){if(cur>longest)longest=cur;cur=0}else cur++}
- if(cur>longest)longest=cur;
- assert(longest/100>=1.4,`儀式には1.4拍以上の息継ぎが要る（実測 ${(longest/100).toFixed(2)}拍）`);
- assert(ev.some(n=>n.beat+n.duration>=total-0.05),'息継ぎでループの継ぎ目に穴を空けてはいけない');
-}
 // コーラスだけが母音の共鳴を持つ。formants を持たない音色は従来どおり素通り。
 {
  const src=fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8');

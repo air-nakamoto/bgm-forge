@@ -30,7 +30,7 @@
     {id:'requiem',style:'hymn',desc:'葬送、慰霊、鎮魂、終幕。悲哀が個人の悲しみなら、こちらは儀式としての弔い。オルガンの持続音が、切れ目なく場を埋めます。',name:'🕊️ 鎮魂',mode:'aeolian',roots:[7,0,5],wave:'sine',progs:[[0,5,2,6],[0,2,5,6],[5,6,0,2],[0,6,5,2],[2,6,0,5],[0,5,6,0]],drums:'none',energy:.35,density:.35},
     {id:'puzzle',style:'walk',desc:'推理、議論、盤面を睨む時間、調査パート。同じ形を回しながら頭を使う時間に。木のマレットの短い音が、淡々と続きます。',name:'🧩 思索',mode:'dorian',roots:[7,0,2],wave:'triangle',progs:[[0,3,0,6],[3,6,3,0],[3,0,6,3],[0,3,6,0],[6,0,3,6],[0,6,0,3]],drums:'light',energy:.6,density:.6},
     {id:'dark',style:'stab',desc:'地下道、夜の路地、尾行されている気配。まだ何も起きていないのに安心できない場面に。輪郭のない持続音と、遠い鼓動。',name:'🌙 暗い',mode:'phrygian',roots:[0,2,6],wave:'sine',progs:[[0,1,0,4],[0,6,1,0],[1,0,3,6],[0,1,6,0],[0,3,1,0],[6,0,1,0]],drums:'pulse',energy:.55,density:.55},
-    {id:'ritual',style:'stab',desc:'召喚、カルトの集会、封印の儀、生贄の祭壇。人ならざるものを呼び出す場面に。重なった声と低い持続音が、2小節ごとに短く息を継ぎます。',name:'🕯️ 儀式',mode:'harmonic',roots:[9,2,4],wave:'sine',progs:[[0,3,0,4],[0,6,3,0],[3,0,6,0],[0,4,3,0],[0,3,4,6],[6,3,0,4]],drums:'heart',energy:.6,density:.4},
+    {id:'ritual',style:'stab',desc:'召喚、カルトの集会、封印の儀、生贄の祭壇。人ならざるものを呼び出す場面に。重なった声が立ち上がり、低い持続音がゆっくり引いていきます。',name:'🕯️ 儀式',mode:'harmonic',roots:[9,2,4],wave:'sine',progs:[[0,3,0,4],[0,6,3,0],[3,0,6,0],[0,4,3,0],[0,3,4,6],[6,3,0,4]],drums:'heart',energy:.6,density:.4},
     {id:'machine',style:'drive',desc:'工場、艦内、無人の管制室、電子の迷宮。人の気配がない人工物の中で。8bit風の矩形波が、等間隔で動き続けます。',name:'⚙️ 機械',mode:'phrygian',roots:[2,7,0],wave:'sawtooth',progs:[[0,6,0,1],[0,1,6,0],[6,0,1,0],[0,6,1,6],[1,0,6,0],[0,3,6,1]],drums:'pulse',energy:.8,density:.6},
     {id:'chase',style:'drive',desc:'逃走、追いかけっこ、時間制限のある移動。プレイヤーに息を切らせたい場面に。爪弾きの連打と走る太鼓で、休みません。',name:'🏃 追跡',mode:'dorian',roots:[4,9,11],wave:'sawtooth',progs:[[0,6,3,0],[0,3,6,4],[0,4,3,6],[3,6,0,4],[0,6,4,3],[6,0,3,4]],drums:'drive',energy:1,density:.85},
     {id:'tense',style:'drive',desc:'対峙、交渉決裂、戦闘。相手と刃を合わせる直前から、決着がつくまで。速い室内楽と、打ち込む太鼓。',name:'🔥 緊迫',mode:'harmonic',roots:[2,7,9],wave:'sawtooth',progs:[[0,3,4,0],[0,5,4,0],[3,4,0,6],[0,4,3,4],[5,3,4,0],[0,3,0,4]],drums:'drive',energy:1,density:.9},
@@ -302,11 +302,11 @@
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
       // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
-      if(['wonder','requiem','night','doubt'].includes(score.moodId)&&(n.part===1||n.part===2)){
+      if(['wonder','requiem','night','doubt','ritual'].includes(score.moodId)&&(n.part===1||n.part===2)){
         const fade=ctx.createGain(),at=n.beat*beat,duration=n.duration*beat;
         fade.gain.setValueAtTime(1,at);
         fade.gain.setValueAtTime(1,at+Math.min(.2,duration*.1));
-        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:score.moodId==='doubt'?.16:score.moodId==='wonder'?.26:.12);
+        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:score.moodId==='doubt'?.16:score.moodId==='wonder'?.26:score.moodId==='ritual'?.18:.12);
         // Requiem settles into a quiet bed until the next chord, rather than
         // finishing the note early and leaving a silent part of each bar.
         fade.gain.exponentialRampToValueAtTime(floor,at+(requiem?Math.min(duration*.9,2.4*beat):duration*.9));
