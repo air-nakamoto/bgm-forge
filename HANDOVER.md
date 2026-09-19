@@ -3,6 +3,10 @@
 最終更新: 2026-09-19
 この文書だけ読めば、別のチャットで作業を続けられるように書いてあります。
 
+**AIに作業を頼むときは `AGENTS.md` を先に読ませてください。** 開発のループ（測る→直す→測り直す→
+テストに固定する→記録する）、触ってよいファイル、Gitの決まり、過去に踏んだ落とし穴をまとめてあります。
+この文書は経緯と計測値の記録です。
+
 **置き場所が変わりました。** 2026-09-17にGitリポジトリ（`air-nakamoto/bgm-forge`）へ移り、
 GitHub Pages で公開しています。旧作業フォルダ `inside-rooms` は凍結扱いです。
 
@@ -54,6 +58,7 @@ TRPG（ココフォリア）のセッション中に流す用途が主目的で�
 | `vendor/lamejs/` | MP3エンコーダ。`lamejs-1.2.1.tgz` はLGPL用の原本一式 | なし |
 | `tests/scene-variation.cjs` | 646ケースの回帰テスト。**仕様の実体はここ** | 高 |
 | `README.md` | 利用者向け説明 | 中 |
+| `AGENTS.md` | **AI向けの開発ルール。着手前に読ませる** | 中 |
 | `HANDOVER.md` | この文書 | 中 |
 
 配布は `bgm_forge_standalone.html` を1つ渡すだけでよい。分割構成のまま配るなら
@@ -480,7 +485,7 @@ for(const m of api.MOODS){ const s=S.compose({mood:m,scale:api.MODES[m.mode],bpm
 
 1. リポジトリのフォルダを作業フォルダとして渡す
    （`~/Documents/Codex/2026-09-17/documents-plugin-documents-openai-primary-runtime/work/bgm-forge`）
-2. この `HANDOVER.md` を読んでもらう
+2. `AGENTS.md`（開発ルール）とこの `HANDOVER.md`（経緯）を読んでもらう
 3. `node tests/scene-variation.cjs` がPASSすることを確認してから着手
 4. **直すのは分割ソース**（`bgm-score.js` / `bgm-forge.js` / `bgm_forge_v2.html`）。単体版は触らない
 5. 変更したら `bgm_forge_v2.html` の `<script src="...?v=YYYYMMDD-名前">` の版を上げる

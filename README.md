@@ -22,6 +22,8 @@ TRPGの場面に合わせたループBGMを、ブラウザ内で自動作曲す�
 - `vendor/lamejs/`：MP3エンコーダー
 - `scripts/build_standalone.py`：分割ソースから単体版を生成
 
+AIに作業を頼むときは、先に `AGENTS.md`（開発ルール）と `HANDOVER.md`（経緯と計測値）を読ませてください。
+
 修正は分割ソースへ行い、最後に次のコマンドで単体版を作り直します。
 
 ```sh
