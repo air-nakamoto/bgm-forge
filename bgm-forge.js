@@ -11,6 +11,10 @@
   // Mood-level accompaniment trim for parts 1-3 (pad / bass / inner voice).
   // 1 = unchanged. Lower = quieter backing under the melody.
   const ACCOMP_TRIM = { wonder: .72, night: .62, doubt: .68 };
+  // 持続音（パッドと低音）の引き方。[どこまで下がるか, 何拍かけて下がるか]。
+  // 拍数が0なら音符の長さの9割をかけて下がる（長い音ほどゆっくり）。
+  // 拍数を入れると音符の長さによらずその時間で引ききるので、長い音が途中で退場する。
+  const FADE = { wonder:[.26,0], night:[.10,0], doubt:[.16,0], requiem:[.14,2.4], ritual:[.12,3] };
   const MOODS = [
     {id:'bright',style:'full',desc:'移動、買い物、雑談、ひと息。明るい場面ならどれにでも。木のマレットが軽く跳ねます。',name:'☀️ 明るい',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,4,5,3],[0,3,4,0],[0,5,3,4],[0,2,3,4],[3,4,0,5],[5,3,0,4]],drums:'light',energy:.75,density:.8},
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。爪弾きの弦が三連で跳ねます。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
@@ -302,15 +306,15 @@
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
       // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
-      if(['wonder','requiem','night','doubt','ritual'].includes(score.moodId)&&(n.part===1||n.part===2)){
+      if(FADE[score.moodId]&&(n.part===1||n.part===2)){
         const fade=ctx.createGain(),at=n.beat*beat,duration=n.duration*beat;
+        const [floor,fadeBeats]=FADE[score.moodId];
         fade.gain.setValueAtTime(1,at);
         fade.gain.setValueAtTime(1,at+Math.min(.2,duration*.1));
-        const requiem=score.moodId==='requiem',floor=requiem?.14:(score.moodId==='night'?.10:score.moodId==='doubt'?.16:score.moodId==='wonder'?.26:score.moodId==='ritual'?.18:.12);
-        // Requiem settles into a quiet bed until the next chord, rather than
-        // finishing the note early and leaving a silent part of each bar.
-        fade.gain.exponentialRampToValueAtTime(floor,at+(requiem?Math.min(duration*.9,2.4*beat):duration*.9));
-        if(requiem)fade.gain.setValueAtTime(floor,at+duration);
+        // 拍数を指定した場面は、音符の長さに関係なくその時間で引ききって、あとは静かな床に居座る。
+        // 7.8拍のパッドを「音符の9割かけて」下げると、実際には何秒も大きいままになる。
+        fade.gain.exponentialRampToValueAtTime(floor,at+(fadeBeats?Math.min(duration*.9,fadeBeats*beat):duration*.9));
+        if(fadeBeats)fade.gain.setValueAtTime(floor,at+duration);
         fade.connect(bus);bus=fade;
       }
       if(n.part===4){
