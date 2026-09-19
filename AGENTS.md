@@ -93,7 +93,7 @@ console.log(score.events(s).length);
 - `git push --force`、`rebase`、`commit --amend` したあとのpushは使わない。
 - 取り消しは、push前なら `git reset --soft HEAD~1`、push済みなら `git revert`。
 - コミットしていない編集が消える操作（`reset --hard` など）は、実行前に日本語で確認を取る。
-- 公開は `~/Documents/bgm-forge_push.command` をダブルクリック（`git push` するだけの補助スクリプト）。
+- 公開はリポジトリ直下の `公開する.command` をダブルクリック。未公開のコミットを表示してから `git push` します。
   環境によっては push を代行できないので、その場合はこれを案内すること。
 - Cowork経由で触ると `.git/index.lock` などが消せずに残ります。`.git/_stale_locks/` へ退避してください。
 

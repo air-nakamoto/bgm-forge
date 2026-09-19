@@ -12,7 +12,7 @@ GitHub Pages で公開しています。旧作業フォルダ `inside-rooms` は
 
 - 作業フォルダ: `~/Documents/Codex/2026-09-17/documents-plugin-documents-openai-primary-runtime/work/bgm-forge`
 - 公開: https://air-nakamoto.github.io/bgm-forge/bgm_forge_v2.html
-- 公開手順: `~/Documents/bgm-forge_push.command` をダブルクリック（`git push` するだけの補助スクリプト）
+- 公開手順: リポジトリ直下の `公開する.command` をダブルクリック
 
 ---
 
@@ -59,6 +59,7 @@ TRPG（ココフォリア）のセッション中に流す用途が主目的で�
 | `tests/scene-variation.cjs` | 646ケースの回帰テスト。**仕様の実体はここ** | 高 |
 | `README.md` | 利用者向け説明 | 中 |
 | `AGENTS.md` | **AI向けの開発ルール。着手前に読ませる** | 中 |
+| `公開する.command` | ダブルクリックで `git push` する補助。場所に依存しない | なし |
 | `HANDOVER.md` | この文書 | 中 |
 
 配布は `bgm_forge_standalone.html` を1つ渡すだけでよい。分割構成のまま配るなら
@@ -492,10 +493,11 @@ for(const m of api.MOODS){ const s=S.compose({mood:m,scale:api.MODES[m.mode],bpm
 6. `python3 scripts/build_standalone.py` で単体版を作り直す
 7. テストを回す。画面を変えたらヘッドレスChromiumでスクリーンショットを撮って目で見る（§4）
 8. `git add -A && git commit`（日本語のメッセージ・mainに直接。PRは作らない）
-9. 公開は `~/Documents/bgm-forge_push.command` をダブルクリック。反映まで1〜2分
+9. 公開はリポジトリ直下の `公開する.command` をダブルクリック。反映まで1〜2分
 10. 「〜っぽい」という指摘には、まず計測スクリプトを書いて数字を出してから手を入れる
 
-`git push` を代行できない環境があるため、9の補助スクリプトを置いてある。中身は `cd` して `git push` するだけ。
+`git push` を代行できない環境があるため、9の補助スクリプトをリポジトリに入れてある。
+自分の置かれた場所へ `cd` してから push するので、フォルダごと移動しても動く。
 
 ### 引き継ぎ時の一言テンプレート
 
