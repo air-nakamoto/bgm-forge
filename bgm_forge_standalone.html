@@ -469,10 +469,11 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   </section>
 
   <section class="panel" id="stepTakes"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">前の曲を聴くなら ここ</span>
-    <h2><i>■</i>テイク<span class="takecount"><span id="takeCount">0 / 6</span> 曲</span><span class="takenote">保持できるテイクは6曲までです</span><button class="more" data-more="d-save">詳細</button></h2>
+    <h2><i>■</i>テイク<span class="takecount"><span id="takeCount">0 / 12</span> 曲</span><span class="takenote">保持できるテイクは12曲までです</span><button class="more" data-more="d-save">詳細</button></h2>
+    <div class="transport" style="margin-bottom:12px"><button id="takePlay" class="play" disabled>再生</button><button id="takeStop" disabled>停止</button></div>
     <div id="takes" class="takes" role="radiogroup" aria-label="作った曲"></div>
     <div id="fingerprint" class="fingerprint empty" role="note" aria-label="選んだ曲の内訳" hidden>まだ曲がありません</div>
-    <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。7曲目を作ると、いちばん古いテイクから消えます（長い曲では6曲より少なくなります）。ページを再読み込みすると全部消えます。</p>
+    <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。13曲目を作ると、いちばん古いテイクから消えます（長い曲では12曲より少なくなります）。ページを再読み込みすると全部消えます。</p>
   </section>
   <p class="note">このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。</p>
   <details class="material-credits">
@@ -1166,7 +1167,7 @@ That&#x27;s all there is to it!
   <div id="d-save" data-title="テイクと保存">
     <p>一覧の<b>行のどこをクリックしても</b>その曲に切り替わり、すぐ再生されます。行の真下に SIGNAL LOG が開き、上下の矢印キーでも選べます。</p>
     <p>保存ボタンは「聴いて確かめる」の下にまとめてあります。<br>
-    テイクは最大6つ（長い曲では自動的に減ります）。ページを再読み込みすると消えるので、必要な曲は保存してください。</p>
+    テイクは最大12曲（長い曲では自動的に減ります）。ページを再読み込みすると消えるので、必要な曲は保存してください。</p>
     <h4>作った曲の扱い</h4>
     <p><b>作った曲はあなたのものです。自由に使ってください（CC0 1.0 相当）。</b>
     クレジット表記も使用報告も要りません。商用利用・改変・再配布ができ、動画・配信・ゲーム・頒布物と用途も問いません。
@@ -1195,7 +1196,7 @@ That&#x27;s all there is to it!
         <li class="step"><span class="no">05</span><div><b>保存する</b><span>「WAVを保存」で完了。ダウンロードした曲は、TRPGのセッションや動画などのBGMに使えます。</span></div></li>
       </ol>
       <p class="help-foot">画面では、いま操作できる場所の枠が光ります。その枠をたどれば一通り作れます。<br>
-      過去に作った曲は下の「テイク」に残ります。（最大６曲まで）行をクリックすると切り替わって再生されます。<br>
+      過去に作った曲は下の「テイク」に残ります。（最大12曲まで）行をクリックすると切り替わって再生されます。<br>
       各セクションの見出しにある「詳細」から、その項目だけの説明を開けます。<br>
       ページを閉じると作った曲は消えるので、気に入ったものは保存してください。</p>
     </div>
@@ -2375,10 +2376,16 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
   const AudioCtor=window.AudioContext||window.webkitAudioContext;
   function audioContext(){if(!state.audio)state.audio=new AudioCtor();return state.audio}
   function unlockAudio(){const c=audioContext();if(c.state!=='running'&&c.resume)void c.resume()}
+  function syncTakeTransport(){
+    const p=$('takePlay'),q=$('takeStop');
+    if(p){p.disabled=state.busy||!state.take;p.textContent=state.playSource&&state.playTake===state.take?'再生中':'再生'}
+    if(q)q.disabled=state.busy||!state.playSource;
+  }
+  function retainTakes(takes){let samples=0;return takes.slice(0,12).filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6})}
   async function stopPlayback(){
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
-    state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();
+    state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();syncTakeTransport();
     if(revision===state.playRevision){$('play').textContent='再生';$('stop').disabled=true;renderMeter(-1);clearPreviews()}
   }
   async function play(target=state.take,once=false,offset=0){
@@ -2402,7 +2409,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
-    $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;startMeter();guide();
+    $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;syncTakeTransport();startMeter();guide();
     if(c.state!=='running'){
       status('ブラウザが音を止めています。画面のどこかをクリックすると再生が始まります','error');
       c.onstatechange=()=>{if(c.state==='running'&&state.playCtx===c){state.playStartedAt=(c.currentTime||0)-from;status('再生しています','')}};
@@ -2437,8 +2444,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
         rendered.push(take);
       }
       overlayProgress(message,100,'仕上げています','');
-      state.takes=[...rendered,...(before?[before]:[]),...state.takes.filter(t=>t!==before)].slice(0,6);
-      let samples=0;state.takes=state.takes.filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6});
+      state.takes=retainTakes([...rendered,...(before?[before]:[]),...state.takes.filter(t=>t!==before)]);
       state.comparison=before&&state.takes.includes(before)?{before,after:rendered[0]}:null;
       state.take=rendered[0];state.tourRemake=false;if(!state.tourSaved)state.tourPlayed=false;draw();
       status(scores.length>1?'探索・不穏・戦闘の3曲を作りました。下の「再生」で聴けます':'曲を作りました。下の「再生」で聴けます','');
@@ -2621,6 +2627,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
       $('compare').disabled=!state.comparison;$('undoEdit').disabled=!state.comparison;
       previewBusy(null);previewLengths();
     }
+    syncTakeTransport();
   }
   function lockScroll(on){if(document.body&&document.body.style)document.body.style.overflow=on?'hidden':''}
   function showOverlay(on){const o=$('overlay');if(!o)return;o.hidden=!on;lockScroll(on)}
@@ -2774,7 +2781,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     readout.className='fingerprint';readout.innerHTML=fingerprint(t.score,t);readout.hidden=!state.logOpen;
     renderMeter(state.playCtx?0:-1);
     $('takes').innerHTML='';
-    const counter=$('takeCount');if(counter)counter.textContent=state.takes.length+' / 6';
+    const counter=$('takeCount');if(counter)counter.textContent=state.takes.length+' / 12';
     nowPlayingLabel();
     const pick=async x=>{
       if(state.busy)return;
@@ -2911,7 +2918,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     const events=BGMScore.events(a),melody=events.filter(n=>n.part===0).map(n=>n.pitch),inner=events.filter(n=>n.part===3).map(n=>n.pitch);
     if(inner.length&&Math.min.apply(null,melody)<=Math.max.apply(null,inner))throw Error('Register overlap failed');
   }
-  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,midiFile,wav,encodeMp3,playGuideLabel,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
+  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
   choiceGroup('moods',MOODS,x=>x.name,x=>x.id,m=>{
     // Browsing scenes is not a step you finish — 作る simply becomes available beside it.
     state.tourReady=true;if(state.take)state.tourRemake=true;
@@ -2958,6 +2965,7 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
   ['pointerdown','keydown'].forEach(type=>document.addEventListener(type,unlockAudio,{capture:true}));
   $('volume').oninput=e=>setVolume(Number(e.target.value)/100);
   $('play').onclick=()=>play();$('stop').onclick=()=>stopPlayback();
+  $('takePlay').onclick=()=>play();$('takeStop').onclick=()=>stopPlayback();
   const savers={wav:save,mp3:saveMp3,midi:saveMidi};
   document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{state.tourSaved=true;guide();return savers[b.dataset.save]()});
   $('compare').onclick=()=>compareEdit();$('undoEdit').onclick=()=>compareEdit(true);

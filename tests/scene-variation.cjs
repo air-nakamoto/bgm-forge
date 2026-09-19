@@ -29,6 +29,19 @@ const {MOODS,MODES,DEFAULTS,selfTest,playGuideLabel}=context.window.BGM_TEST;
 // 文言は現在のテイクの作成経路で決まる。切替・取り消しでも元の表示へ戻る。
 const freshTake={adjusted:false},adjustedTake={adjusted:true};
 for(const [take,label] of [[null,'聴いてみる'],[freshTake,'聴いてみる'],[adjustedTake,'作り直した曲を　聴いてみる'],[freshTake,'聴いてみる'],[adjustedTake,'作り直した曲を　聴いてみる']])assert.equal(playGuideLabel(take),label);
+// 曲数と音声メモリの上限を別々に検査する。
+const {retainTakes,syncTakeTransport,state}=context.window.BGM_TEST;
+const shortTakes=Array.from({length:13},(_,id)=>({id,length:44100*30}));
+assert.deepEqual(Array.from(retainTakes(shortTakes),t=>t.id),Array.from({length:12},(_,i)=>i));
+assert.equal(retainTakes(Array.from({length:12},()=>({length:44100*120}))).length,4);
+const transport={takePlay:{},takeStop:{}};
+context.document={getElementById:id=>transport[id]};
+syncTakeTransport();assert.equal(transport.takePlay.disabled,true);assert.equal(transport.takeStop.disabled,true);
+state.take={};syncTakeTransport();assert.equal(transport.takePlay.disabled,false);assert.equal(transport.takeStop.disabled,true);
+state.playSource={};state.playTake=state.take;syncTakeTransport();assert.equal(transport.takePlay.textContent,'再生中');assert.equal(transport.takeStop.disabled,false);
+state.busy=true;syncTakeTransport();assert.equal(transport.takePlay.disabled,true);assert.equal(transport.takeStop.disabled,true);
+state.busy=false;state.playSource=null;state.playTake=null;syncTakeTransport();assert.equal(transport.takePlay.textContent,'再生');assert.equal(transport.takeStop.disabled,true);
+state.take=null;delete context.document;
 const compose=(m,seed,extra={})=>score.compose({mood:m,scale:MODES[m.mode],bpm:DEFAULTS[m.id][0],sound:DEFAULTS[m.id][1],length:30,ending:'loop',lead:false,...extra},seed);
 const shape=events=>JSON.stringify(events.filter(n=>n.part!==0&&n.part!==4).map(n=>[n.part,+n.beat.toFixed(5),+n.duration.toFixed(5)]));
 function valid(s){

@@ -319,10 +319,16 @@
   const AudioCtor=window.AudioContext||window.webkitAudioContext;
   function audioContext(){if(!state.audio)state.audio=new AudioCtor();return state.audio}
   function unlockAudio(){const c=audioContext();if(c.state!=='running'&&c.resume)void c.resume()}
+  function syncTakeTransport(){
+    const p=$('takePlay'),q=$('takeStop');
+    if(p){p.disabled=state.busy||!state.take;p.textContent=state.playSource&&state.playTake===state.take?'再生中':'再生'}
+    if(q)q.disabled=state.busy||!state.playSource;
+  }
+  function retainTakes(takes){let samples=0;return takes.slice(0,12).filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6})}
   async function stopPlayback(){
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
-    state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();
+    state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();syncTakeTransport();
     if(revision===state.playRevision){$('play').textContent='再生';$('stop').disabled=true;renderMeter(-1);clearPreviews()}
   }
   async function play(target=state.take,once=false,offset=0){
@@ -346,7 +352,7 @@
     state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
-    $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;startMeter();guide();
+    $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;syncTakeTransport();startMeter();guide();
     if(c.state!=='running'){
       status('ブラウザが音を止めています。画面のどこかをクリックすると再生が始まります','error');
       c.onstatechange=()=>{if(c.state==='running'&&state.playCtx===c){state.playStartedAt=(c.currentTime||0)-from;status('再生しています','')}};
@@ -381,8 +387,7 @@
         rendered.push(take);
       }
       overlayProgress(message,100,'仕上げています','');
-      state.takes=[...rendered,...(before?[before]:[]),...state.takes.filter(t=>t!==before)].slice(0,6);
-      let samples=0;state.takes=state.takes.filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6});
+      state.takes=retainTakes([...rendered,...(before?[before]:[]),...state.takes.filter(t=>t!==before)]);
       state.comparison=before&&state.takes.includes(before)?{before,after:rendered[0]}:null;
       state.take=rendered[0];state.tourRemake=false;if(!state.tourSaved)state.tourPlayed=false;draw();
       status(scores.length>1?'探索・不穏・戦闘の3曲を作りました。下の「再生」で聴けます':'曲を作りました。下の「再生」で聴けます','');
@@ -565,6 +570,7 @@
       $('compare').disabled=!state.comparison;$('undoEdit').disabled=!state.comparison;
       previewBusy(null);previewLengths();
     }
+    syncTakeTransport();
   }
   function lockScroll(on){if(document.body&&document.body.style)document.body.style.overflow=on?'hidden':''}
   function showOverlay(on){const o=$('overlay');if(!o)return;o.hidden=!on;lockScroll(on)}
@@ -718,7 +724,7 @@
     readout.className='fingerprint';readout.innerHTML=fingerprint(t.score,t);readout.hidden=!state.logOpen;
     renderMeter(state.playCtx?0:-1);
     $('takes').innerHTML='';
-    const counter=$('takeCount');if(counter)counter.textContent=state.takes.length+' / 6';
+    const counter=$('takeCount');if(counter)counter.textContent=state.takes.length+' / 12';
     nowPlayingLabel();
     const pick=async x=>{
       if(state.busy)return;
@@ -855,7 +861,7 @@
     const events=BGMScore.events(a),melody=events.filter(n=>n.part===0).map(n=>n.pitch),inner=events.filter(n=>n.part===3).map(n=>n.pitch);
     if(inner.length&&Math.min.apply(null,melody)<=Math.max.apply(null,inner))throw Error('Register overlap failed');
   }
-  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,midiFile,wav,encodeMp3,playGuideLabel,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
+  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
   choiceGroup('moods',MOODS,x=>x.name,x=>x.id,m=>{
     // Browsing scenes is not a step you finish — 作る simply becomes available beside it.
     state.tourReady=true;if(state.take)state.tourRemake=true;
@@ -902,6 +908,7 @@
   ['pointerdown','keydown'].forEach(type=>document.addEventListener(type,unlockAudio,{capture:true}));
   $('volume').oninput=e=>setVolume(Number(e.target.value)/100);
   $('play').onclick=()=>play();$('stop').onclick=()=>stopPlayback();
+  $('takePlay').onclick=()=>play();$('takeStop').onclick=()=>stopPlayback();
   const savers={wav:save,mp3:saveMp3,midi:saveMidi};
   document.querySelectorAll('[data-save]').forEach(b=>b.onclick=()=>{state.tourSaved=true;guide();return savers[b.dataset.save]()});
   $('compare').onclick=()=>compareEdit();$('undoEdit').onclick=()=>compareEdit(true);
