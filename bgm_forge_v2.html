@@ -327,6 +327,8 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 @keyframes nowtag{50%{border-color:var(--cyan-lit);box-shadow:0 0 14px -3px rgba(140,226,244,.8)}}
 .is-now{box-shadow:0 0 34px -14px rgba(140,226,244,.7)}
 #stepPlay,#stepSave{padding:9px;border-radius:4px}
+#stepSave.is-now{padding-top:34px}
+#stepSave.is-now>.nowtag{max-width:calc(100% - 28px);box-sizing:border-box;border-radius:10px}
 /* More than one frame can be live at once: while a scene is being picked, 作る is already a valid
    move, and after a listen, saving and adjusting are equally valid. The beams are offset in time so
    two lit frames do not pulse as one block. */
@@ -386,21 +388,21 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 
   <section class="panel listen">
     <h2><i>02</i>聴いて確かめる<span id="nowPlaying" class="nowplaying" role="status" hidden></span><button class="more" data-more="d-listen">詳細</button></h2>
-    <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">聴いてみる</span>
+    <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">作り直した曲を　聴いてみる</span>
       <button id="play" class="play" disabled>再生</button>
       <button id="stop" disabled>停止</button>
     </div>
     <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output id="volumeValue" for="volume">50%</output></label>
     <p class="note">試聴音量は保存するファイルに影響しません。会話をしながら、声が聞き取りやすい音量で確認してください。</p>
     <canvas id="meter" class="meter" width="900" height="86"></canvas>
-    <div class="transport saves" id="stepSave"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">気に入ったらダウンロードする</span>
+    <div class="transport saves" id="stepSave"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">この曲がきにいったら、ここからダウンロード（保存ボタンをクリック）</span>
       <button data-save="wav" disabled>WAVを保存</button>
       <button data-save="mp3" disabled>MP3を保存（軽量）</button>
       <button data-save="midi" disabled>MIDIを保存（編集用）</button>
     </div>
     <p class="note">気に入った曲は保存してください。ページを閉じると作った曲は消えます。</p>
     <details class="advanced" id="adjustments">
-      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><button type="button" class="more" data-more="d-edit" aria-label="編集に関する詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">変えたいときは ここ</span></summary>
+      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><button type="button" class="more" data-more="d-edit" aria-label="編集に関する詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">この曲を微調整したい場合は、ここ</span></summary>
       <p class="note">ここで変えた設定は、下の「この設定で曲を作り直す」を押すまで曲に反映されません。押すと、同じテーマのまま新しい曲ができます。</p>
       <fieldset id="editFields" disabled style="border:0;padding:0;margin:10px 0">
       <div class="option-rows">
@@ -548,7 +550,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 
 <script src="vendor/lamejs/lame.min.js?v=20260916k"></script>
 <script src="samples/vsco2/bank.js?v=20260916g"></script>
-<script src="bgm-score.js?v=20260919-ogp-copy"></script>
-<script src="bgm-forge.js?v=20260919-ogp-copy"></script>
+<script src="bgm-score.js?v=20260919-guide-copy"></script>
+<script src="bgm-forge.js?v=20260919-guide-copy"></script>
 </body>
 </html>
