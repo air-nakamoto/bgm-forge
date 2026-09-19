@@ -29,7 +29,8 @@
     casino: {inner:[[2/3,1,8/3,3],[1,5/3,2.5,11/3],[0,2/3,2,8/3,3.5]],comp:true,bass:['walk','march','fifth'],pad:[],padBars:1,hold:0,harmony:[1,1,2],high:74,gate:.22,drum:'swing'},
     bright: {inner:[[0,.75,2,2.75],[0,1.5,2.5],[.5,1,2.5,3]],bass:['fifth','walk','two'],pad:[0,2],padBars:2,hold:1.2,harmony:[1,1,2],high:72,gate:.48,drum:'light'},
     town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
-    victory:{inner:[[0,1.5,2],[0,.5,2,3],[0,1,2.5]],bass:['march','fifth','march'],pad:[0,2],padBars:1,hold:1.5,harmony:[2,1,2],high:72,gate:.65,drum:'march'},
+    // クリア：4小節で主和音に着地。裏拍を交えた短い伴奏と二拍の低音で弾ませる。
+    victory:{inner:[[0,.5,1.5,2,3],[.5,1,2,2.5,3.5],[0,1,1.5,2.5,3]],bass:['fifth','two','fifth'],pad:[0,2.5],padBars:1,hold:1.1,harmony:[1,1,1],high:74,gate:.38,drum:'light'},
     wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
     night:  {inner:[[.5,1.75,3.25],[0,1.25,2.75],[.75,2,3.5]],bass:['fifth','two','hold'],bassHold:2.1,pad:[2],padBars:1,hold:1.2,harmony:[2,1,2],high:73,gate:.5,drum:'none'},
     calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},

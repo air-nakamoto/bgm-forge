@@ -82,6 +82,20 @@ function valid(s){
  return events;
 }
 selfTest();
+// クリアは軽い打楽器と弾む内声を持ち、4小節の終わりに主和音へ着地する。
+const resolution=MOODS.find(m=>m.id==='victory');
+assert(context.window.BGM_TEST.TEMPOS.some(t=>t.bpm===DEFAULTS.victory[0]));
+assert.equal(DEFAULTS.victory[1],'wood','clear should use the wood mallet');
+for(let seed=1;seed<=24;seed++){
+ const s=compose(resolution,seed),ev=score.events(s),bars=s.length*s.bpm/240;
+ assert(ev.some(e=>e.part===4),'clear defaults need light percussion');
+ assert(!ev.some(e=>e.part===4&&(e.pitch===36||e.pitch===38)),'clear must avoid marching kick/snare');
+ assert(ev.filter(e=>e.part===2).length/bars<=2,'resolution bass must not become a march');
+ const inner=ev.filter(e=>e.part===3);
+ assert(inner.length/bars>=4&&inner.length/bars<=5,'clear needs an active inner rhythm');
+ assert(inner.every(e=>e.duration<=.4),'clear accompaniment must stay short and bouncy');
+ for(let bar=3;bar<s.themeBars;bar+=4)assert.equal(score.chordAt(s,bar),0,'resolution phrase must arrive on tonic');
+}
 let tested=0;
 for(const mood of MOODS){
  const arrangements=new Map();
