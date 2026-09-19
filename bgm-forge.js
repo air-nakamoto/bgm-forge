@@ -322,10 +322,8 @@
   function syncTakeTransport(){
     document.querySelectorAll('[data-take-play]').forEach(p=>{
       const take=state.takes[Number(p.dataset.takePlay)];
-      p.disabled=state.busy||!take;p.textContent=state.playSource&&state.playTake===take?'再生中':'再生';
-    });
-    document.querySelectorAll('[data-take-stop]').forEach(p=>{
-      p.disabled=state.busy||!state.playSource||state.playTake!==state.takes[Number(p.dataset.takeStop)];
+      const playing=state.playSource&&state.playTake===take;
+      p.disabled=state.busy||!take;p.textContent=playing?'⏸':'▶';if(p.setAttribute)p.setAttribute('aria-label',playing?'テイクを停止':'テイクを再生');
     });
   }
   function retainTakes(takes){let samples=0;return takes.slice(0,12).filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6})}
@@ -749,12 +747,10 @@
       d.setAttribute('role','radio');d.setAttribute('aria-checked',x===t?'true':'false');
       d.tabIndex=x===t?0:-1;
       // 見出しは「いつ作ったか」。同じ場面を続けて作ると見分けがつかないので、時刻を先に出す。
-      d.innerHTML='<span class="dot"></span><div><strong>'+takeTitle(x)+'</strong>'+
+      d.innerHTML='<button type="button" class="take-play" data-take-play="'+i+'" aria-label="テイク'+(i+1)+'を再生">▶</button><div><strong>'+takeTitle(x)+'</strong>'+
         '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
-        '<span class="take-meta">SEED '+x.score.seed+'</span></p></div>'+
-        '<div class="take-actions"><span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span><button type="button" data-take-play="'+i+'" aria-label="テイク'+(i+1)+'を再生">再生</button><button type="button" data-take-stop="'+i+'" aria-label="テイク'+(i+1)+'を停止" disabled>停止</button></div>';
-      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(x===state.take)void play();else void pick(x)};
-      d.querySelector('[data-take-stop]').onclick=e=>{e.stopPropagation();if(state.playTake===x)void stopPlayback()};
+        '<span class="take-meta">SEED '+x.score.seed+'</span></p></div><span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
+      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(state.playSource&&state.playTake===x)void stopPlayback();else if(x===state.take)void play();else void pick(x)};
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{
         if(e.target!==d)return;

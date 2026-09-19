@@ -148,9 +148,6 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .transport button.play:hover:not(:disabled){box-shadow:0 0 28px -8px rgba(166,230,244,.75)}
 .material-credits{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
 .material-credits>summary{cursor:pointer;color:var(--cyan);padding:8px 0}
-.take-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
-.take-actions .take-state{flex-basis:100%;text-align:center}
-@media(max-width:640px){.take-actions{grid-column:2 / -1;justify-content:flex-start}.take-actions .take-state{flex-basis:auto}}
 .saves{margin-top:10px}
 .saves::before{content:"SAVE";font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);margin-right:4px}
 /* 保存はこの画面の目的地なので、作る・聴くと同じ重さで出す。 */
@@ -180,7 +177,7 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 @keyframes blink{50%{opacity:0}}
 
 .takes{display:grid;gap:5px}
-.take{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);
+.take{display:grid;grid-template-columns:30px 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);
   border-radius:2px;padding:9px 12px;background:rgba(140,190,215,.018);transition:border-color .25s,box-shadow .25s;cursor:pointer}
 .take:hover{border-color:rgba(180,222,236,.3);box-shadow:0 0 20px -10px rgba(166,230,244,.6)}
 /* The whole row is the control — a small "選ぶ" target inside a wide row is a needless miss. */
@@ -189,8 +186,9 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .take:hover .take-state{border-color:rgba(180,222,236,.35);color:var(--ink)}
 .take.active .take-state{border-color:var(--cyan);color:var(--cyan-lit);background:rgba(113,196,213,.1)}
 .take.active{border-color:rgba(113,196,213,.5);background:rgba(113,196,213,.05)}
-.take .dot{width:5px;height:5px;border-radius:50%;background:var(--faint)}
-.take.active .dot{background:var(--cyan);box-shadow:0 0 9px 1px rgba(113,196,213,.9)}
+.take-play{width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:50%;background:rgba(113,196,213,.06);color:var(--cyan-lit);font:15px/1 var(--sans);cursor:pointer}
+.take-play:hover:not(:disabled){border-color:var(--cyan-lit);background:rgba(113,196,213,.16)}
+.take-play:disabled{opacity:.35}
 .take strong{font:400 12px var(--mono);letter-spacing:.06em;color:#dce7ef}
 .take p{margin:2px 0 0;color:var(--dim);font:10.5px var(--mono);letter-spacing:.05em}
 .take-meta{margin-left:10px;padding-left:10px;border-left:1px solid var(--line-lit);color:var(--faint)}
@@ -2381,10 +2379,8 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
   function syncTakeTransport(){
     document.querySelectorAll('[data-take-play]').forEach(p=>{
       const take=state.takes[Number(p.dataset.takePlay)];
-      p.disabled=state.busy||!take;p.textContent=state.playSource&&state.playTake===take?'再生中':'再生';
-    });
-    document.querySelectorAll('[data-take-stop]').forEach(p=>{
-      p.disabled=state.busy||!state.playSource||state.playTake!==state.takes[Number(p.dataset.takeStop)];
+      const playing=state.playSource&&state.playTake===take;
+      p.disabled=state.busy||!take;p.textContent=playing?'⏸':'▶';if(p.setAttribute)p.setAttribute('aria-label',playing?'テイクを停止':'テイクを再生');
     });
   }
   function retainTakes(takes){let samples=0;return takes.slice(0,12).filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6})}
@@ -2808,12 +2804,10 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
       d.setAttribute('role','radio');d.setAttribute('aria-checked',x===t?'true':'false');
       d.tabIndex=x===t?0:-1;
       // 見出しは「いつ作ったか」。同じ場面を続けて作ると見分けがつかないので、時刻を先に出す。
-      d.innerHTML='<span class="dot"></span><div><strong>'+takeTitle(x)+'</strong>'+
+      d.innerHTML='<button type="button" class="take-play" data-take-play="'+i+'" aria-label="テイク'+(i+1)+'を再生">▶</button><div><strong>'+takeTitle(x)+'</strong>'+
         '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
-        '<span class="take-meta">SEED '+x.score.seed+'</span></p></div>'+
-        '<div class="take-actions"><span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span><button type="button" data-take-play="'+i+'" aria-label="テイク'+(i+1)+'を再生">再生</button><button type="button" data-take-stop="'+i+'" aria-label="テイク'+(i+1)+'を停止" disabled>停止</button></div>';
-      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(x===state.take)void play();else void pick(x)};
-      d.querySelector('[data-take-stop]').onclick=e=>{e.stopPropagation();if(state.playTake===x)void stopPlayback()};
+        '<span class="take-meta">SEED '+x.score.seed+'</span></p></div><span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
+      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(state.playSource&&state.playTake===x)void stopPlayback();else if(x===state.take)void play();else void pick(x)};
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{
         if(e.target!==d)return;

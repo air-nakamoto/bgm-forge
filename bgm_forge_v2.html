@@ -124,9 +124,6 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .transport button.play:hover:not(:disabled){box-shadow:0 0 28px -8px rgba(166,230,244,.75)}
 .material-credits{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
 .material-credits>summary{cursor:pointer;color:var(--cyan);padding:8px 0}
-.take-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:flex-end}
-.take-actions .take-state{flex-basis:100%;text-align:center}
-@media(max-width:640px){.take-actions{grid-column:2 / -1;justify-content:flex-start}.take-actions .take-state{flex-basis:auto}}
 .saves{margin-top:10px}
 .saves::before{content:"SAVE";font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);margin-right:4px}
 /* 保存はこの画面の目的地なので、作る・聴くと同じ重さで出す。 */
@@ -156,7 +153,7 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 @keyframes blink{50%{opacity:0}}
 
 .takes{display:grid;gap:5px}
-.take{display:grid;grid-template-columns:auto 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);
+.take{display:grid;grid-template-columns:30px 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);
   border-radius:2px;padding:9px 12px;background:rgba(140,190,215,.018);transition:border-color .25s,box-shadow .25s;cursor:pointer}
 .take:hover{border-color:rgba(180,222,236,.3);box-shadow:0 0 20px -10px rgba(166,230,244,.6)}
 /* The whole row is the control — a small "選ぶ" target inside a wide row is a needless miss. */
@@ -165,8 +162,9 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .take:hover .take-state{border-color:rgba(180,222,236,.35);color:var(--ink)}
 .take.active .take-state{border-color:var(--cyan);color:var(--cyan-lit);background:rgba(113,196,213,.1)}
 .take.active{border-color:rgba(113,196,213,.5);background:rgba(113,196,213,.05)}
-.take .dot{width:5px;height:5px;border-radius:50%;background:var(--faint)}
-.take.active .dot{background:var(--cyan);box-shadow:0 0 9px 1px rgba(113,196,213,.9)}
+.take-play{width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:50%;background:rgba(113,196,213,.06);color:var(--cyan-lit);font:15px/1 var(--sans);cursor:pointer}
+.take-play:hover:not(:disabled){border-color:var(--cyan-lit);background:rgba(113,196,213,.16)}
+.take-play:disabled{opacity:.35}
 .take strong{font:400 12px var(--mono);letter-spacing:.06em;color:#dce7ef}
 .take p{margin:2px 0 0;color:var(--dim);font:10.5px var(--mono);letter-spacing:.05em}
 .take-meta{margin-left:10px;padding-left:10px;border-left:1px solid var(--line-lit);color:var(--faint)}
