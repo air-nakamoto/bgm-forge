@@ -86,6 +86,18 @@ selfTest();
 const resolution=MOODS.find(m=>m.id==='victory');
 assert(context.window.BGM_TEST.TEMPOS.some(t=>t.bpm===DEFAULTS.victory[0]));
 assert.equal(DEFAULTS.victory[1],'wood','clear should use the wood mallet');
+assert.equal(DEFAULTS.decision[2],true,'decision should start with melody');
+assert.equal(DEFAULTS.decision[3],'sparse','decision should start with sparse melody phrasing');
+assert.equal(MOODS.find(m=>m.id==='japanese').mode,'japanese','japanese must use a pentatonic scale');
+assert.deepEqual(Array.from(MODES.japanese),[0,2,4,7,9]);
+assert.equal(DEFAULTS.japanese[3],'minimal','japanese should start with very sparse melody');
+let minimalNotes=0,sparseNotes=0;
+for(let seed=1;seed<=24;seed++){
+ const base={mood:MOODS.find(m=>m.id==='japanese'),scale:MODES.japanese,bpm:76,sound:'koto',length:30,ending:'loop',lead:true};
+ minimalNotes+=score.events(score.compose({...base,phrasing:'minimal'},seed)).filter(e=>e.part===0).length;
+ sparseNotes+=score.events(score.compose({...base,phrasing:'sparse'},seed)).filter(e=>e.part===0).length;
+}
+assert(minimalNotes<sparseNotes,`minimal melody must be sparser (${minimalNotes} vs ${sparseNotes})`);
 for(let seed=1;seed<=24;seed++){
  const s=compose(resolution,seed),ev=score.events(s),bars=s.length*s.bpm/240;
  assert(ev.some(e=>e.part===4),'clear defaults need light percussion');
@@ -141,5 +153,5 @@ for(const seed of [1,7,42]){
  const signatures=MOODS.map(m=>shape(score.events(compose(m,seed,{bpm:96,sound:'synth',length:40}))));
  assert.equal(new Set(signatures).size,MOODS.length,'scene rhythm collision');
 }
-assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),/function selectMood\(mood\)[^\n]*state\.lead=false/);
+assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),/function selectMood\(mood\)[^\n]*state\.lead=d\[2\]===true/);
 console.log(`PASS: ${tested} scene cases; ${MOODS.length} distinct scene rhythms, 3 arrangements each, melody off, determinism, remix, previews, manual patterns and note bounds.`);

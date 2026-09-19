@@ -31,6 +31,10 @@
     town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
     // クリア：4小節で主和音に着地。裏拍を交えた短い伴奏と二拍の低音で弾ませる。
     victory:{inner:[[0,.5,1.5,2,3],[.5,1,2,2.5,3.5],[0,1,1.5,2.5,3]],bass:['fifth','two','fifth'],pad:[0,2.5],padBars:1,hold:1.1,harmony:[1,1,1],high:74,gate:.38,drum:'light'},
+    ethnic:  {inner:[[0,1.5,2.5],[.5,2,3],[0,1,2,3.5]],bass:['walk','fifth','two'],pad:[0,2.5],padBars:2,hold:1.1,harmony:[1,2,1],high:73,gate:.42,drum:'swing'},
+    japanese:{inner:[[0,1.5,3],[.5,2.5],[0,1,2.5,3.5]],bass:['pedal','fifth','hold'],pad:[0],padBars:2,hold:2.4,harmony:[2,2,1],high:70,gate:.7,drum:'none'},
+    decision:{inner:[[1.5],[.5,2.5],[0,2.75]],bass:['hold','pedal','fifth'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:67,gate:1.05,drum:'distant'},
+    kagura:  {inner:[[0,1.5,3],[.5,2.5],[0,2,3.5]],bass:['pedal','ritual','pedal'],pad:[0],padBars:2,hold:5.2,harmony:[4,2,4],high:75,gate:.8,drum:'ritual'},
     wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
     night:  {inner:[[.5,1.75,3.25],[0,1.25,2.75],[.75,2,3.5]],bass:['fifth','two','hold'],bassHold:2.1,pad:[2],padBars:1,hold:1.2,harmony:[2,1,2],high:73,gate:.5,drum:'none'},
     calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
@@ -44,7 +48,7 @@
     requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
     dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
-    ritual: {inner:[[0,1.5,3],[0,1,2.5],[.5,2,3.5]],bass:['pedal','ritual','pedal'],pad:[0],padBars:2,hold:7.8,harmony:[4,2,4],high:65,gate:.65,drum:'ritual'},
+    ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:2,hold:7.8,harmony:[4,2,4],high:65,gate:.45,drum:'none'},
     machine:{inner:[[0,.5,1,1.75,2.5,3],[0,.75,1.5,2,3,3.5],[0,.5,1.5,2.5,3.25]],bass:['motor','two','motor'],pad:[],padBars:1,hold:0,harmony:[2,4,2],high:66,gate:.22,drum:'motor'},
     chase:  {inner:[[0,.5,1,1.5,2,2.5,3,3.5],[0,.5,1.5,2,2.5,3.5],[0,.75,1.5,2,2.75,3.5]],bass:['motor','walk','motor'],pad:[0],padBars:2,hold:.9,harmony:[1,1,2],high:73,gate:.32,drum:'running'},
     tense:  {inner:[[0,.75,1.5,2.5,3],[0,.5,1.75,2.5,3.5],[0,1.5,2,2.75]],bass:['ritual','motor','march'],pad:[0,2.5],padBars:1,hold:.7,harmony:[1,2,1],high:67,gate:.35,drum:'battle'},
@@ -59,7 +63,7 @@
   const STEPS=[-4,-3,-2,-2,-1,-1,1,1,2,2,3,4];
   const rng=seed=>{let a=seed|0;return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}};
   const pick=(r,a)=>a[Math.floor(r()*a.length)];
-  const pitch=(scale,d)=>scale[(d%7+7)%7]+12*Math.floor(d/7);
+  const pitch=(scale,d)=>scale[(d%scale.length+scale.length)%scale.length]+12*Math.floor(d/scale.length);
   const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a);
   function chordDegrees(d){return [d-7,d-5,d-3,d,d+2,d+4,d+7,d+9,d+11]}
   function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery].join('|');return s}
@@ -106,7 +110,7 @@
   }
 
   // How much of the bar the tune sings. The rest belongs to the accompaniment.
-  function densityFor(base,phrasing){const d=typeof base==='number'?base:.65;return phrasing==='sparse'?Math.max(.3,d*.7):phrasing==='dense'?Math.min(.95,d+.25):d}
+  function densityFor(base,phrasing){const d=typeof base==='number'?base:.65;return phrasing==='minimal'?Math.max(.18,d*.42):phrasing==='sparse'?Math.max(.3,d*.7):phrasing==='dense'?Math.min(.95,d+.25):d}
   // How often each mode reaches past a bare triad.
   const COLOUR={
     ionian:[[5,'plain'],[2,'nine'],[2,'seven'],[1,'sus']],
@@ -139,7 +143,7 @@
     // Voice-leading state carried across bars: last note, last direction, whether a leap awaits its answer, run length.
     let previous=4,lastDir=0,owe=false,run=0;
     for(let bar=0;bar<bars;bar++){
-      const chord=chordAt(s,bar),phraseBar=bar%4,response=bars>=8&&bar%8>=4,cadence=bar%p===p-1&&chord===0;
+      const chord=chordAt(s,bar),phraseBar=bar%4,response=bars>=8&&bar%8>=4,turnaround=s.ending==='loop'&&bar===bars-1,cadence=!turnaround&&bar%p===p-1&&chord===0;
       const interlude=bars>=16&&bar>=8&&bar<12,development=bars>=16&&bar>=12;
       // A sparse line does not walk in on the downbeat: it lets the accompaniment set the scene
       // for half a bar first, which is what makes it sit under talking instead of leading it.
@@ -153,6 +157,9 @@
       else if(phraseBar===1)shape=density>.75?'full':density>.55?'breath':density<.5&&r()<.5?'rest':'long';
       else if(phraseBar===2)shape=r()<density?'full':'breath';
       else shape=density<.45&&r()<.4?'rest':density>.7?'breath':'long';
+      // 「ごく少ない」は4小節の入口だけ休ませる。中間まで止めると、和風の五音音階や
+      // 和琴の手掛かりが途切れすぎるため、少なめより少し少ない程度に留める。
+      if(s.phrasing==='minimal'&&!cadence&&!turnaround&&phraseBar===0)shape='rest';
       if(shape==='rest'){owe=false;run=0;continue}
       const rhythm=RHYTHMS[(s.rhythmIndex+(development&&bar%4===1?1:0))%4],cell=phraseBar%2?4:0;
       const count=shape==='full'?4:shape==='cadence'?2:shape==='breath'?3:density>.6?2:1;

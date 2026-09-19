@@ -6,7 +6,7 @@
     ionian:[0,2,4,5,7,9,11], dorian:[0,2,3,5,7,9,10],
     aeolian:[0,2,3,5,7,8,10], phrygian:[0,1,3,5,7,8,10],
     locrian:[0,1,3,5,6,8,10], harmonic:[0,2,3,5,7,8,11],
-    lydian:[0,2,4,6,7,9,11], mixolydian:[0,2,4,5,7,9,10]
+    lydian:[0,2,4,6,7,9,11], mixolydian:[0,2,4,5,7,9,10], japanese:[0,2,4,7,9]
   };
   // Mood-level accompaniment trim for parts 1-3 (pad / bass / inner voice).
   // 1 = unchanged. Lower = quieter backing under the melody.
@@ -16,6 +16,10 @@
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。爪弾きの弦が三連で跳ねます。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
     {id:'casino',style:'walk',desc:'ルーレット、カード勝負、華やかな遊技場。陽気な駆け引きやコミカルな騒動に。速いピアノと歩く低音が三連で跳ねます。',name:'🎲 カジノ',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,5,1,4],[0,2,5,4],[3,0,1,4],[0,5,3,4],[0,3,1,4],[5,1,4,0]],drums:'light',energy:.72,density:.65},
     {id:'victory',style:'full',desc:'問題が解決した。事件が解決した。脅威が去った。探索や依頼をクリアした喜びに。木のマレットが弾む伴奏と軽い打楽器で、明るい達成感を目指します。',name:'🎉 クリア',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,3,4,0],[0,5,3,0],[3,1,4,0],[0,2,3,0],[5,3,4,0],[3,4,0,0]],drums:'light',energy:.8,density:.75},
+    {id:'ethnic',style:'walk',desc:'異国の街、草原、砂漠、遠い土地への旅。土地の暮らしや文化に触れる場面に。民族弦の乾いた撥弦と歩くリズムで、素朴な旅情を描きます。',name:'🌍 民族',mode:'mixolydian',roots:[0,5,7],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,4,5,3],[3,0,4,0],[0,5,3,4],[5,3,0,4]],drums:'swing',energy:.65,density:.65},
+    {id:'japanese',style:'walk',desc:'城下町、山道、祭り、和風の街並み。静かな旅や人々の暮らしを感じる場面に。和琴の硬質な余韻と間を活かした、素朴な和風の響きです。',name:'🎐 和風',mode:'japanese',roots:[0,2,7],wave:'triangle',progs:[[0,2,4,0],[0,4,2,0],[2,0,4,0],[0,3,2,0],[4,0,2,0],[0,2,3,0]],drums:'none',energy:.48,density:.45},
+    {id:'decision',style:'hymn',desc:'重大な選択、対立、真相を前にした沈黙。引き返せない決断を迫られる場面に。低い持続音と重い和音で、張りつめた時間を支えます。',name:'⚖️ 決断',mode:'aeolian',roots:[0,5,7],wave:'sine',progs:[[0,5,3,0],[0,2,5,0],[5,0,3,0],[0,3,5,0],[0,6,5,0],[3,0,5,0]],drums:'none',energy:.52,density:.35},
+    {id:'kagura',style:'stab',desc:'神社、呪い、封印、神降ろし、和風の儀式。人ならざるものと向き合う場面に。神楽笛の息の混じる音と低い持続音、遠い太鼓で神秘を描きます。',name:'⛩️ 神楽',mode:'harmonic',roots:[0,2,7],wave:'sine',progs:[[0,3,0,4],[0,6,3,0],[3,0,6,0],[0,4,3,0],[0,3,4,6],[6,3,0,4]],drums:'heart',energy:.58,density:.4},
     {id:'wonder',style:'drift',desc:'夢や異世界、精霊との邂逅、神秘的な遺跡の探索。日常を離れる場面に。澄んだ鐘が、長く伸びる持続音の上に落ちます。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
     {id:'night',style:'drift',desc:'涼しい夜風、星空の下の散歩、月明かりの街道。静かでも暗くならない、すっきりした夜のひとときに。オルゴールがまばらに鳴ります。',name:'🌌 夜空',mode:'lydian',roots:[5,0,7],wave:'sine',progs:[[0,4,1,0],[0,2,1,4],[3,0,4,1],[0,1,4,2],[2,4,0,1],[0,4,2,3]],drums:'none',energy:.38,density:.35},
     {id:'calm',style:'walk',desc:'弾む三連のカントリー調。畑と家畜の鈴、開いた窓、井戸端の立ち話。急ぐ用事のない、のんびりした時間に。',name:'🌾 のどか',mode:'mixolydian',roots:[0,7,5],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,3,0,4],[3,0,4,0],[0,6,0,3],[4,3,0,0]],drums:'swing',energy:.55,density:.6},
@@ -45,9 +49,13 @@
     {id:'organ',name:'オルガン',note:'まっすぐな持続音'},
     {id:'tape',name:'ローファイ・テープ',note:'高域を落とした揺れる音'},
     {id:'drone',name:'アンビエント',note:'輪郭のない持続音'},
-    {id:'chip',name:'チップチューン',note:'8bit風の矩形波'}
+    {id:'chip',name:'チップチューン',note:'8bit風の矩形波'},
+    {id:'folk',name:'民族弦',note:'乾いた撥弦とゆるい揺れ'},
+    {id:'koto',name:'和琴',note:'硬質な琴の余韻'},
+    {id:'shinobue',name:'神楽笛',note:'息の混じる細い笛の音'}
+    ,{id:'choir',name:'コーラス',note:'ゆっくり立ち上がる重なった声'}
   ];
-  const PHRASINGS=[{id:'sparse',name:'少なめ',note:'休みが多い'},{id:'auto',name:'ふつう',note:'雰囲気の既定'},{id:'dense',name:'多め',note:'よく歌う'}];
+  const PHRASINGS=[{id:'minimal',name:'ごく少ない',note:'要所だけ鳴る'},{id:'sparse',name:'少なめ',note:'休みが多い'},{id:'auto',name:'ふつう',note:'雰囲気の既定'},{id:'dense',name:'多め',note:'よく歌う'}];
   const TEMPOS=[{bpm:46,name:'とても遅い'},{bpm:60,name:'ゆっくり'},{bpm:76,name:'ふつう'},{bpm:96,name:'速め'},{bpm:116,name:'疾走'},{bpm:132,name:'めまぐるしい'}];
   const LENGTHS=[20,30,45,60,90,120];
   const lengthLabel=s=>!Number.isInteger(s)?s.toFixed(1)+'秒':s<60?s+'秒':s%60?Math.floor(s/60)+'分'+(s%60)+'秒':(s/60)+'分';
@@ -91,6 +99,22 @@
       key :{wave:'triangle',parts:[[1,0,.6],[2,6,.16],[3,-7,.05]],a:.02,r:.3,decay:.1,filt:[7,3],floor:520,wow:7,wowHz:5.4},
       pad :{wave:'triangle',parts:[[1,-7,.36],[1,7,.36],[2,-4,.1]],a:.5,r:.9,hold:.8,fixed:[1500,900],wow:5,wowHz:4.1},
       bass:{wave:'sine',parts:[[1,0,.9],[2,0,.08]],a:.03,r:.3,hold:.8,fixed:[520,260],wow:4,wowHz:3.6}},
+    folk:{wet:[.34,.44],drums:.9,gains:[.27,.065,.1,.07],
+      key:{wave:'triangle',parts:[[1,0,.42],[2.01,7,.2],[3.02,-5,.12],[5.03,9,.065],[8.07,-11,.028]],a:.002,r:.46,decay:.08,filt:[19,4],floor:900},
+      pad:{wave:'triangle',parts:[[1,-5,.3],[1,5,.3],[2,2,.12]],a:.02,r:.42,decay:.08,filt:[11,3],floor:650},
+      bass:{wave:'triangle',parts:[[1,0,.8],[2,0,.14]],a:.004,r:.25,decay:.06,filt:[8,3],floor:420}},
+    koto:{wet:[.38,.48],drums:.8,gains:[.26,.06,.095,.065],
+      key:{wave:'triangle',parts:[[1,0,.42],[2,4,.2],[3,-7,.1],[6,11,.035]],a:.002,r:.48,decay:.045,filt:[19,5],floor:1200},
+      pad:{wave:'sine',parts:[[1,-4,.3],[1,4,.28],[2,0,.1]],a:.02,r:.58,decay:.1,filt:[13,4],floor:800},
+      bass:{wave:'triangle',parts:[[1,0,.82],[2,0,.1]],a:.006,r:.32,decay:.07,filt:[8,3],floor:430}},
+    shinobue:{wet:[.46,.56],drums:.65,gains:[.25,.055,.085,.06],
+      key:{wave:'triangle',parts:[[1,0,.52],[2,8,.18],[3,-6,.08],[4,12,.035]],a:.035,r:.3,hold:.72,filt:[10,5],floor:1100},
+      pad:{wave:'sine',parts:[[1,-3,.34],[2,4,.14],[3,-5,.05]],a:.25,r:.7,hold:.8,fixed:[2500,1500]},
+      bass:{wave:'sine',parts:[[1,0,.86],[2,0,.12]],a:.08,r:.45,hold:.78,fixed:[620,300]}},
+    choir:{wet:[.58,.66],drums:.45,gains:[.22,.05,.075,.05],
+      key:{wave:'sine',parts:[[1,-7,.36],[1,7,.36],[2,-3,.12],[3,4,.045]],a:.16,r:.7,hold:.58,fixed:[3600,2200]},
+      pad:{wave:'sine',parts:[[1,-9,.34],[1,9,.34],[2,-4,.12],[3,5,.04]],a:.8,r:1.2,hold:.9,fixed:[1800,950]},
+      bass:{wave:'sine',parts:[[1,0,.82],[2,-4,.12],[3,5,.035]],a:.18,r:.7,hold:.86,fixed:[520,280]}},
     drone:{wet:[.7,.76],drums:.4,gains:[.19,.1,.095,.045],
       key :{wave:'triangle',parts:[[1,-11,.46],[1,11,.46],[2,-5,.07]],a:.85,r:1.3,hold:.88,fixed:[1050,520]},
       pad :{wave:'triangle',parts:[[1,-14,.42],[1,14,.42],[2,-6,.08],[3,7,.02]],a:1.3,r:1.6,hold:.92,fixed:[780,400]},
@@ -99,8 +123,8 @@
   // The mood's waveform still tilts how bright the preset sounds.
   const BRIGHT={sine:.82,triangle:1,sawtooth:1.28};
   const $ = id => document.getElementById(id);
-  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'wood'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[96,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'drone'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood']};
-  function selectMood(mood){state.mood=mood;[state.bpm,state.sound]=DEFAULTS[mood.id];state.length=30;state.ending='loop';state.lead=false;state.phrasing='auto'}
+  const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'wood'],ethnic:[96,'folk'],japanese:[76,'koto',true,'minimal'],decision:[60,'synth',true,'sparse'],kagura:[76,'shinobue'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[96,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'choir',true,'minimal'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood']};
+  function selectMood(mood){state.mood=mood;const d=DEFAULTS[mood.id];state.bpm=d[0];state.sound=d[1];state.length=30;state.ending='loop';state.lead=d[2]===true;state.phrasing=d[3]||'auto'}
   const state={sound:'synth',mood:MOODS[1],bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
   function rng(seed){let a=seed|0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -285,6 +309,7 @@
       }
       if(bank){sampleNote(ctx,bus,n,beat,bank,soft,trim,sampleKinds);continue}
       if(chip){chipTone(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,[.11,.05,.095,.045][n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan);continue}
+      if(score.sound==='folk'&&n.part===3)noiseSource(ctx,noiseBuffer,bus,n.beat*beat,.065,.018*trim*n.velocity/80,3600,n.pan||0);
       synthNote(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,V.gains[n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan||0,V,bright);
     }
     let abortReject=null,aborted=false;const abort=new Promise((_,reject)=>{abortReject=reject});
@@ -617,14 +642,14 @@
     return [mood?mood.name:score.moodId,(tempo?tempo.name+' ':'')+score.bpm+' BPM',lengthLabel(score.length),sound?sound.name:score.sound].join(' · ');
   }
   const MODE_JA={ionian:'イオニア（長調）',dorian:'ドリア',aeolian:'エオリア（自然短調）',phrygian:'フリギア',
-    locrian:'ロクリア',harmonic:'和声的短音階',lydian:'リディア',mixolydian:'ミクソリディア'};
+    locrian:'ロクリア',harmonic:'和声的短音階',lydian:'リディア',mixolydian:'ミクソリディア',japanese:'和風五音音階'};
   const densityWord=d=>d<.5?'少なめ':d>.75?'多め':'ふつう';
   const DRUM_JA={none:'なし',swing:'シャッフル（三連）',ticks:'時計（まばら）',light:'軽い（2・4拍）',pulse:'鼓動（1拍）',heart:'心音（二連）',drive:'ドライブ（8分＋太鼓）'};
   // The mood card sells the scene; the build panel confirms the spec just before generating.
   function renderBrief(){
     const m=state.mood,tempo=TEMPOS.find(t=>t.bpm===state.bpm),sound=SOUNDS.find(x=>x.id===state.sound);
     const bars=BGMScore.themeBarsFor(state.bpm,state.length);
-    const phrasing=({sparse:'少なめ',dense:'多め'})[state.phrasing]||'ふつう';
+    const phrasing=({minimal:'ごく少ない',sparse:'少なめ',dense:'多め'})[state.phrasing]||'ふつう';
     const card=$('brief');
     if(card&&card.innerHTML!==undefined)card.innerHTML='<h4>'+m.name+'</h4><p>'+(m.desc||'')+'</p>';
     const sum=$('summary');
@@ -639,7 +664,7 @@
   }
   function status(s,c){$('status').textContent=s;$('status').className='status '+c}
   function fingerprint(s,t){
-    const phrasing=({sparse:'間 多め',dense:'間 少なめ'})[s.phrasing]||'おまかせ';
+    const phrasing=({minimal:'間 とても多め',sparse:'間 多め',dense:'間 少なめ'})[s.phrasing]||'おまかせ';
     const rows=[
       ['SEED',s.seed],['TEMPO',s.bpm+' BPM'],
       ['KEY',NOTES[s.root]+' '+s.mode],['SCENE',s.sceneName||'テーマ'],
