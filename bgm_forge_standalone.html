@@ -2352,12 +2352,19 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
       if(chip){chipTone(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,[.11,.05,.095,.045][n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan);continue}
       synthNote(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,V.gains[n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan||0,V,bright);
     }
-    let abortReject=null;const abort=new Promise((_,reject)=>{abortReject=reject});
+    let abortReject=null,aborted=false;const abort=new Promise((_,reject)=>{abortReject=reject});
     if(onProgress||isCancelled){
       for(let part=1;part<10;part++){
         const when=total*part/10;
         try{ctx.suspend(when).then(()=>{
-          if(isCancelled&&isCancelled()){abortReject(Object.assign(Error('中止しました'),{cancelled:true}));return}
+          // 中止しても必ず resume する。止めたままにすると startRendering の Promise が永久に
+          // 解決せず、その曲ぶんのノード（2分の曲で数千個）がまるごと解放されない。
+          // 中断はできない仕組みなので、最後まで回しきって結果を捨てるのが唯一の解放手段。
+          if(isCancelled&&isCancelled()){
+            if(!aborted){aborted=true;abortReject(Object.assign(Error('中止しました'),{cancelled:true}))}
+            try{ctx.resume()}catch(e){}
+            return;
+          }
           if(onProgress)onProgress(part*10);
           ctx.resume();
         }).catch(()=>{})}catch(e){}
@@ -2565,8 +2572,10 @@ window.BGM_SAMPLE_BANK=[{"id":"piano-C2-pp","kind":"piano","root":36,"velocity":
     let take=sampleTakes.get(key);
     if(!take){
       previewBusy(kind);
-      try{take=await render(score)}
-      catch(e){if(turn===sampling){previewBusy(null);status(e.message||'試聴の準備に失敗しました','error')}return}
+      // 設定を続けて触ると試聴も次々に差し替わる。古い分は結果を捨てるだけでなく実際に止める。
+      // 止めないと、2小節ぶんとはいえ OfflineAudioContext が何本も並走したまま最後まで回る。
+      try{take=await render(score,null,()=>turn!==sampling)}
+      catch(e){if(e&&e.cancelled)return;if(turn===sampling){previewBusy(null);status(e.message||'試聴の準備に失敗しました','error')}return}
       if(turn!==sampling)return;
       take.sample=true;sampleTakes.set(key,take);
       while(sampleTakes.size>16)sampleTakes.delete(sampleTakes.keys().next().value);

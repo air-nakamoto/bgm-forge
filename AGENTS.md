@@ -77,10 +77,14 @@ console.log(score.events(s).length);
 
 ## 3. 変更のたびに必ず
 
-1. `bgm_forge_v2.html` の `<script src="...?v=YYYYMMDD-名前">` の**版を上げる**
+1. `bgm_forge_v2.html` の `<script src="...?v=YYYYMMDD-名前-ハッシュ">` の**版を上げる**
    （上げないとブラウザが古いJSを使い続け、修正が反映されません）
+   末尾の8桁は、そのファイルのsha256の先頭8桁です。手で計算する必要はありません。
+   合っていなければ `node tests/scene-variation.cjs` が落ち、**貼るべき文字列をそのまま表示します**。
 2. `python3 scripts/build_standalone.py` で単体版を作り直す
 3. `node tests/scene-variation.cjs` を回す
+   （単体版と分割ソースの一致、`?v=` の更新も、このテストが見ています。
+   手順1・2を忘れると必ず落ちるので、記憶に頼る必要はありません）
 4. `HANDOVER.md` の §3 に計測値つきで追記する
 
 ---

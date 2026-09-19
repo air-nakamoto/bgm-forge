@@ -2,6 +2,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
+const crypto=require('node:crypto');
 const root=path.join(__dirname,'..');
 const mit=fs.readFileSync(path.join(root,'LICENSE'),'utf8').split('\n---')[0].trim();
 const standalone=fs.readFileSync(path.join(root,'bgm_forge_standalone.html'),'utf8');
@@ -21,6 +22,27 @@ for(const file of ['bgm_forge_v2.html','bgm_forge_standalone.html']){
  const html=fs.readFileSync(path.join(root,file),'utf8');
  assert.match(html, /property="og:image" content="https:\/\/air-nakamoto\.github\.io\/bgm-forge\/ogp\.png"/);
  assert.match(html, /name="twitter:card" content="summary_large_image"/);
+}
+// 単体版は分割ソースの生成物であって別系統ではない。埋め込まれた4本が原本と1文字でも違えば、
+// python3 scripts/build_standalone.py を忘れたということ。2026-09-16 の乖離はここを見ていなかった。
+const EMBEDDED=['vendor/lamejs/lame.min.js','samples/vsco2/bank.js','bgm-score.js','bgm-forge.js'];
+const embedded=Array.from(standalone.matchAll(/<script[^>]*>\n([\s\S]*?)\n<\/script>/g),m=>m[1]);
+assert.equal(embedded.length,EMBEDDED.length,'単体版の <script> は '+EMBEDDED.length+' 本のはず');
+EMBEDDED.forEach((rel,i)=>{
+ const src=fs.readFileSync(path.join(root,rel),'utf8').replace(/\n*$/,'');
+ assert.equal(embedded[i].replace(/\n*$/,''),src,
+  rel+' が単体版の中身と違う。python3 scripts/build_standalone.py を実行すること');
+});
+// ?v= を上げ忘れると、ブラウザが古いJSを使い続けて「直したのに直らない」になる。
+// 版の末尾に中身のsha256先頭8桁を付ける決まりにして、忘れたらここで落とす。
+const v2html=fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8');
+for(const rel of EMBEDDED){
+ const digest=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,rel))).digest('hex').slice(0,8);
+ const tag=v2html.match(new RegExp('<script src="'+rel.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+'\\?v=([^"]+)"'));
+ assert(tag,rel+' の <script src> に ?v= が付いていない');
+ assert(tag[1].endsWith('-'+digest),
+  rel+' の ?v= が中身と合っていない。bgm_forge_v2.html を ?v='
+  +tag[1].replace(/-[0-9a-f]{8}$/,'')+'-'+digest+' に直すこと');
 }
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
