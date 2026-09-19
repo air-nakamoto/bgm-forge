@@ -734,7 +734,8 @@
       state.logOpen=true;
       if(x===state.take){
         const r=$('fingerprint');if(r)r.hidden=false;
-        if(state.playTake!==state.take)void play();
+        if(state.playTake===state.take&&state.playSource)void stopPlayback();
+        else void play();
         return;
       }
       await stopPlayback();state.take=x;state.comparison=null;draw();setBusy(false);
