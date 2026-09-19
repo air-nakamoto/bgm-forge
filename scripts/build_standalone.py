@@ -84,6 +84,10 @@ def bundled_credits():
 
 def main():
     doc = read("bgm_forge_v2.html")
+    # MIT本文だけをコメントに同梱。後続のMarkdown区切り（---）は含めない。
+    mit = read("LICENSE").split("\n---", 1)[0].strip()
+    assert mit.startswith("MIT License") and "--" not in mit, "MIT本文をHTMLコメントにできない"
+    doc = doc.replace("<head>", "<head>\n<!--\nBGM Forge\n" + mit + "\n-->", 1)
     doc, n = re.subn(r"<title>BGM Forge V2</title>",
                      "<title>BGM Forge V2 — 単体起動版</title>", doc, count=1)
     assert n == 1, "<title> が見つからない"

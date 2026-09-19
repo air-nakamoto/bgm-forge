@@ -3,6 +3,9 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 const root=path.join(__dirname,'..');
+const mit=fs.readFileSync(path.join(root,'LICENSE'),'utf8').split('\n---')[0].trim();
+const standalone=fs.readFileSync(path.join(root,'bgm_forge_standalone.html'),'utf8');
+assert(standalone.includes('<!--\nBGM Forge\n'+mit+'\n-->'),'standalone must retain the complete MIT notice in a comment');
 // 単体版を1ファイルで渡しても、同じファビコンが残ること。
 const icon=fs.readFileSync(path.join(root,'favicon.svg'));
 assert.match(fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8'), /rel="icon"[^>]+href="favicon\.svg\?v=/);
