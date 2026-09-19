@@ -3,6 +3,12 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
 const root=path.join(__dirname,'..');
+// 単体版を1ファイルで渡しても、同じファビコンが残ること。
+const icon=fs.readFileSync(path.join(root,'favicon.svg'));
+assert.match(fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8'), /rel="icon"[^>]+href="favicon\.svg\?v=/);
+const bundledIcon=fs.readFileSync(path.join(root,'bgm_forge_standalone.html'),'utf8').match(/rel="icon"[^>]+href="data:image\/svg\+xml;base64,([^"]+)"/);
+assert(bundledIcon,'standalone favicon must be embedded');
+assert.deepEqual(Buffer.from(bundledIcon[1],'base64'),icon);
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
 vm.runInNewContext(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),context);

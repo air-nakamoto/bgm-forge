@@ -83,6 +83,10 @@ def main():
     doc, n = re.subn(r"<title>BGM Forge V2</title>",
                      "<title>BGM Forge V2 — 単体起動版</title>", doc, count=1)
     assert n == 1, "<title> が見つからない"
+    icon = base64.b64encode(read("favicon.svg", "rb")).decode("ascii")
+    doc, n = re.subn(r'href="favicon\.svg[^"\s]*"',
+                     'href="data:image/svg+xml;base64,' + icon + '"', doc)
+    assert n == 1, "ファビコンが見つからない"
     assert NOTE_SOURCE.search(doc) and NOTE_LAME.search(doc), "クレジット行が見つからない"
     doc = NOTE_LAME.sub("", doc, count=1)
     doc = NOTE_GROOVE.sub("", doc, count=1)
