@@ -122,6 +122,8 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
   font-weight:500;font-size:15px;letter-spacing:.14em;padding:13px 30px;box-shadow:inset 0 0 24px -14px rgba(166,230,244,.9)}
 #generate,#play{width:184px;flex:none}
 .transport button.play:hover:not(:disabled){box-shadow:0 0 28px -8px rgba(166,230,244,.75)}
+.material-credits{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
+.material-credits>summary{cursor:pointer;color:var(--cyan);padding:8px 0}
 .saves{margin-top:10px}
 .saves::before{content:"SAVE";font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);margin-right:4px}
 /* 保存はこの画面の目的地なので、作る・聴くと同じ重さで出す。 */
@@ -447,10 +449,13 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
     <div id="fingerprint" class="fingerprint empty" role="note" aria-label="選んだ曲の内訳" hidden>まだ曲がありません</div>
     <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。7曲目を作ると、いちばん古いテイクから消えます（長い曲では6曲より少なくなります）。ページを再読み込みすると全部消えます。</p>
   </section>
+  <details class="material-credits">
+    <summary>使用素材・ライセンス</summary>
   <p class="note">打楽器の強弱とタイミングは Groove MIDI Dataset（Magenta / Google · CC BY 4.0）の統計を参考にしています。データは同梱していません。</p>
   <p class="note">音源: VSCO 2 Community Edition / Versilian Studios · CC0。32サンプルをモノラル32 kHzへ変換して同梱。<a href="samples/vsco2/CREDITS.md">音源情報</a></p>
 <p class="note">このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。ツール本体のコードは MIT License。</p>
 <p class="note">MP3エンコーダー: lamejs 1.2.1 / LAME · LGPL（未改変）。<a href="vendor/lamejs/lamejs-1.2.1.tgz" download>ソース</a> · <a href="https://lame.sourceforge.net/">LAME</a></p>
+  </details>
 </main>
 <div id="detail" class="overlay" hidden>
   <div class="card help" role="dialog" aria-modal="true">
@@ -556,7 +561,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 
 <script src="vendor/lamejs/lame.min.js?v=20260916k"></script>
 <script src="samples/vsco2/bank.js?v=20260916g"></script>
-<script src="bgm-score.js?v=20260919-mit-comment"></script>
-<script src="bgm-forge.js?v=20260919-mit-comment"></script>
+<script src="bgm-score.js?v=20260919-material-credits"></script>
+<script src="bgm-forge.js?v=20260919-material-credits"></script>
 </body>
 </html>
