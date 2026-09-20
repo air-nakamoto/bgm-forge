@@ -186,6 +186,28 @@ function measuredRoot(entry){
    if(((n.pitch-s.root)%12+12)%12===0)tonicBass+=n.duration*beat;
   }
  }
+ // ヒジャーズでは度数5が増三和音・度数4が減三和音になり、鳴らすと調が変わって聞こえる。
+ // 使ってよいのは 0（主音）・1（♭2）・3 だけ。全曲が主音の和音で始まること。
+ for(const prog of m.progs){
+  assert.equal(prog[0],0,'民族の進行が主音で始まっていない '+JSON.stringify(prog));
+  for(const deg of prog)assert([0,1,3].includes(deg),
+   '民族の進行に調が動く度数が入っている '+deg+' '+JSON.stringify(prog));
+ }
+ // シタールの「ジャラーン」。同梱シタールは1音（実音52.4）なので、音域を50〜61に
+ // 限って早回しを抑えている。内声（62以上）と重ならないことも併せて見る。
+ {
+  const s=score.compose({mood:m,scale:MODES[m.mode],bpm:de[0],sound:de[1],
+   length:30,ending:'loop',lead:false,phrasing:de[3]||'auto'},3);
+  const ev=score.events(s);
+  const strum=ev.filter(n=>n.part===3&&n.pitch>=50&&n.pitch<=61).sort((a,b)=>a.beat-b.beat);
+  assert(strum.length>=4,'民族にシタールのジャラーンが無い');
+  // 撥弦は一本ずつずれる。0.04〜0.12拍のあいだに次が来ること。
+  const gap=strum[1].beat-strum[0].beat;
+  assert(gap>0.04&&gap<0.12,'ジャラーンの間隔がおかしい '+gap);
+  assert(strum[1].pitch>strum[0].pitch,'ジャラーンが駆け上がっていない');
+  const inner=ev.filter(n=>n.part===3&&n.pitch>61);
+  assert(inner.length>0&&Math.min(...inner.map(n=>n.pitch))>61,'内声とジャラーンの音域が重なっている');
+ }
  // 増2度（3半音）が隣り合う割合。ミクソリディアでは17.8%、ヒジャーズでは24.8%だった。
  assert(steps[3]/notes>0.21,'民族の旋律に増2度が出ていない '+(100*steps[3]/notes).toFixed(1)+'%');
  // 半音の隣接。ミクソリディア17.4% → ヒジャーズ37.7%。

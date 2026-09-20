@@ -367,6 +367,19 @@
     // 「最初にシャランと一発なるのが気になる」と言われた。間隔は4小節のままで、
     // 曲の先頭と継ぎ目を避けて鳴る。
     if(s.moodId==='kagura'&&bar%4===2)add(4,84,b,1.6,54,-.15);
+    // シタールの「ジャラーン」。撥弦を一本ずつ数十ミリ秒ずらして駆け上げると、弦を
+    // 撫でた響きになる。同梱シタールは1音（実音 MIDI 52.4）しかないので、音域を
+    // 50〜61に限って早回しを抑える。内声は62〜73なので、同じ高さで重なることもない
+    // （同じパート・同じ音高の重なりはテストが禁じている）。
+    if(s.moodId==='ethnic'&&bar%4===0){
+      const strum=[];
+      for(let i=-7;i<14&&strum.length<5;i++){
+        const q=base+pitch(s.scale,d+i);
+        if(q>=50&&q<=61)strum.push(q);
+      }
+      strum.forEach((q,k)=>add(3,q,b+k*.07,2.6,36+energy*14-k*2,
+        (k/Math.max(1,strum.length-1)-.5)*.7));
+    }
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
     const kind=c.drum==='none'?'light':c.drum;
     const hit=(pitch,at,velocity,duration=.2)=>add(4,pitch,b+at,duration,velocity);
