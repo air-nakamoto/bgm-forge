@@ -29,9 +29,12 @@ for(const file of ['bgm_forge.html','bgm_forge_standalone.html']){
 const v2html=fs.readFileSync(path.join(root,'bgm_forge.html'),'utf8');
 const oldPage=fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8');
 assert.match(oldPage,/http-equiv="refresh" content="0;url=bgm_forge\.html"/);
-assert(oldPage.includes("location.replace('bgm_forge.html'+location.search+location.hash)"));
+// 整形ツール（エディタの自動フォーマット）を通すと空白が入るので、空白を潰して見る。
+// 2026-09-20 に bgm_forge.html 全体が整形され、ここだけが「空白ありの同じコード」で落ちた。
+const flat=t=>t.replace(/\s+/g,'');
+assert(flat(oldPage).includes("location.replace('bgm_forge.html'+location.search+location.hash)"));
 assert(v2html.includes('https://bgm-forge.suihei.workers.dev/'));
-assert(v2html.includes("if(location.hostname==='air-nakamoto.github.io')location.replace("));
+assert(flat(v2html).includes("if(location.hostname==='air-nakamoto.github.io')location.replace("));
 const EMBEDDED=Array.from(v2html.matchAll(/<script src="([^"?]+)\?v=[^"]*"><\/script>/g),m=>m[1]);
 assert(EMBEDDED.length>=5,'bgm_forge.html の <script src> が読めていない');
 const embedded=Array.from(standalone.matchAll(/<script[^>]*>\n([\s\S]*?)\n<\/script>/g),m=>m[1]);
