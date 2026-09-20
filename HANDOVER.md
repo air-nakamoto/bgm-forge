@@ -35,9 +35,9 @@ GitHub Pages で公開しています。旧作業フォルダ `inside-rooms` は
   早回ししていた（`SAMPLE_LIFT` で折り返し、最大17.6→6.5半音）。(2) **同梱音源の音高表示が
   最大18.7半音ずれ、倍音を持たない細い音が旋律の56%を占めていた**。`scripts/build_koto.py` を
   検算つきに作り直し、6音・収録1.5秒で入れ替えた（§3）。音源の音高はテストが毎回実測する。
-- 検証は **782ケースPASS**。単体版と分割ソースの一致、`?v=` のハッシュ照合、
+- 検証は **816ケースPASS**。単体版と分割ソースの一致、`?v=` のハッシュ照合、
   旋律の跳躍の上限、合唱の音量係数、フォルマントの有無をテストが見ている。
-- 作業ツリーはクリーン。**未pushのコミットが4件ある**（`公開する.command` で公開する）。
+- 作業ツリーはクリーン。**未pushのコミットが5件ある**（`公開する.command` で公開する）。
 - **次にやること**は §6.0 にまとめてある。音の話はすべて「鳴らして確かめる」が残っている。
 
 
@@ -216,6 +216,56 @@ const INNER_GAP=4, INNER_SPAN=11, PAD_LOW=55, PAD_HIGH=79;
 ---
 
 ## 3. これまでの修正履歴（すべて計測つき）
+
+### 2026-09-20 · 「意見を送る」を足す（Cloudflare Worker 経由でDiscordへ）
+
+「https://apng-generator-tan.vercel.app/ これみたいに意見を送るを実装したい」「元々Discordで
+送られるようにしているので同じようにしたい」「単体版に送信機能は不要だよね」。曲の指紋は**添えない**と
+決めた（「添えない」）。
+
+**Webhook URLをページに置くと誰でも叩ける**ので、あいだに Cloudflare Worker を挟んだ。
+ページは Worker のURLだけを知り、Discord の Webhook URL は Worker の秘密（`wrangler secret`）に入る。
+
+| 置き場 | 持つもの |
+|---|---|
+| `bgm_forge_v2.html` の `<meta name="feedback-endpoint">` | Worker のURL（公開してよい） |
+| Worker の環境変数 `DISCORD_WEBHOOK` | Webhook URL（リポジトリにもチャットにも出さない） |
+| Worker の変数 `ALLOWED_ORIGINS` | 受け付ける出どころ。既定は GitHub Pages のドメインのみ |
+
+Worker 側（`worker/feedback.js`）で止めているもの。
+
+- **出どころ違い** — `Origin` が `ALLOWED_ORIGINS` に無ければ403。CORSヘッダも返さない。
+- **連投** — Cache API に送信元IPを60秒置く。ある間は429（画面は「少し待ってから」と出す）。
+- **機械** — 画面に出ない入力欄（honeypot）が埋まっていたら、成功を返して捨てる。
+- **メンション爆撃** — `@everyone` `@here` `<@123>` にゼロ幅空白を挟み、`allowed_mentions:{parse:[]}` も付ける。
+- **長文** — 2000文字で切る（Discordの上限）。画面側も `maxlength` と残り字数で同じ上限。
+
+**送るのは本文だけ。** 曲も設定も指紋も送らない。名前も連絡先も取らないので返信はできない、と
+ダイアログに明記した。
+
+**単体起動版には入れない。** オフラインで配る版から外へ出る通信をなくすため、`feedback:start`〜
+`feedback:end` で囲った6か所（meta・ヘッダのボタン・下の案内文・ダイアログ・CSS・配線のJS）を
+`scripts/build_standalone.py` が丸ごと落とす。落としたあと `"feedback" not in doc` をアサートしている。
+配線のJSを `bgm-forge.js` ではなくHTMLに直接置いたのは、**単体版に痕跡を1文字も残さないため**
+（`bgm-forge.js` は単体版へ1バイトも違わず埋め込まれる決まりなので、あちらに書くと死んだコードが残る）。
+
+計測と確認（ヘッドレスChromium、820px／390px）。
+
+| 見たこと | 結果 |
+|---|---|
+| 送信先が空（既定・ローカルで開いたとき） | ヘッダのボタン・下の案内文・ダイアログとも `hidden` のまま。JSは即return |
+| 送信先を入れたとき | 両方のボタンが出る。押すとダイアログ、字数が `20 / 2000` と動く |
+| 届かない相手へ送ったとき | 「送れませんでした。通信を確認してください。」ボタンは押せる状態に戻る（固まらない） |
+| 390px | ヘッダのボタン2つが1行に収まる。ダイアログも折り返し事故なし |
+| 単体版 | `feedback` の文字列が0件 |
+
+テストに固定した（`tests/scene-variation.cjs`）。分割版に `<meta name="feedback-endpoint">`・
+`data-feedback-open`・`id="feedbackText"` があること、単体版にその4語が**無い**こと。
+
+**まだ動いていない。** Worker のデプロイと `DISCORD_WEBHOOK` の設定、`<meta>` へのURL記入は
+アイアールさんの作業（手順は §6.0）。それまでは送信先が空なので、画面に「意見を送る」は出ない。
+
+---
 
 ### 2026-09-20 · クレジットに出典リンクを足す（笛が丸ごと抜けていた）
 
@@ -1934,6 +1984,35 @@ for(const m of api.MOODS){ const s=S.compose({mood:m,scale:api.MODES[m.mode],bpm
 7. ~~民族からシタールがほとんど消えている~~ → **2026-09-20 に内声を奇数小節で戻した**（§3）。
    シタールは1曲6.0音→17.0音（全体の12%→27%）。じゃらん直後3秒の内声は0.00秒のままなので
    「コードが続く」は再発していない。増減させたいときの数字は §3 の表にある。
+
+**アイアールさんの手が要ること：「意見を送る」を動かす**
+
+コードは入っているが、送信先が空なので画面には出ていない。次の3つで動き出す。
+
+1. Worker を置く（リポジトリ直下で）
+
+   ```sh
+   cd worker
+   npx wrangler deploy                      # 初回はブラウザでCloudflareにログイン
+   npx wrangler secret put DISCORD_WEBHOOK  # 聞かれたらWebhook URLを貼る
+   ```
+
+   **Webhook URL はチャットにも、このリポジトリにも貼らないでください。** 会話にも履歴にも残ります。
+   入れる先は上の `secret put` が聞いてくるところだけです。
+
+2. `deploy` が表示するURL（`https://bgm-forge-feedback.<アカウント>.workers.dev`）を、
+   `bgm_forge_v2.html` の `<meta name="feedback-endpoint" content="">` に入れる。
+   入れたら `python3 scripts/build_standalone.py` → `node tests/scene-variation.cjs`。
+
+3. 公開（`公開する.command`）。ページを開いて、ヘッダに「✉ 意見を送る」が出れば通っている。
+   届かないときは `npx wrangler tail` で Worker のログを見る。
+
+`worker/wrangler.toml` の `ALLOWED_ORIGINS` は GitHub Pages のドメインだけを許している。
+独自ドメインや Cloudflare Pages へ移すときは、ここに足さないと403で弾かれる。
+
+**Cloudflare Pages への移行そのもの**（「そろそろCloudflare Worker移行もしようか」）は未着手。
+Worker は今回のフォーム専用で、ページの配信は GitHub Pages のまま。移すならアカウントとDNSの
+判断が要るので、やるときに相談すること。
 
 **やってみて却下されたこと（再導入しないこと）**
 

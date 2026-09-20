@@ -1,0 +1,9 @@
+name = "bgm-forge-feedback"
+main = "feedback.js"
+compatibility_date = "2026-09-20"
+
+# 送信を受け付ける公開先。ここに無いページからの投稿は 403 で弾く。
+# 秘密ではないのでここに書いてよい。Webhook だけは secret に入れること。
+#   npx wrangler secret put DISCORD_WEBHOOK
+[vars]
+ALLOWED_ORIGINS = "https://air-nakamoto.github.io"

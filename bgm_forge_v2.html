@@ -188,6 +188,15 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
 /* 権利の2行は続けて読ませる。2行目に区切り線を重ねない。 */
 main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 /* 一番下から画面の頭へ。場面が24個あって縦に長いので、読み終わりから戻れるようにする。 */
+/* feedback:start */
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--cyan);text-decoration:underline;cursor:pointer}
+#feedbackText{width:100%;box-sizing:border-box;margin-top:8px;padding:10px;background:rgba(8,16,22,.6);
+  border:1px solid var(--line);border-radius:2px;color:var(--ink);font:12px/1.7 var(--sans);resize:vertical}
+#feedbackText:focus{outline:none;border-color:rgba(113,196,213,.6)}
+.feedback-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.feedback-foot .note{margin:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* feedback:end */
 .backtop{margin:22px 0 4px;padding-top:14px;border-top:1px solid var(--line);text-align:center}
 .backtop a{font:11px/1.75 var(--sans);color:var(--faint);letter-spacing:.06em;text-decoration:none}
 .backtop a:hover,.backtop a:focus-visible{color:var(--cyan)}
@@ -375,6 +384,12 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 #adjustments[open]>#stepAdjust>.more{display:inline-block}
 </style>
 </head>
+<!-- feedback:start -->
+<!-- 「意見を送る」の送り先。Cloudflare Worker のURL（worker/feedback.js）。
+     秘密ではないのでここに書いてよい。Discord の Webhook は Worker の secret にある。
+     空にすると送信欄もボタンも出ない。単体起動版ではこの塊ごと削られる。 -->
+<meta name="feedback-endpoint" content="">
+<!-- feedback:end -->
 <body>
 <main id="top">
   <header>
@@ -385,6 +400,7 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
     <div class="lead">
       <p>場面に合ったBGMを、ブラウザでつくれる。</p>
       <button id="helpOpen" class="helpbtn" aria-haspopup="dialog">? 使い方</button>
+      <!-- feedback:start --><button class="helpbtn" data-feedback-open aria-haspopup="dialog" hidden>✉ 意見を送る</button><!-- feedback:end -->
     </div>
   </header>
 
@@ -481,8 +497,32 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 <p class="note">MP3エンコーダー: lamejs 1.2.1 / LAME · LGPL（未改変）。<a href="vendor/lamejs/lamejs-1.2.1.tgz" download>ソース</a> · <a href="https://lame.sourceforge.net/">LAME</a> · <a href="https://github.com/zhuker/lamejs">lamejs</a> · <a href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">LGPL 2.1</a></p>
     <p class="note">ツール本体のコードは <a href="LICENSE">MIT License</a>（Copyright © 2026 air-nakamoto）。</p>
   </details>
+  <!-- feedback:start -->
+  <p class="note feedback-note" hidden>このツールは個人が作って試験的に公開しているものです。不具合や改善点、ご意見がありましたら、<button class="linkbtn" data-feedback-open>意見を送る</button> からお寄せください。今後の参考にさせていただきます。</p>
+  <!-- feedback:end -->
   <p class="backtop"><a href="#top">↑ ページの一番上に戻る</a></p>
 </main>
+<!-- feedback:start -->
+<div id="feedback" class="overlay" hidden>
+  <div class="card help" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+    <div class="card-head"><span class="led" style="animation:none"></span><span id="feedbackTitle">意見を送る</span><span class="rule"></span>
+      <button class="helpclose" data-feedback-close aria-label="閉じる">閉じる</button></div>
+    <div class="help-body">
+      <p class="note">不具合、こう鳴ってほしかった、欲しい場面。短くて構いません。作者にだけ届きます。</p>
+      <label class="sr-only" for="feedbackText">意見</label>
+      <textarea id="feedbackText" rows="7" maxlength="2000" placeholder="例：和風で高い音がときどき硬く鳴る気がします"></textarea>
+      <!-- 罠の欄。人には見えない。埋まっていたら機械なので Worker 側で捨てる。 -->
+      <input id="feedbackHp" class="sr-only" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="feedback-foot">
+        <span id="feedbackCount" class="note">0 / 2000</span>
+        <button id="feedbackSend" class="helpbtn">送信する</button>
+      </div>
+      <p id="feedbackStatus" class="note" role="status"></p>
+      <p class="note">送るのは書いた本文だけです。作った曲も設定も送られません。名前や連絡先は取得していないので、返信はできません。</p>
+    </div>
+  </div>
+</div>
+<!-- feedback:end -->
 <div id="detail" class="overlay" hidden>
   <div class="card help" role="dialog" aria-modal="true">
     <div class="card-head"><span class="led" style="animation:none"></span><span id="detailTitle">詳細</span><span class="rule"></span>
@@ -593,5 +633,59 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
 <script src="bgm-score.js?v=20260920-water-6b578ff2"></script>
 <script src="bgm-forge.js?v=20260920-decision-desc-55557978"></script>
+<!-- feedback:start -->
+<!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
+     曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。
+     単体起動版には入らない（build_standalone.py が印のついた塊を落とす）。 -->
+<script>
+(function(){
+  var meta=document.querySelector('meta[name="feedback-endpoint"]');
+  var url=meta&&meta.content?meta.content.trim():'';
+  if(!url)return;                                   // 送信先が無い版では機能ごと出さない
+  var $=function(id){return document.getElementById(id)};
+  var box=$('feedback'),ta=$('feedbackText'),hp=$('feedbackHp');
+  var count=$('feedbackCount'),send=$('feedbackSend'),status=$('feedbackStatus');
+  if(!box||!ta||!send)return;
+  var LIMIT=2000,opener=null,busy=false;
+  function lock(on){document.body.style.overflow=on?'hidden':''}
+  function tell(msg){status.textContent=msg||''}
+  function open(from){
+    opener=from||null;box.hidden=false;lock(true);tell('');ta.focus();
+  }
+  function close(){
+    box.hidden=true;lock(false);
+    if(opener&&opener.focus)opener.focus();
+  }
+  function tally(){
+    var n=ta.value.length;count.textContent=n+' / '+LIMIT;
+  }
+  var note=document.querySelector('.feedback-note');if(note)note.hidden=false;
+  [].forEach.call(document.querySelectorAll('[data-feedback-open]'),function(b){
+    b.hidden=false;b.onclick=function(){open(b)};
+  });
+  [].forEach.call(document.querySelectorAll('[data-feedback-close]'),function(b){b.onclick=close});
+  box.onclick=function(e){if(e.target===box)close()};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!box.hidden)close()});
+  ta.oninput=tally;tally();
+  send.onclick=function(){
+    if(busy)return;
+    var text=ta.value.trim();
+    if(!text){tell('本文を書いてください。');ta.focus();return}
+    if(text.length>LIMIT){tell('長すぎます。'+LIMIT+'文字までにしてください。');return}
+    busy=true;send.disabled=true;tell('送っています…');
+    fetch(url,{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({text:text,hp:hp?hp.value:''})})
+      .then(function(r){return r.json().catch(function(){return{ok:r.ok}})})
+      .then(function(d){
+        if(d&&d.ok){ta.value='';tally();tell('送りました。ありがとうございます。');setTimeout(close,1200)}
+        else if(d&&d.error==='cooldown')tell('続けて送ることはできません。少し待ってからお願いします。');
+        else tell('送れませんでした。時間をおいて試してください。');
+      })
+      .catch(function(){tell('送れませんでした。通信を確認してください。')})
+      .then(function(){busy=false;send.disabled=false});
+  };
+})();
+</script>
+<!-- feedback:end -->
 </body>
 </html>

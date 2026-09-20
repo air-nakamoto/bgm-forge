@@ -190,6 +190,16 @@ console.log(score.events(s).length);
 - **`autoPattern` を持つ場面では `SCENES` の一部の設定が効かなくなる。** 効くのは `harmony` と `high` だけです。
 - **伴奏の音量に手を入れるときは、発音の3経路すべてに掛ける。** `synthNote` / `sampleNote` / `chipTone`。
   片方だけだと音色を切り替えたときにバランスが変わります。
+- **「意見を送る」は分割版だけの機能。単体起動版に持ち込まない。** 単体版はオフラインで配るものなので、
+  外へ出る通信を1つも残さない方針です。`feedback:start`〜`feedback:end` で囲った塊を
+  `scripts/build_standalone.py` が落とし、そのあと `"feedback" not in doc` をアサートしています。
+  印を増やしたら、同スクリプトの想定個数（いまは6）も直すこと。忘れるとビルドが落ちて気づけます。
+- **送信の配線を `bgm-forge.js` に書かない。** `bgm-forge.js` は単体版へ1バイトも違わず埋め込まれる
+  決まりなので、あちらに書くと単体版に死んだコードが残ります。フォーム関連のJSは
+  `bgm_forge_v2.html` の印の中に直接置いてあります（このファイルで唯一のインラインscript）。
+- **Webhook URL などの秘密をリポジトリにもチャットにも書かない。** 置き場は Cloudflare Worker の
+  シークレット（`npx wrangler secret put DISCORD_WEBHOOK`）だけ。ページが持つのは Worker のURLで、
+  これは公開してよいもの。`<meta name="feedback-endpoint">` が空なら機能ごと画面に出ません。
 
 ---
 
@@ -214,6 +224,8 @@ console.log(score.events(s).length);
 
 - DAW相当の編集、MIDI入力、歌声生成
 - 外部API・学習モデルの利用（ブラウザ単体で完結させる方針）
+  - 例外は「意見を送る」の送信だけ。**曲作り・再生・保存は外部通信なし**のままで、
+    通信するのは利用者がフォームを押した瞬間だけです。単体起動版にはこの機能自体が入りません。
 - プルリクエスト（§4）
 
 ---

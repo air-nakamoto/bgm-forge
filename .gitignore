@@ -10,3 +10,6 @@ __pycache__/
 553217__*.wav
 *.crdownload
 *のエイリアス
+.wrangler/
+node_modules/
+.dev.vars

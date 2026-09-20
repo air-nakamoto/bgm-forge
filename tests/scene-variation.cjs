@@ -46,6 +46,15 @@ for(const rel of EMBEDDED){
   rel+' の ?v= が中身と合っていない。bgm_forge_v2.html を ?v='
   +tag[1].replace(/-[0-9a-f]{8}$/,'')+'-'+digest+' に直すこと');
 }
+// 「意見を送る」は分割版だけの機能。単体版はオフラインで配るものなので、外へ出る通信を残さない。
+// 送信先は <meta> に入れる（ソースには書かない）。空でも壊れないことは配線側で守っている。
+assert.match(v2html,/<meta name="feedback-endpoint" content="[^"]*">/,'v2 に送信先の <meta> が無い');
+assert(v2html.includes('data-feedback-open'),'v2 に「意見を送る」のボタンが無い');
+assert(v2html.includes('id="feedbackText"'),'v2 に意見の入力欄が無い');
+for(const token of ['feedback-endpoint','data-feedback-open','feedbackText','feedback:start']){
+ assert(!standalone.includes(token),'単体版に意見送信の痕跡が残っている: '+token);
+}
+
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
 vm.runInNewContext(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),context);

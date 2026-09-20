@@ -10,6 +10,7 @@
   1. <title> に「— 単体起動版」を付ける
   2. 外部リンクのクレジット2行を、同梱クレジット（CC0全文・LGPL全文・エンコーダー原本）に差し替える
   3. <script src="..."> 4本を中身ごと埋め込む（順序は lamejs → bank → score → forge）
+  4. 「意見を送る」（feedback:start〜end の塊）を丸ごと落とす
 """
 import base64
 import html
@@ -38,6 +39,9 @@ NOTE_SOURCE = re.compile(r'<p class="note">音源: VSCO 2 Community Edition.*?</
 NOTE_LAME = re.compile(r'<p class="note">MP3エンコーダー: lamejs.*?</p>\n', re.S)
 # 単体版では下の折りたたみに入るので、分割版向けの1行は落とす。
 NOTE_GROOVE = re.compile(r'<p class="note">打楽器の強弱とタイミングは Groove.*?</p>\n', re.S)
+# 「意見を送る」は単体版に入れない。オフラインで配る版から外へ出る通信をなくすため。
+# 印は HTML コメント（<!-- feedback:start --> …）と CSS コメント（/* feedback:start */ …）の2種類。
+FEEDBACK = re.compile(r"(?:<!--|/\*) feedback:start (?:-->|\*/).*?(?:<!--|/\*) feedback:end (?:-->|\*/)\n?", re.S)
 
 
 def read(rel, mode="r"):
@@ -115,6 +119,10 @@ def main():
     doc = NOTE_LAME.sub("", doc, count=1)
     doc = NOTE_GROOVE.sub("", doc, count=1)
     doc = NOTE_SOURCE.sub(lambda m: bundled_credits(), doc, count=1)
+
+    doc, n = FEEDBACK.subn("", doc)
+    assert n == 6, "feedback の塊が %d 個（想定 6）" % n
+    assert "feedback" not in doc, "単体版に意見送信の痕跡が残っている"
 
     tags = list(re.finditer(r'<script src="([^"?]+)[^"]*"></script>', doc))
     assert len(tags) == len(SCRIPTS), "<script src> の数が %d（想定 %d）" % (len(tags), len(SCRIPTS))
