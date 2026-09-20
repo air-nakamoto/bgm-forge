@@ -337,9 +337,13 @@
       const times=bass==='motor'?[0,.5,1,1.5,2,2.5,3,3.5]:bass==='ritual'?[0,1.5,3]:bass==='march'?[0,1,2,3]:[0,2];
       times.forEach((at,k)=>add(2,bass==='fifth'&&k%2?fifth:root,b+at,bass==='motor'?.34:bass==='ritual'?.7:bass==='march'?.75:1.7,bv-(k%2?7:0)));
     }
-    // ethnic はストラム（ジャラーン）が内声を兼ねる。毎小節アルペジオを鳴らすと
-    // 「コードがたくさん続く」に聞こえるため、ethnic では inner を鳴らさない。
-    if(!breath&&s.moodId!=='ethnic'){
+    // 民族の内声は「毎小節」と「全部止める」の中間にする。毎小節だと
+    // 「コードがたくさん続く」に聞こえ、全部止めると実録音シタールが1曲6音になって
+    // 「民族っぽくなくなった」と言われた（どちらも 2026-09-20 の指摘）。
+    // 奇数小節だけにすると、アルペジオの小節が2つ続くことが無く、じゃらんのある
+    // 小節（4の倍数）は必ず空く。計測はシタール6.0→17.0音/曲、全体の12%→27%、
+    // じゃらん直後3秒の内声は0.00秒のまま。
+    if(!breath&&(s.moodId!=='ethnic'||bar%2===1)){
       const times=c.inner[v],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[v];
       times.forEach((at,k)=>{
         // The answer leaves room; it does not append a new tune.

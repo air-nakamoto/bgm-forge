@@ -214,10 +214,19 @@ function measuredRoot(entry){
    'ジャラーンが長すぎる（和音を押さえたように聞こえる） '+n.duration+'拍 seed='+seed);
   for(let i=1;i<first.length;i++)assert(first[i]-first[i-1]>=3,
    'ジャラーンが'+(first[i]-first[i-1])+'半音で重なっている（和音構成音だけを拾うこと） seed='+seed);
-   // ethnic は strum が内声を兼ねるため inner（part3, pitch>61）は0音が正常。
-   // それ以外の場面では inner が鳴ることを別のテストで保証している。
+   // 民族の内声（part3, pitch>61）は奇数小節だけに鳴る。全部止めると実録音シタールが
+   // 1曲6音になって「民族っぽくなくなった」、毎小節だと「コードがたくさん続く」になる。
+   // 中間として、(a) 鳴ること (b) アルペジオの小節が2つ続かないこと
+   // (c) じゃらんのある小節（4の倍数）には入らないこと、の3つを固定する。
    const inner=ev.filter(n=>n.part===3&&n.pitch>61);
-   assert(inner.length===0,'ethnic で内声が鳴っている（strum だけのはず） seed='+seed);
+   assert(inner.length>0,'民族の内声が鳴っていない（シタールがじゃらんだけになる） seed='+seed);
+   const innerBars=[...new Set(inner.map(n=>Math.floor(n.beat/4)))].sort((a,b)=>a-b);
+   for(const bar of innerBars){
+    assert(bar%2===1,'民族の内声が偶数小節に入っている bar='+bar+' seed='+seed);
+    assert(bar%4!==0,'民族の内声がじゃらんの小節に入っている bar='+bar+' seed='+seed);
+   }
+   for(let i=1;i<innerBars.length;i++)assert(innerBars[i]-innerBars[i-1]>=2,
+    '民族のアルペジオが2小節続いている bar='+innerBars[i]+' seed='+seed);
  }
  // 増2度（3半音）が隣り合う割合。ミクソリディアでは17.8%、ヒジャーズでは24.8%だった。
  assert(steps[3]/notes>0.21,'民族の旋律に増2度が出ていない '+(100*steps[3]/notes).toFixed(1)+'%');
