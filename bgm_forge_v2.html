@@ -185,6 +185,8 @@ button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outli
 .note{font:11px/1.75 var(--sans);color:var(--faint);margin:8px 0 0;letter-spacing:.01em}
 a{color:var(--cyan)}
 main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+/* 権利の2行は続けて読ませる。2行目に区切り線を重ねない。 */
+main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 /* 一番下から画面の頭へ。場面が24個あって縦に長いので、読み終わりから戻れるようにする。 */
 .backtop{margin:22px 0 4px;padding-top:14px;border-top:1px solid var(--line);text-align:center}
 .backtop a{font:11px/1.75 var(--sans);color:var(--faint);letter-spacing:.06em;text-decoration:none}
@@ -467,6 +469,7 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
     <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。13曲目を作ると、いちばん古いテイクから消えます（長い曲では12曲より少なくなります）。ページを再読み込みすると全部消えます。</p>
   </section>
   <p class="note">このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。</p>
+  <p class="note">同梱音源はすべて <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> です。その為このツールで作った曲に素材由来の条件は付きません。</p>
   <details class="material-credits">
     <summary>使用素材・ライセンス</summary>
   <p class="note">打楽器の強弱とタイミングは Groove MIDI Dataset（Magenta / Google · CC BY 4.0）の統計を参考にしています。データは同梱していません。<a href="https://magenta.tensorflow.org/datasets/groove">データセット</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></p>
@@ -475,7 +478,6 @@ main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
   <p class="note">箏: Japan_Koto_Improv / RutgerMuller · CC0。13分の即興演奏から6音を切り出して同梱。<a href="https://freesound.org/people/RutgerMuller/sounds/365242/">Freesound 365242</a> · <a href="samples/koto/CREDITS.md">音源情報</a></p>
   <p class="note">笛: Oriental flute / t-man95 · CC0。独奏から8音を切り出し、ループ点を打って同梱。<a href="https://freesound.org/people/t-man95/sounds/553217/">Freesound 553217</a> · <a href="samples/shinobue/CREDITS.md">音源情報</a></p>
   <p class="note">合唱: CRWDSing U Ooh Vowel / ShangusBurger · CC0。無指向成分のみを使用。<a href="https://freesound.org/people/ShangusBurger/sounds/764124/">Freesound 764124</a> · <a href="samples/choir/CREDITS.md">音源情報</a></p>
-  <p class="note">同梱音源はすべて <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a>。だからこのツールで作った曲に素材由来の条件は付きません。</p>
 <p class="note">MP3エンコーダー: lamejs 1.2.1 / LAME · LGPL（未改変）。<a href="vendor/lamejs/lamejs-1.2.1.tgz" download>ソース</a> · <a href="https://lame.sourceforge.net/">LAME</a> · <a href="https://github.com/zhuker/lamejs">lamejs</a> · <a href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">LGPL 2.1</a></p>
     <p class="note">ツール本体のコードは <a href="LICENSE">MIT License</a>（Copyright © 2026 air-nakamoto）。</p>
   </details>
