@@ -359,7 +359,10 @@
     // 約束をテストが見ているので、鈴だけ残したいなら約束のほうから直すこと。
     // 神楽の打楽器はこの場面ごとの経路で作られる。events() の後半にある `s.drums!=='none'`
     // の塊は伴奏が legacy のときだけ通る道で、神楽はそこを通らない（2026-09-20 に踏んだ）。
-    if(s.moodId==='kagura'&&bar%4===0)add(4,84,b,1.6,54,-.15);
+    // 2026-09-20: 4小節の「頭」から2小節ずらした。頭に置くと曲が鈴で始まり、
+    // 「最初にシャランと一発なるのが気になる」と言われた。間隔は4小節のままで、
+    // 曲の先頭と継ぎ目を避けて鳴る。
+    if(s.moodId==='kagura'&&bar%4===2)add(4,84,b,1.6,54,-.15);
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
     const kind=c.drum==='none'?'light':c.drum;
     const hit=(pitch,at,velocity,duration=.2)=>add(4,pitch,b+at,duration,velocity);

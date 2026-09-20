@@ -176,9 +176,13 @@ function measuredRoot(entry){
   const suzu=score.events(s).filter(n=>n.part===4&&n.pitch===84);
   assert(suzu.length>0,'神楽に神楽鈴が入っていない seed='+seed);
   withDrums+=suzu.length;
-  // 4小節（16拍）の頭。humanize でミリ秒ずれるので許容を持たせる。
-  for(const n of suzu)assert(Math.abs(n.beat-Math.round(n.beat/16)*16)<0.2,
-   '神楽鈴が4小節の頭にない beat='+n.beat);
+  // 4小節（16拍）ごと、頭から2小節（8拍）ずらした位置。曲の先頭では鳴らさない
+  // （鈴で曲が始まるのが気になると言われたため）。humanize のずれを許容する。
+  for(const n of suzu){
+   assert(n.beat>1,'神楽鈴が曲の先頭で鳴っている beat='+n.beat);
+   assert(Math.abs(n.beat-(Math.round((n.beat-8)/16)*16+8))<0.2,
+    '神楽鈴が4小節ごとの定位置にない beat='+n.beat);
+  }
   const off={...s,drums:'none'};
   withoutDrums+=score.events(off).filter(n=>n.part===4).length;
  }
