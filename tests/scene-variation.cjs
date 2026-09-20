@@ -200,15 +200,18 @@ function measuredRoot(entry){
    length:30,ending:'loop',lead:false,phrasing:de[3]||'auto'},seed);
   const ev=score.events(s);
   const strum=ev.filter(n=>n.part===3&&n.pitch>=45&&n.pitch<=61).sort((a,b)=>a.beat-b.beat);
-  assert(strum.length>=4,'民族にシタールのジャラーンが無い seed='+seed);
+  assert(strum.length>=3,'民族にシタールのジャラーンが無い seed='+seed);
   // 撥弦は一本ずつずれる。0.04〜0.12拍のあいだに次が来ること。
   const gap=strum[1].beat-strum[0].beat;
-  assert(gap>0.04&&gap<0.12,'ジャラーンの間隔がおかしい '+gap);
+  assert(gap>0.02&&gap<0.08,'ジャラーンの間隔がおかしい '+gap);
   assert(strum[1].pitch>strum[0].pitch,'ジャラーンが駆け上がっていない');
   // 同時に鳴る音が2半音以内で並ぶと、弦の響きではなく音の塊になってうるさい。
   // 2026-09-20 に音階順で駆け上げたときは、間隔の92%が2半音以下だった（半音だけで50%）。
   const first=strum.filter(n=>n.beat<1).map(n=>n.pitch).sort((a,b)=>a-b);
-  assert(first.length>=4,'ジャラーンの音数が足りない seed='+seed);
+  assert(first.length>=3,'ジャラーンの音数が足りない seed='+seed);
+  // 撥弦は押さえっぱなしにしない。音符そのものは短くして、シタールの余韻(1.2秒)に任せる。
+  for(const n of strum)assert(n.duration<=0.6,
+   'ジャラーンが長すぎる（和音を押さえたように聞こえる） '+n.duration+'拍 seed='+seed);
   for(let i=1;i<first.length;i++)assert(first[i]-first[i-1]>=3,
    'ジャラーンが'+(first[i]-first[i-1])+'半音で重なっている（和音構成音だけを拾うこと） seed='+seed);
   const inner=ev.filter(n=>n.part===3&&n.pitch>61);

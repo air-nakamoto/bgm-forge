@@ -377,15 +377,20 @@
     // 間隔の92%が2半音以下（半音だけで50%）＝ただの音の塊だった。弦は音階順ではなく
     // 和音の音に張られているので、和音構成音（d, d+2, d+4 とその上のオクターブ）
     // だけを拾い、1オクターブ以上に散らす。非和音の音を混ぜると和音パートともぶつかる。
+    // 2026-09-20 二度目：「じゃらんの音が不自然」「じゃんとなったあともコードが
+    // たくさん続くのが違和感」。計測すると、じゃらん直後3秒のあいだに、じゃらんの音だけで
+    // 延べ11.67秒鳴っていた（4音×約3秒）。撥弦のつもりが、4音の和音を2秒押さえっぱなしに
+    // していた。シタールの release は1.2秒あるので、音符そのものは短くして余韻に任せる。
+    // 併せて3音に減らし、間隔を詰めて不均等にした（等間隔の4連打は機械に聞こえる）。
     if(s.moodId==='ethnic'&&bar%4===0){
       const strum=[];
       for(const k of [0,2,4,7,9,11,14]){
-        if(strum.length>=4)break;
+        if(strum.length>=3)break;
         const q=base-12+pitch(s.scale,d+k);
         if(q>=45&&q<=61)strum.push(q);
       }
-      strum.forEach((q,k)=>add(3,q,b+k*.07,2.6,32+energy*12-k*2,
-        (k/Math.max(1,strum.length-1)-.5)*.7));
+      const at=[0,.035,.062],vel=[42,34,28],pan=[-.35,0,.35];
+      strum.forEach((q,k)=>add(3,q,b+at[k],.4,vel[k]*(.7+energy*.5),pan[k]));
     }
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
     const kind=c.drum==='none'?'light':c.drum;
