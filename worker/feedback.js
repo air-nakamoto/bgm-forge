@@ -10,7 +10,7 @@
  * 置き方
  *   1. wrangler deploy
  *   2. npx wrangler secret put DISCORD_WEBHOOK   ← Discord の Webhook URL を貼る
- *   3. 出てきた Worker のURLを bgm_forge_v2.html の
+ *   3. 出てきた Worker のURLを bgm_forge.html の
  *      <meta name="feedback-endpoint" content="..."> に書く（秘密ではない）
  *   4. ALLOWED_ORIGINS を公開先に合わせる（環境変数。カンマ区切り）
  */

@@ -67,7 +67,7 @@ console.log(score.events(s).length);
 |---|---|
 | `bgm-score.js` | 作曲の中核。純粋関数のみ。**音を出す処理を入れない** |
 | `bgm-forge.js` | 音声合成・再生・保存・UI配線 |
-| `bgm_forge_v2.html` | 画面とCSS。UI要素のidはここが正 |
+| `bgm_forge.html` | 画面とCSS。UI要素のidはここが正 |
 | `bgm_forge_standalone.html` | **生成物。直接編集しない** |
 | `samples/` `vendor/` | 音源とMP3エンコーダ。ライセンス表記を消さない |
 
@@ -77,7 +77,7 @@ console.log(score.events(s).length);
 
 ## 3. 変更のたびに必ず
 
-1. `bgm_forge_v2.html` の `<script src="...?v=YYYYMMDD-名前-ハッシュ">` の**版を上げる**
+1. `bgm_forge.html` の `<script src="...?v=YYYYMMDD-名前-ハッシュ">` の**版を上げる**
    （上げないとブラウザが古いJSを使い続け、修正が反映されません）
    末尾の8桁は、そのファイルのsha256の先頭8桁です。手で計算する必要はありません。
    合っていなければ `node tests/scene-variation.cjs` が落ち、**貼るべき文字列をそのまま表示します**。
@@ -182,7 +182,7 @@ console.log(score.events(s).length);
   この塊が動いている」は成り立たない（2026-09-20 に神楽鈴で踏んだ）。
 - **音源を足したら、画面のクレジットに載せたか確かめる。** 笛を実録音に差し替えた日に、
   「使用素材・ライセンス」への追記を忘れていた。同梱音源がCC0であることが生成物をCC0と
-  言い切れる根拠（§6）なので、載っていないのは表示の穴。`bgm_forge_v2.html` の
+  言い切れる根拠（§6）なので、載っていないのは表示の穴。`bgm_forge.html` の
   `details.material-credits` と `scripts/build_standalone.py` の `bundled_credits()` の両方。
 - **クレジット行の行頭の文言を書き換えない。** `build_standalone.py` が `NOTE_SOURCE` /
   `NOTE_LAME` / `NOTE_GROOVE` の正規表現で行を探して差し替えている。リンクなどは行の末尾に
@@ -196,7 +196,7 @@ console.log(score.events(s).length);
   印を増やしたら、同スクリプトの想定個数（いまは6）も直すこと。忘れるとビルドが落ちて気づけます。
 - **送信の配線を `bgm-forge.js` に書かない。** `bgm-forge.js` は単体版へ1バイトも違わず埋め込まれる
   決まりなので、あちらに書くと単体版に死んだコードが残ります。フォーム関連のJSは
-  `bgm_forge_v2.html` の印の中に直接置いてあります（このファイルで唯一のインラインscript）。
+  `bgm_forge.html` の印の中に直接置いてあります（このファイルで唯一のインラインscript）。
 - **Webhook URL などの秘密をリポジトリにもチャットにも書かない。** 置き場は Cloudflare Worker の
   シークレット（`npx wrangler secret put DISCORD_WEBHOOK`）だけ。ページが持つのは Worker のURLで、
   これは公開してよいもの。`<meta name="feedback-endpoint">` が空なら機能ごと画面に出ません。

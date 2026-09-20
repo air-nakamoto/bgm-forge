@@ -11,7 +11,7 @@
 GitHub Pages で公開しています。旧作業フォルダ `inside-rooms` は凍結扱いです。
 
 - 作業フォルダ: `~/Documents/Codex/2026-09-17/documents-plugin-documents-openai-primary-runtime/work/bgm-forge`
-- 公開: https://air-nakamoto.github.io/bgm-forge/bgm_forge_v2.html
+- 公開: https://air-nakamoto.github.io/bgm-forge/bgm_forge.html
 - 公開手順: リポジトリ直下の `公開する.command` をダブルクリック
 
 ---
@@ -38,7 +38,7 @@ GitHub Pages で公開しています。旧作業フォルダ `inside-rooms` は
 - **画面まわり**：一番下に「ページの一番上に戻る」、クレジットに出典リンク（笛が丸ごと抜けていた）、
   権利の2行を折りたたみの外へ、決断の説明に「シリアス」、神楽の説明から「儀式」を外した。
 - **「意見を送る」を足した**（2026-09-20 最後の作業）。Cloudflare Worker 経由でDiscordへ。
-  **Workerの公開とページへのURL設定は完了**。DiscordのWebhook登録とページの公開が残っている（手順は §6.0）。
+  **Workerの公開とページへのURL設定は完了**。DiscordのWebhook登録も完了。ページの公開と実送信確認が残っている（手順は §6.0）。
   **単体起動版には入らない**（ビルドが丸ごと落とし、痕跡ゼロをアサート）。
 - 検証は **816ケースPASS**。単体版と分割ソースの一致、`?v=` のハッシュ照合、音源の実測音高、
   旋律の跳躍の上限、場面ごとの伴奏の相異、単体版に送信機能が無いことをテストが見ている。
@@ -55,7 +55,7 @@ TRPG（ココフォリア）のセッション中に流す用途が主目的で�
 | ファイル | 使う場面 | 実体 |
 |---|---|---|
 | `bgm_forge_standalone.html` | 人に渡す・別のPCで開く | 音源もMP3エンコーダーも埋め込んだ1ファイル（20.8MB）。これ単体で全機能が動く |
-| `bgm_forge_v2.html` | **開発するとき** | HTML＋JS＋`samples/`＋`vendor/` の分割構成。同じフォルダごと開く |
+| `bgm_forge.html` | **開発するとき** | HTML＋JS＋`samples/`＋`vendor/` の分割構成。同じフォルダごと開く |
 
 **編集は必ず分割ソース側に入れ、`python3 scripts/build_standalone.py` で単体版を作り直すこと。**
 単体版を直接編集すると分割ソースと中身がずれる（実際に2026-09-16までずれていた。§3 第4次）。
@@ -63,12 +63,12 @@ TRPG（ココフォリア）のセッション中に流す用途が主目的で�
 - 検証: `node tests/scene-variation.cjs`（816ケース。PASSを維持すること）
 - 旧フォルダにあった score / playback / adjust / browser / loop / seam の各テストは**リポジトリへ移していません**。
   必要になったら `inside-rooms/tests/` から持ってくること（§5）。
-- 見た目の確認: ヘッドレスChromiumで `bgm_forge_v2.html` を開いてスクリーンショットを撮る方法が有効だった（§4）
+- 見た目の確認: ヘッドレスChromiumで `bgm_forge.html` を開いてスクリーンショットを撮る方法が有効だった（§4）
 
 **画面の流れ**: 場面を選ぶ → 新しい曲を作る → 聴く → （調整して作り直す）→ 保存。
 いま操作できる場所の枠が光る（複数同時に光る）。音色・テンポ・メロディ・打楽器は、変えると2小節だけ自動で試聴が鳴る。
 
-**編集時の注意**: `bgm_forge_v2.html` の `<script src="...?v=YYYYMMDD-名前-ハッシュ">` の版を、JSを変えるたびに上げること。
+**編集時の注意**: `bgm_forge.html` の `<script src="...?v=YYYYMMDD-名前-ハッシュ">` の版を、JSを変えるたびに上げること。
 末尾8桁はそのファイルのsha256の先頭8桁で、**手で計算する必要はない**。合っていなければテストが落ち、
 貼るべき文字列をそのまま表示する。
 `python3 -m http.server` はキャッシュ制御を返さないため、上げないとブラウザが古いJSを使い続け、修正が反映されない。
@@ -80,7 +80,7 @@ TRPG（ココフォリア）のセッション中に流す用途が主目的で�
 
 | ファイル | 役割 | 触る頻度 |
 |---|---|---|
-| `bgm_forge_v2.html` | 画面とCSS。UI要素のidはここが正 | 高 |
+| `bgm_forge.html` | 画面とCSS。UI要素のidはここが正 | 高 |
 | `bgm_forge_standalone.html` | 単体起動版。**生成物なので直接編集しない** | ビルド時のみ |
 | `favicon.svg` | タブ用アイコン。単体版へビルド時に埋め込み | 低 |
 | `ogp.svg` / `ogp.png` | 共有画像の編集元 / 公開用PNG | 低 |
@@ -100,7 +100,7 @@ TRPG（ココフォリア）のセッション中に流す用途が主目的で�
 | `HANDOVER.md` | この文書 | 中 |
 
 配布は `bgm_forge_standalone.html` を1つ渡すだけでよい。分割構成のまま配るなら
-`bgm_forge_v2.html` / `bgm-forge.js` / `bgm-score.js` / `favicon.svg` / `samples/vsco2/` / `vendor/lamejs/` を同じ相対配置でコピーする。
+`bgm_forge.html` / `bgm-forge.js` / `bgm-score.js` / `favicon.svg` / `samples/vsco2/` / `vendor/lamejs/` を同じ相対配置でコピーする。
 
 ---
 
@@ -226,6 +226,17 @@ const INNER_GAP=4, INNER_SPAN=11, PAD_LOW=55, PAD_HIGH=79;
 
 ## 3. これまでの修正履歴（すべて計測つき）
 
+### 2026-09-20 · 公開URLからv2を外す
+
+正本を `bgm_forge.html` へ改名。旧 `bgm_forge_v2.html` は新URLへ自動転送する小さいページとし、
+クエリとハッシュを引き継ぐ。ページタイトルのV2、OG URL、公開コマンドの案内、ビルドとテストの参照も更新。
+この文書内の参照は現行ファイル名へ統一した。ライセンス条件は変更せず対象ファイル名のみ更新。
+ヘッドレスChromeで820px／390pxの2幅とも旧URLから転送、クエリ・ハッシュ保持、横はみ出し0を確認し画像を目視。
+旧URLの転送先を回帰アサートに固定。単体版再生成後816ケースPASS。
+Workerへ空JSONを送った応答は503 not-configuredから400 emptyへ変化し、Webhook登録済みを確認。
+Discordへの実投稿はしていない。未追跡の `favicon.png` は今回の変更に含めない。
+
+
 ### 2026-09-20 · 意見の送信先を公開済みWorkerへ設定
 
 利用者が公開した `https://bgm-forge-feedback.suihei.workers.dev` を分割版のmetaへ設定。
@@ -247,7 +258,7 @@ Webhookは未登録。次は利用者が `npx wrangler secret put DISCORD_WEBHOO
 
 | 置き場 | 持つもの |
 |---|---|
-| `bgm_forge_v2.html` の `<meta name="feedback-endpoint">` | Worker のURL（公開してよい） |
+| `bgm_forge.html` の `<meta name="feedback-endpoint">` | Worker のURL（公開してよい） |
 | Worker の環境変数 `DISCORD_WEBHOOK` | Webhook URL（リポジトリにもチャットにも出さない） |
 | Worker の変数 `ALLOWED_ORIGINS` | 受け付ける出どころ。既定は GitHub Pages のドメインのみ |
 
@@ -1162,7 +1173,7 @@ const RECORDED={
 | 民族 | シタール | 40秒 | 0.807 | 0.0007 | 0（内声で使用） |
 
 **テストを1か所直した。** 単体版に埋め込む `<script>` の本数をテストに書き写していたため、
-音源を足すたびに古くなっていた。`bgm_forge_v2.html` の `<script src>` から読む形にした。
+音源を足すたびに古くなっていた。`bgm_forge.html` の `<script src>` から読む形にした。
 以後、音源を足しても本数を書き換える必要はない。
 
 **単体版は 18.0MB → 20.4MB**（箏1.07MB＋合唱0.58MB）。
@@ -1908,7 +1919,7 @@ G-6の原因は2つ重なっていた。幻想は60拍・30秒指定だと**4小
   書き換えて** `new Function()` で評価すると、UIを初期化せずにAPIだけ生える。定数を変えた版を何通りも
   その場でレンダリングして比較できる（幻想のループは4案を比べて決めた）。レンダリングは1曲で数十秒かかるので、
   結果を `window` に溜める非同期処理にして、あとから取り出すこと。
-- **見た目はスクリーンショットで確認する** — ヘッドレスChromiumで `bgm_forge_v2.html` を開き、テイク行などを
+- **見た目はスクリーンショットで確認する** — ヘッドレスChromiumで `bgm_forge.html` を開き、テイク行などを
   JSで流し込んでから撮る。820pxと390pxの2幅で見ると、折り返しの事故に気づける。
 
 「たぶん良くなった」で終わらせないこと。実際、内声を絶対音域で固定したら80–250Hz帯がかえって増えた（41.8%→51.7%）ことが計測で分かって方針を変えた、という失敗もしている。
@@ -2040,7 +2051,7 @@ for(const m of api.MOODS){ const s=S.compose({mood:m,scale:api.MODES[m.mode],bpm
 
 **アイアールさんの手が要ること：「意見を送る」を動かす**
 
-Workerの公開と送信先URLの設定は完了（2026-09-20）。Webhook登録とページ公開が残っている。以下は初回設定手順。
+Workerの公開と送信先URLの設定は完了（2026-09-20）。Webhook登録も完了。ページ公開と実送信確認が残っている。以下は初回設定手順。
 
 1. Worker を置く（リポジトリ直下で）
 
@@ -2054,7 +2065,7 @@ Workerの公開と送信先URLの設定は完了（2026-09-20）。Webhook登録
    入れる先は上の `secret put` が聞いてくるところだけです。
 
 2. `deploy` が表示するURL（`https://bgm-forge-feedback.<アカウント>.workers.dev`）を、
-   `bgm_forge_v2.html` の `<meta name="feedback-endpoint" content="">` に入れる。
+   `bgm_forge.html` の `<meta name="feedback-endpoint" content="">` に入れる。
    入れたら `python3 scripts/build_standalone.py` → `node tests/scene-variation.cjs`。
 
 3. 公開（`公開する.command`）。ページを開いて、ヘッダに「✉ 意見を送る」が出れば通っている。
@@ -2127,8 +2138,8 @@ Worker は今回のフォーム専用で、ページの配信は GitHub Pages �
 3. `node tests/scene-variation.cjs` がPASSすることを確認してから着手。
    **落ちたら、まず原因を報告してもらう**（たいていは単体版の作り直し忘れか `?v=` のずれで、
    落ちたメッセージが直し方をそのまま書いている）
-4. **直すのは分割ソース**（`bgm-score.js` / `bgm-forge.js` / `bgm_forge_v2.html`）。単体版は触らない
-5. 変更したら `bgm_forge_v2.html` の `<script src="...?v=YYYYMMDD-名前-ハッシュ">` の版を上げる。
+4. **直すのは分割ソース**（`bgm-score.js` / `bgm-forge.js` / `bgm_forge.html`）。単体版は触らない
+5. 変更したら `bgm_forge.html` の `<script src="...?v=YYYYMMDD-名前-ハッシュ">` の版を上げる。
    ハッシュは手で計算しない。テストが落ちて貼るべき文字列を表示する
 6. `python3 scripts/build_standalone.py` で単体版を作り直す
 7. テストを回す。画面を変えたらヘッドレスChromiumでスクリーンショットを撮って目で見る（§4）。

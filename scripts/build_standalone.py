@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bgm_forge_v2.html と分割ソースから bgm_forge_standalone.html を作る。
+"""bgm_forge.html と分割ソースから bgm_forge_standalone.html を作る。
 
 使い方:  python3 scripts/build_standalone.py      （フォルダ直下で実行）
 
@@ -20,7 +20,7 @@ import sys
 import tarfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SRC = os.path.join(ROOT, "bgm_forge_v2.html")
+SRC = os.path.join(ROOT, "bgm_forge.html")
 OUT = os.path.join(ROOT, "bgm_forge_standalone.html")
 SCRIPTS = [
     ("vendor/lamejs/lame.min.js", ' id="lamejs-1-2-1"'),
@@ -103,13 +103,13 @@ def bundled_credits():
 
 
 def main():
-    doc = read("bgm_forge_v2.html")
+    doc = read("bgm_forge.html")
     # MIT本文だけをコメントに同梱。後続のMarkdown区切り（---）は含めない。
     mit = read("LICENSE").split("\n---", 1)[0].strip()
     assert mit.startswith("MIT License") and "--" not in mit, "MIT本文をHTMLコメントにできない"
     doc = doc.replace("<head>", "<head>\n<!--\nBGM Forge\n" + mit + "\n-->", 1)
-    doc, n = re.subn(r"<title>BGM Forge V2</title>",
-                     "<title>BGM Forge V2 — 単体起動版</title>", doc, count=1)
+    doc, n = re.subn(r"<title>BGM Forge</title>",
+                     "<title>BGM Forge — 単体起動版</title>", doc, count=1)
     assert n == 1, "<title> が見つからない"
     icon = base64.b64encode(read("favicon.svg", "rb")).decode("ascii")
     doc, n = re.subn(r'href="favicon\.svg[^"\s]*"',

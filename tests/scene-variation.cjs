@@ -9,7 +9,7 @@ const standalone=fs.readFileSync(path.join(root,'bgm_forge_standalone.html'),'ut
 assert(standalone.includes('<!--\nBGM Forge\n'+mit+'\n-->'),'standalone must retain the complete MIT notice in a comment');
 // 単体版を1ファイルで渡しても、同じファビコンが残ること。
 const icon=fs.readFileSync(path.join(root,'favicon.svg'));
-assert.match(fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8'), /rel="icon"[^>]+href="favicon\.svg\?v=/);
+assert.match(fs.readFileSync(path.join(root,'bgm_forge.html'),'utf8'), /rel="icon"[^>]+href="favicon\.svg\?v=/);
 const bundledIcon=fs.readFileSync(path.join(root,'bgm_forge_standalone.html'),'utf8').match(/rel="icon"[^>]+href="data:image\/svg\+xml;base64,([^"]+)"/);
 assert(bundledIcon,'standalone favicon must be embedded');
 assert.deepEqual(Buffer.from(bundledIcon[1],'base64'),icon);
@@ -18,17 +18,21 @@ const ogp=fs.readFileSync(path.join(root,'ogp.png'));
 assert.equal(ogp.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
 assert.equal(ogp.readUInt32BE(16),1200);
 assert.equal(ogp.readUInt32BE(20),630);
-for(const file of ['bgm_forge_v2.html','bgm_forge_standalone.html']){
+for(const file of ['bgm_forge.html','bgm_forge_standalone.html']){
  const html=fs.readFileSync(path.join(root,file),'utf8');
  assert.match(html, /property="og:image" content="https:\/\/air-nakamoto\.github\.io\/bgm-forge\/ogp\.png"/);
  assert.match(html, /name="twitter:card" content="summary_large_image"/);
 }
 // 単体版は分割ソースの生成物であって別系統ではない。埋め込まれた4本が原本と1文字でも違えば、
 // python3 scripts/build_standalone.py を忘れたということ。2026-09-16 の乖離はここを見ていなかった。
-// 読み込む順と本数は bgm_forge_v2.html が正。ここに書き写すと音源を足すたびに古くなる。
-const v2html=fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8');
+// 読み込む順と本数は bgm_forge.html が正。ここに書き写すと音源を足すたびに古くなる。
+const v2html=fs.readFileSync(path.join(root,'bgm_forge.html'),'utf8');
+const oldPage=fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8');
+assert.match(oldPage,/http-equiv="refresh" content="0;url=bgm_forge\.html"/);
+assert(oldPage.includes("location.replace('bgm_forge.html'+location.search+location.hash)"));
+assert(v2html.includes('https://air-nakamoto.github.io/bgm-forge/bgm_forge.html'));
 const EMBEDDED=Array.from(v2html.matchAll(/<script src="([^"?]+)\?v=[^"]*"><\/script>/g),m=>m[1]);
-assert(EMBEDDED.length>=5,'bgm_forge_v2.html の <script src> が読めていない');
+assert(EMBEDDED.length>=5,'bgm_forge.html の <script src> が読めていない');
 const embedded=Array.from(standalone.matchAll(/<script[^>]*>\n([\s\S]*?)\n<\/script>/g),m=>m[1]);
 assert.equal(embedded.length,EMBEDDED.length,'単体版の <script> は '+EMBEDDED.length+' 本のはず');
 EMBEDDED.forEach((rel,i)=>{
@@ -43,7 +47,7 @@ for(const rel of EMBEDDED){
  const tag=v2html.match(new RegExp('<script src="'+rel.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+'\\?v=([^"]+)"'));
  assert(tag,rel+' の <script src> に ?v= が付いていない');
  assert(tag[1].endsWith('-'+digest),
-  rel+' の ?v= が中身と合っていない。bgm_forge_v2.html を ?v='
+  rel+' の ?v= が中身と合っていない。bgm_forge.html を ?v='
   +tag[1].replace(/-[0-9a-f]{8}$/,'')+'-'+digest+' に直すこと');
 }
 // 「意見を送る」は分割版だけの機能。単体版はオフラインで配るものなので、外へ出る通信を残さない。

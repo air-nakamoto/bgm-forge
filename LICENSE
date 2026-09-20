@@ -23,7 +23,7 @@ SOFTWARE.
 ---
 
 このMITライセンスは、BGM Forge のソースコード（bgm-forge.js / bgm-score.js /
-bgm_forge_v2.html / scripts / tests）に対するものです。
+bgm_forge.html / scripts / tests）に対するものです。
 
 同梱物は、それぞれ元のライセンスに従います。
 - samples/vsco2/  VSCO 2 Community Edition · CC0 1.0（samples/vsco2/LICENSE）

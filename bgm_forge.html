@@ -1,0 +1,691 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BGM Forge</title>
+<meta name="description" content="場面に合ったBGMを、ブラウザでつくれる。TRPG向けループBGM自動作曲ツール。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="BGM FORGE / THEME &amp; SCENE EDITION">
+<meta property="og:description" content="場面に合ったBGMを、ブラウザでつくれる。TRPG向けループBGM自動作曲ツール。">
+<meta property="og:url" content="https://air-nakamoto.github.io/bgm-forge/bgm_forge.html">
+<meta property="og:image" content="https://air-nakamoto.github.io/bgm-forge/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="BGM FORGE / THEME &amp; SCENE EDITION。場面に合ったBGMを、ブラウザで自動作曲。つくった曲は無料でダウンロードできる。">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg?v=20260919-favicon">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#000205;--ink:#e8eef4;--dim:#9db0c0;--faint:#7a8b9c;
+  --cyan:#71c4d5;--cyan-lit:#a6e6f4;--gold:#e4ad65;--bad:#e37b71;--edit:#e0705f;--edit-lit:#ff9c8a;
+  --line:rgba(122,190,208,.13);--line-lit:rgba(226,244,250,.42);
+  --sans:system-ui,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  --mincho:"Hiragino Mincho ProN","Yu Mincho",YuMincho,"Noto Serif JP",serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font:14.5px/1.6 var(--sans);position:relative;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    repeating-linear-gradient(to right,rgba(113,196,213,.030) 0 1px,transparent 1px 88px),
+    repeating-linear-gradient(to bottom,rgba(113,196,213,.030) 0 1px,transparent 1px 88px),
+    repeating-linear-gradient(to bottom,rgba(180,220,235,.020) 0 1px,transparent 1px 3px),
+    radial-gradient(120% 80% at 50% -10%,rgba(30,60,76,.34) 0,transparent 62%),
+    radial-gradient(100% 70% at 50% 120%,rgba(0,0,0,.85) 0,transparent 60%)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.035;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+main{position:relative;z-index:1;width:min(1080px,calc(100% - 28px));margin:0 auto;padding:32px 0 60px}
+
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.version{font:11px var(--mono);color:var(--cyan);letter-spacing:.34em;text-transform:uppercase;opacity:.72}
+.version::before{content:"▚ "}
+h1{margin:8px 0 0;font:200 clamp(26px,4.6vw,42px)/1 var(--mono);letter-spacing:.17em;color:#f2f8fc}
+h1 span{color:var(--gold);font-weight:300}
+.title-lockup{display:flex;align-items:center;gap:12px;margin-top:8px}
+.title-lockup h1{margin:0}
+.title-mark{width:20px;height:32px;flex:none;fill:var(--cyan);opacity:.8;animation:mark-drift 6s ease-in-out infinite}
+@keyframes mark-drift{0%,100%{transform:translateY(0);opacity:.72}50%{transform:translateY(-2px);opacity:1}}
+.mark-upper{animation:mark-swap-upper 16s ease-in-out infinite}
+.mark-lower{animation:mark-swap-lower 16s ease-in-out infinite}
+@keyframes mark-swap-upper{0%,35%,85%,100%{transform:translate(0,0)}45%,75%{transform:translate(10px,16px)}}
+@keyframes mark-swap-lower{0%,35%,85%,100%{transform:translate(0,0)}45%,75%{transform:translate(-10px,-16px)}}
+.lead{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header p{color:var(--dim);margin:0;font:300 14px/1.7 var(--mincho);letter-spacing:.05em}
+.helpbtn{border:1px solid var(--line);background:rgba(160,205,225,.028);color:var(--cyan-lit);border-radius:2px;
+  padding:6px 14px;cursor:pointer;font:11.5px var(--mono);letter-spacing:.14em;white-space:nowrap;
+  transition:border-color .25s,box-shadow .25s,background .25s}
+.helpbtn:hover:not(:disabled){border-color:rgba(113,196,213,.6);background:rgba(113,196,213,.1);box-shadow:0 0 18px -6px rgba(166,230,244,.7)}
+
+.panel{position:relative;background:linear-gradient(180deg,rgba(140,190,215,.022),rgba(140,190,215,.006));
+  border:1px solid var(--line);border-radius:2px;padding:16px 18px;margin-top:10px;transition:border-color .35s,box-shadow .35s}
+.panel:hover{border-color:rgba(180,222,236,.26);box-shadow:0 0 26px -14px rgba(166,230,244,.5)}
+.panel::before,.panel::after{content:"";position:absolute;width:9px;height:9px;pointer-events:none;opacity:.5}
+.panel::before{top:-1px;left:-1px;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan)}
+.panel::after{bottom:-1px;right:-1px;border-bottom:1px solid var(--cyan);border-right:1px solid var(--cyan)}
+.panel h2{margin:0 0 12px;font:300 14px/1 var(--mincho);letter-spacing:.16em;color:#dce7ef;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel h2 i{font:400 10px var(--mono);letter-spacing:.2em;color:var(--cyan);font-style:normal;opacity:.85}
+
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px 24px}
+.field h3{margin:0 0 7px;font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);text-transform:uppercase}
+.choices{display:flex;flex-wrap:wrap;gap:5px}
+.mood-layout{display:grid;grid-template-columns:minmax(236px,306px) minmax(0,1fr);gap:14px;align-items:start}
+.choices.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:5px}
+.choices.grid .choice{text-align:center;padding:8px 6px}
+.brief{border:1px solid var(--line);border-radius:2px;background:rgba(0,8,14,.55);padding:12px 13px}
+.brief h4{margin:0;font:500 15px var(--sans);letter-spacing:.04em;color:#f1f7fb}
+.brief p{margin:7px 0 0;font:12.5px/1.9 var(--sans);color:#bacada;letter-spacing:.01em}
+.brief dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:11px 0 0;padding-top:10px;
+  border-top:1px solid var(--line);font:12px/1.7 var(--sans);letter-spacing:0}
+.brief dl .grp{grid-column:1/-1;font:10px var(--mono);letter-spacing:.18em;color:var(--cyan);opacity:.8;margin-bottom:3px}
+.brief dl .grp.next{margin-top:9px;padding-top:8px;border-top:1px solid var(--line)}
+.brief dt{color:#8fa1b2;white-space:nowrap}
+.brief dd{margin:0;color:#e0ebf3}
+.choice,.transport button,.take button,#cancel{
+  border:1px solid var(--line);background:rgba(160,205,225,.028);color:var(--ink);border-radius:2px;
+  padding:7px 11px;cursor:pointer;font:12.5px/1.35 var(--sans);letter-spacing:.03em;
+  transition:border-color .25s,box-shadow .25s,background .25s,color .25s}
+.choice:hover:not(:disabled),.transport button:hover:not(:disabled),.take button:hover:not(:disabled),#cancel:hover:not(:disabled){
+  border-color:var(--line-lit);box-shadow:0 0 18px -6px rgba(226,244,250,.55);background:rgba(190,225,240,.06)}
+.choice[aria-pressed="true"]{border-color:rgba(228,173,101,.62);background:rgba(228,173,101,.09);color:#ffdcaa;
+  box-shadow:inset 0 0 22px -12px rgba(255,204,138,.9)}
+.choice small{display:block;color:var(--faint);font:10px var(--mono);letter-spacing:.06em;margin-top:2px}
+.choice[aria-pressed="true"] small{color:rgba(255,220,170,.6)}
+button:disabled{opacity:.3;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:1px solid var(--cyan-lit);outline-offset:2px}
+
+.checks{display:flex;flex-wrap:wrap;gap:8px}
+.check{display:flex;align-items:flex-start;gap:9px;border:1px solid var(--line);border-radius:2px;padding:8px 12px;
+  cursor:pointer;background:rgba(160,205,225,.028);transition:border-color .25s,background .25s}
+.check:hover{border-color:var(--line-lit);background:rgba(190,225,240,.06)}
+.check input{appearance:none;width:13px;height:13px;margin:3px 0 0;border:1px solid rgba(122,190,208,.5);
+  border-radius:1px;background:transparent;flex:none;position:relative;cursor:pointer}
+.check input:checked{border-color:var(--cyan);background:rgba(113,196,213,.2);box-shadow:0 0 10px -2px rgba(113,196,213,.9)}
+.check input:checked::after{content:"";position:absolute;inset:2px;background:var(--cyan);border-radius:1px}
+.check b{font:400 12.5px var(--sans);color:var(--ink)}
+.check small{display:block;color:var(--faint);font:10px var(--mono);letter-spacing:.06em;margin-top:2px}
+
+.build{display:grid;grid-template-columns:auto minmax(260px,1fr);gap:16px 22px;align-items:center}
+.buildbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.summary{border:1px solid var(--line);border-left:2px solid rgba(113,196,213,.55);border-radius:2px;
+  background:rgba(0,8,14,.5);padding:11px 14px}
+.summary h5{margin:0 0 7px;font:10px var(--mono);letter-spacing:.2em;color:var(--cyan);opacity:.85;text-transform:uppercase}
+.summary dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0;font:12px/1.7 var(--sans)}
+.summary dt{color:#8fa1b2;white-space:nowrap}
+.summary dd{margin:0;color:#e0ebf3}
+.primary{border:1px solid rgba(228,173,101,.55);background:linear-gradient(180deg,rgba(228,173,101,.16),rgba(228,173,101,.06));
+  color:#ffd9a4;border-radius:2px;padding:13px 30px;font:500 15px var(--sans);letter-spacing:.14em;cursor:pointer;
+  transition:box-shadow .3s,border-color .3s,background .3s;flex:none}
+.primary:hover:not(:disabled){border-color:rgba(255,214,150,.9);background:rgba(228,173,101,.22);box-shadow:0 0 30px -8px rgba(255,196,120,.8)}
+.status{font:12px var(--mono);letter-spacing:.06em;color:var(--dim);margin-top:9px}
+.status::before{content:"> ";color:var(--faint)}
+.status.busy{color:var(--cyan-lit)}
+.status.error{color:var(--bad)}
+
+.transport{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.transport button.play{border-color:rgba(113,196,213,.5);background:rgba(113,196,213,.1);color:var(--cyan-lit);
+  font-weight:500;font-size:15px;letter-spacing:.14em;padding:13px 30px;box-shadow:inset 0 0 24px -14px rgba(166,230,244,.9)}
+#generate,#play{width:184px;flex:none}
+.transport button.play:hover:not(:disabled){box-shadow:0 0 28px -8px rgba(166,230,244,.75)}
+.material-credits{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);color:var(--dim);font-size:12px}
+.material-credits>summary{cursor:pointer;color:var(--cyan);padding:8px 0}
+.saves{margin-top:10px}
+.saves::before{content:"SAVE";font:400 10px var(--mono);letter-spacing:.22em;color:var(--faint);margin-right:4px}
+/* 保存はこの画面の目的地なので、作る・聴くと同じ重さで出す。 */
+.saves button{border:1px solid rgba(228,173,101,.55);color:#ffd9a4;font-weight:500;font-size:14px;letter-spacing:.1em;
+  padding:12px 22px;background:linear-gradient(180deg,rgba(228,173,101,.16),rgba(228,173,101,.06));
+  box-shadow:inset 0 0 26px -16px rgba(255,214,150,.9)}
+.saves button:hover:not(:disabled){border-color:rgba(255,214,150,.9);background:rgba(228,173,101,.22);
+  box-shadow:0 0 30px -8px rgba(255,196,120,.8)}
+.acts{display:grid;grid-template-columns:repeat(auto-fit,minmax(176px,1fr));gap:6px}
+.acts button{text-align:left;padding:9px 12px}
+.acts button small{display:block;color:var(--faint);font:10px/1.5 var(--mono);letter-spacing:.04em;margin-top:3px}
+.listen .transport{margin-bottom:10px}
+
+.meter{display:block;width:100%;height:86px;background:#000205;border:1px solid var(--line);border-radius:2px}
+.fingerprint{margin-top:10px;border:1px solid var(--line);border-radius:2px;background:rgba(0,8,14,.72);
+  font:11.5px/1.55 var(--mono);letter-spacing:.04em;overflow-wrap:anywhere}
+.fingerprint.empty{padding:12px;color:var(--faint)}
+.log-head{display:flex;align-items:center;gap:9px;padding:8px 12px;border-bottom:1px solid var(--line);
+  color:var(--cyan);font-size:10px;letter-spacing:.28em;text-transform:uppercase}
+.log-head .led{width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 9px 1px rgba(113,196,213,.95);flex:none}
+.log-head .rule{flex:1;height:1px;background:linear-gradient(to right,var(--line),transparent)}
+.log-body{display:grid;grid-template-columns:auto 1fr auto 1fr;gap:1px 14px;padding:10px 12px 11px;margin:0}
+.log-body dt{color:var(--faint);font-size:10px;letter-spacing:.18em;padding-top:1px}
+.log-body dd{margin:0;color:#cfdde8}
+.log-body dd em{font-style:normal;color:var(--cyan-lit)}
+.log-cursor{display:inline-block;width:6px;height:11px;background:var(--cyan);vertical-align:-1px;margin-left:5px;animation:blink 1.15s steps(2,end) infinite}
+@keyframes blink{50%{opacity:0}}
+
+.takes{display:grid;gap:5px}
+.take{display:grid;grid-template-columns:30px 1fr auto;gap:11px;align-items:center;border:1px solid var(--line);
+  border-radius:2px;padding:9px 12px;background:rgba(140,190,215,.018);transition:border-color .25s,box-shadow .25s;cursor:pointer}
+.take:hover{border-color:rgba(180,222,236,.3);box-shadow:0 0 20px -10px rgba(166,230,244,.6)}
+/* The whole row is the control — a small "選ぶ" target inside a wide row is a needless miss. */
+.take-state{font:11px var(--sans);letter-spacing:.06em;color:var(--dim);white-space:nowrap;
+  padding:3px 10px;border:1px solid var(--line);border-radius:2px}
+.take:hover .take-state{border-color:rgba(180,222,236,.35);color:var(--ink)}
+.take.active .take-state{border-color:var(--cyan);color:var(--cyan-lit);background:rgba(113,196,213,.1)}
+.take.active{border-color:rgba(113,196,213,.5);background:rgba(113,196,213,.05)}
+.take-play{width:30px;height:30px;padding:0;border:1px solid var(--line);border-radius:50%;background:rgba(113,196,213,.06);color:var(--cyan-lit);font:15px/1 var(--sans);cursor:pointer}
+.take-play:hover:not(:disabled){border-color:var(--cyan-lit);background:rgba(113,196,213,.16)}
+.take-play:disabled{opacity:.35}
+.take strong{font:400 12px var(--mono);letter-spacing:.06em;color:#dce7ef}
+.take p{margin:2px 0 0;color:var(--dim);font:10.5px var(--mono);letter-spacing:.05em}
+.take-meta{margin-left:10px;padding-left:10px;border-left:1px solid var(--line-lit);color:var(--faint)}
+.takenote{font:11px var(--sans);letter-spacing:0;color:var(--faint)}
+.nowplaying{padding:2px 10px;border:1px solid var(--line);border-radius:999px;
+  font:11px var(--mono);letter-spacing:.04em;color:var(--cyan-lit);background:rgba(113,196,213,.07)}
+.takecount{margin-left:10px;padding:1px 9px;border:1px solid var(--line);border-radius:999px;
+  font:10px var(--mono);letter-spacing:.1em;color:var(--dim);vertical-align:2px}
+
+.note{font:11px/1.75 var(--sans);color:var(--faint);margin:8px 0 0;letter-spacing:.01em}
+a{color:var(--cyan)}
+main>.note{margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+/* 権利の2行は続けて読ませる。2行目に区切り線を重ねない。 */
+main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
+/* 一番下から画面の頭へ。場面が24個あって縦に長いので、読み終わりから戻れるようにする。 */
+/* feedback:start */
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--cyan);text-decoration:underline;cursor:pointer}
+#feedbackText{width:100%;box-sizing:border-box;margin-top:8px;padding:10px;background:rgba(8,16,22,.6);
+  border:1px solid var(--line);border-radius:2px;color:var(--ink);font:12px/1.7 var(--sans);resize:vertical}
+#feedbackText:focus{outline:none;border-color:rgba(113,196,213,.6)}
+.feedback-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+.feedback-foot .note{margin:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* feedback:end */
+.backtop{margin:22px 0 4px;padding-top:14px;border-top:1px solid var(--line);text-align:center}
+.backtop a{font:11px/1.75 var(--sans);color:var(--faint);letter-spacing:.06em;text-decoration:none}
+.backtop a:hover,.backtop a:focus-visible{color:var(--cyan)}
+.overlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:24px;
+  background:rgba(0,2,5,.86);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.overlay[hidden]{display:none}
+.card{position:relative;width:min(460px,100%);border:1px solid rgba(122,190,208,.34);border-radius:2px;padding:20px;
+  background:linear-gradient(180deg,rgba(20,42,54,.96),rgba(0,8,14,.96));box-shadow:0 0 60px -12px rgba(113,196,213,.45)}
+.card::before,.card::after{content:"";position:absolute;width:11px;height:11px;pointer-events:none}
+.card::before{top:-1px;left:-1px;border-top:1px solid var(--cyan);border-left:1px solid var(--cyan)}
+.card::after{bottom:-1px;right:-1px;border-bottom:1px solid var(--cyan);border-right:1px solid var(--cyan)}
+.card-head{display:flex;align-items:center;gap:9px;font:400 10px var(--mono);letter-spacing:.28em;
+  text-transform:uppercase;color:var(--cyan);margin-bottom:14px}
+.card-head .led{width:6px;height:6px;border-radius:50%;background:var(--cyan);
+  box-shadow:0 0 10px 1px rgba(113,196,213,.95);flex:none;animation:pulse 1.1s ease-in-out infinite}
+.card-head .rule{flex:1;height:1px;background:linear-gradient(to right,var(--line),transparent)}
+.card-title{font:300 17px var(--mincho);letter-spacing:.1em;color:#eaf3f8}
+.card.help{width:min(680px,100%);max-height:82vh;display:flex;flex-direction:column}
+.helpclose{border:1px solid var(--line);background:rgba(160,205,225,.03);color:var(--ink);border-radius:2px;
+  padding:4px 12px;cursor:pointer;font:11px var(--mono);letter-spacing:.12em}
+.helpclose:hover{border-color:var(--line-lit);box-shadow:0 0 16px -6px rgba(226,244,250,.55)}
+.help-body{overflow:auto;padding-right:4px;margin-top:2px}
+.steps{margin:0 0 4px;padding:0;list-style:none}
+.step{display:grid;grid-template-columns:auto 1fr;gap:14px;padding:0 0 16px;position:relative}
+.step:last-child{padding-bottom:0}
+.step .no{width:26px;height:26px;border:1px solid rgba(113,196,213,.45);border-radius:2px;display:grid;place-items:center;
+  font:400 10px var(--mono);letter-spacing:.06em;color:var(--cyan);background:rgba(113,196,213,.08);position:relative;z-index:1}
+.step:not(:last-child)::before{content:"";position:absolute;left:13px;top:28px;bottom:2px;width:1px;
+  background:linear-gradient(to bottom,rgba(113,196,213,.4),rgba(113,196,213,.1))}
+.step b{display:block;font:500 16px/26px "Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif CJK JP",serif;letter-spacing:.05em;color:#e4ad65;margin:0 0 3px}
+.step span{display:block;font:12px/1.8 var(--sans);color:#bacada}
+.help-body details{border-top:1px solid var(--line)}
+.help-body details:last-child{border-bottom:1px solid var(--line)}
+.help-body summary{cursor:pointer;padding:11px 2px;font:400 12.5px var(--sans);color:#e0ebf3;letter-spacing:.03em;
+  list-style:none;display:flex;align-items:center;gap:9px}
+.help-body summary::-webkit-details-marker{display:none}
+.help-body summary::before{content:"▸";color:var(--cyan);font-size:10px;display:inline-block;transition:transform .2s}
+.help-body details[open] summary::before{transform:rotate(90deg)}
+.help-body details>*:not(summary){margin:0 0 13px;padding-left:19px}
+.help-body figure{margin:0 0 13px;padding-left:19px}
+.help-body figure svg{display:block;width:100%;max-width:340px;height:auto}
+.help-body figcaption{margin-top:7px;font:11.5px/1.8 var(--sans);color:#9db0c0}
+.help-body h4{margin:17px 0 8px;font:400 11px var(--mono);letter-spacing:.16em;color:var(--gold)}
+.help-body h4:first-child{margin-top:0}
+#detailBody>*{padding-left:0}
+#detailBody figure{padding-left:0}
+#detailBody .dim{color:#7d8d9d;font-size:11px}
+.help-foot{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font:11.5px/1.9 var(--sans);color:#9db0c0}
+.more{margin-left:auto;border:1px solid var(--line);background:rgba(160,205,225,.03);color:var(--cyan-lit);
+  border-radius:2px;padding:3px 11px;cursor:pointer;font:10.5px var(--mono);letter-spacing:.12em;
+  transition:border-color .25s,box-shadow .25s,background .25s}
+.more:hover:not(:disabled){border-color:rgba(113,196,213,.6);background:rgba(113,196,213,.1);box-shadow:0 0 16px -6px rgba(166,230,244,.7)}
+.help-body p{margin:0;font:12.5px/1.95 var(--sans);color:#bacada}
+.help-body dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font:12.5px/1.85 var(--sans)}
+.help-body dt{color:var(--cyan-lit);white-space:nowrap}
+.help-body dd{margin:0;color:#bacada}
+.card-meta{font:11px var(--mono);letter-spacing:.06em;color:var(--dim);margin-top:6px;min-height:1.4em}
+.bar{height:3px;background:rgba(122,190,208,.16);margin:16px 0 10px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(to right,rgba(113,196,213,.5),var(--cyan-lit));
+  box-shadow:0 0 14px 1px rgba(166,230,244,.8);transition:width .35s ease}
+.card-foot{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#overlayPct{font:400 12px var(--mono);letter-spacing:.14em;color:var(--cyan-lit)}
+#overlayCancel{border:1px solid var(--line);background:rgba(160,205,225,.028);color:var(--ink);border-radius:2px;
+  padding:7px 16px;cursor:pointer;font:12.5px var(--sans);letter-spacing:.04em}
+#overlayCancel:hover{border-color:var(--line-lit);box-shadow:0 0 18px -6px rgba(226,244,250,.55)}
+@keyframes pulse{50%{opacity:.28}}
+@media(prefers-reduced-motion:reduce){.card-head .led{animation:none}.bar i{transition:none}}
+@media(max-width:860px){.mood-layout{grid-template-columns:1fr}.brief{order:2}.build{grid-template-columns:1fr}}
+@media(max-width:640px){.log-body{grid-template-columns:auto 1fr}.primary{width:100%}#generate,#play{width:100%}#stepPlay.transport{padding-inline:0}}
+@media(prefers-reduced-motion:reduce){.log-cursor{animation:none}}
+.advanced{margin-top:12px;border:1px solid transparent;border-radius:3px;transition:border-color .25s,background .25s}
+/* 調整は寄り道なので、閉じているあいだは控えめに置く。 */
+.advanced summary{cursor:pointer;padding:11px 14px;border:1px solid var(--line);color:var(--dim);font-size:13px}
+.advanced summary:hover{color:var(--ink)}
+/* 開いているあいだは、この枠の中だけが「調整中」だと分かる色にする。 */
+.advanced[open]{border-color:var(--edit);background:rgba(224,112,95,.05);padding:0 10px 10px}
+.advanced{min-width:0;overflow:visible}
+.advanced[open] summary{color:var(--edit-lit);border-color:rgba(224,112,95,.5);background:rgba(224,112,95,.08);
+  font-size:14px;font-weight:500;margin:0 -10px}
+.editing{display:none;margin-left:10px;padding:1px 9px;border:1px solid var(--edit);border-radius:999px;
+  font:10px var(--sans);letter-spacing:.12em;color:var(--edit-lit)}
+.advanced[open] .editing{display:inline-block}
+.volume{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.volume input{width:min(240px,50vw);accent-color:var(--cyan)}
+:focus-visible{outline:2px solid var(--cyan-lit);outline-offset:4px}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* One shape for every option: a label, the control, an optional listen row, one short help line.
+   Two per line, so the panel stays between the player and the save buttons instead of pushing them away. */
+.option-rows{display:flex;flex-direction:column;gap:12px}
+.option-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px}
+.option-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.option-line{display:flex;align-items:center;gap:12px;min-height:32px;min-width:0}
+.option-line select{flex:1 1 0;min-width:0}
+.option-title{font:600 12.5px/1.5 var(--sans);color:var(--ink)}
+.option-help{font:11px/1.45 var(--sans);color:var(--dim);margin:0;display:block}
+.option-switches{display:flex;flex-wrap:wrap;align-items:center;gap:8px 18px;min-height:32px}
+.option-switches #editPhrasing{flex:0 1 150px;min-width:110px}
+#editFields select{width:100%;min-height:32px;padding:5px 10px;background:#101b23;color:var(--ink);border:1px solid var(--line-lit);border-radius:4px;font:13px var(--sans)}
+#editFields{min-width:0;max-width:100%;box-sizing:border-box}
+#editFields select{box-sizing:border-box}
+#editFields select:disabled{opacity:.45}
+/* Listen row: the button, how far the sample has run, and how long it lasts. */
+.preview{display:flex;align-items:center;gap:9px;min-height:24px}
+.try{flex:none;padding:7px 14px;border:1px solid rgba(113,196,213,.45);border-radius:2px;background:rgba(113,196,213,.1);
+  color:var(--cyan-lit);font:12px var(--sans);cursor:pointer;letter-spacing:.02em;white-space:nowrap}
+.try:hover:not(:disabled){border-color:var(--cyan);background:rgba(113,196,213,.14)}
+.try:disabled{opacity:.4;cursor:default}
+.preview.is-loading .try{color:var(--dim)}
+.seek{flex:1 1 auto;min-width:48px;height:8px;border:1px solid var(--line-lit);border-radius:999px;
+  background:#0d171e;position:relative;overflow:hidden;cursor:pointer}
+.seek>i{position:absolute;top:0;bottom:0;left:0;width:0;display:block;
+  background:linear-gradient(90deg,rgba(113,196,213,.45),var(--cyan-lit))}
+.preview.is-playing .seek{border-color:var(--cyan)}
+.seek-time{flex:none;font:10.5px var(--mono);color:var(--dim);min-width:74px;text-align:right;letter-spacing:.02em}
+/* The switches share the fields' label type, so both groups read as one set of options. */
+.option-switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font:600 12.5px/1.5 var(--sans);color:var(--ink);white-space:nowrap}
+.option-switch input{appearance:none;-webkit-appearance:none;flex:none;width:38px;height:21px;margin:0;border-radius:999px;
+  border:1px solid var(--line-lit);background:#101b23;position:relative;cursor:pointer;transition:background .15s,border-color .15s}
+.option-switch input::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;
+  background:var(--dim);transition:transform .15s,background .15s}
+.option-switch input:checked{background:rgba(113,196,213,.2);border-color:var(--cyan)}
+.option-switch input:checked::after{transform:translateX(17px);background:var(--cyan-lit)}
+.option-notes{margin:10px 0 0}
+@media(max-width:720px){.option-pair{grid-template-columns:1fr}}
+.edit-submit{margin-top:12px;padding:12px;border:1px solid rgba(224,112,95,.4);background:#160e0d}
+.edit-submit.has-changes{border-color:var(--edit);background:#1d100e;box-shadow:0 0 32px -14px rgba(255,140,120,.7)}
+/* 調整の仕上げはこのボタン。枠と同じ色にして、どこを押せば終わるのかを1目で示す。 */
+#applyEdits{border-color:rgba(224,112,95,.6);color:#ffc5b8;
+  background:linear-gradient(180deg,rgba(224,112,95,.18),rgba(224,112,95,.06))}
+#applyEdits:hover:not(:disabled){border-color:var(--edit-lit);background:rgba(224,112,95,.26);
+  box-shadow:0 0 30px -8px rgba(255,150,130,.8)}
+.is-now>.nowtag.edit-tag{border-color:var(--edit);color:var(--edit-lit)}
+.edit-submit-buttons{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+
+#applyEdits{min-height:42px;padding:10px 22px;font:600 14px var(--sans)}
+#resetEdits{min-height:42px;padding:10px 18px;background:transparent;color:var(--dim);border:1px solid var(--line);border-radius:2px;cursor:pointer;font:13px var(--sans)}
+#editPending{margin:0;flex:1 1 220px;min-width:0}
+#applyEdits:disabled,#resetEdits:disabled{opacity:.45;cursor:default}
+
+/* "You are here": one frame at a time, with a light running round its border. The panels already
+   use ::before/::after for their corner brackets, so the beam gets its own element. */
+@property --beam{syntax:"<angle>";initial-value:0deg;inherits:false}
+.nowbeam,.nowtag{display:none}
+.is-now{position:relative}
+.is-now>.nowbeam{
+  display:block;position:absolute;inset:-1px;border-radius:5px;padding:1px;pointer-events:none;z-index:3;
+  background:conic-gradient(from var(--beam,0deg),transparent 0 56%,rgba(113,196,213,.22) 66%,
+    var(--cyan-lit) 79%,rgba(113,196,213,.22) 90%,transparent 97%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;mask-composite:exclude;
+  animation:nowbeam 3.2s linear infinite}
+@keyframes nowbeam{to{--beam:360deg}}
+.is-now>.nowtag{
+  display:block;position:absolute;top:-9px;left:14px;z-index:4;pointer-events:none;
+  padding:1px 9px;border:1px solid var(--cyan);border-radius:999px;background:#08131a;
+  font:10px/1.7 var(--sans);letter-spacing:.12em;color:var(--cyan-lit);
+  animation:nowtag 3.2s ease-in-out infinite}
+@keyframes nowtag{50%{border-color:var(--cyan-lit);box-shadow:0 0 14px -3px rgba(140,226,244,.8)}}
+.is-now{box-shadow:0 0 34px -14px rgba(140,226,244,.7)}
+#stepPlay,#stepSave{padding:9px;border-radius:4px}
+#stepSave.is-now{padding-top:34px}
+#stepSave.is-now>.nowtag{max-width:calc(100% - 28px);box-sizing:border-box;border-radius:10px}
+/* More than one frame can be live at once: while a scene is being picked, 作る is already a valid
+   move, and after a listen, saving and adjusting are equally valid. The beams are offset in time so
+   two lit frames do not pulse as one block. */
+#stepBuild>.nowbeam,#stepAdjust>.nowbeam,#stepTakes>.nowbeam{animation-delay:-1.6s}
+#stepBuild>.nowtag,#stepAdjust>.nowtag,#stepTakes>.nowtag{animation-delay:-1.6s}
+/* The log sits with the take it describes, so it is indented under that row. */
+#takes>.fingerprint{margin:-2px 0 4px}
+#stepAdjust{position:relative}
+/* A sample you started can be stopped from the same button. */
+.try.is-stop{color:var(--gold);border-color:rgba(214,178,110,.6);background:rgba(214,178,110,.08)}
+.try.is-stop:hover:not(:disabled){border-color:var(--gold);background:rgba(214,178,110,.16)}
+/* Without the running light the frame still has to read as the live one. */
+@media(prefers-reduced-motion:reduce){
+  .is-now>.nowbeam{background:var(--cyan)}
+  .is-now{box-shadow:0 0 0 1px rgba(113,196,213,.3),0 0 30px -12px rgba(140,226,244,.7)}
+}
+
+#stepAdjust{display:flex;align-items:center;gap:12px}
+#stepAdjust::before{content:"▸";color:var(--cyan);font-size:11px}
+#adjustments[open]>#stepAdjust::before{content:"▾"}
+#stepAdjust::-webkit-details-marker{display:none}
+#stepAdjust>.more{display:none;flex:none;margin-left:auto}
+#adjustments[open]>#stepAdjust>.more{display:inline-block}
+</style>
+</head>
+<!-- feedback:start -->
+<!-- 「意見を送る」の送り先。Cloudflare Worker のURL（worker/feedback.js）。
+     秘密ではないのでここに書いてよい。Discord の Webhook は Worker の secret にある。
+     空にすると送信欄もボタンも出ない。単体起動版ではこの塊ごと削られる。 -->
+<meta name="feedback-endpoint" content="https://bgm-forge-feedback.suihei.workers.dev">
+<!-- feedback:end -->
+<body>
+<main id="top">
+  <header>
+    <div>
+      <div class="version">BGM FORGE / THEME &amp; SCENE EDITION</div>
+      <div class="title-lockup"><svg class="title-mark" viewBox="0 0 20 32" aria-hidden="true" focusable="false"><rect class="mark-upper" width="10" height="16"/><rect class="mark-lower" x="10" y="16" width="10" height="16"/></svg><h1>BGM <span>FORGE</span></h1></div>
+    </div>
+    <div class="lead">
+      <p>場面に合ったBGMを、ブラウザでつくれる。</p>
+      <button id="helpOpen" class="helpbtn" aria-haspopup="dialog">? 使い方</button>
+      <!-- feedback:start --><button class="helpbtn" data-feedback-open aria-haspopup="dialog" hidden>✉ 意見を送る</button><!-- feedback:end -->
+    </div>
+  </header>
+
+  <section class="panel" id="stepScene"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">まず ここ</span>
+    <h2><i>01</i>どんな場面で流しますか？</h2>
+    <p class="note">場面を選んで「新しい曲を作る」を押すだけ。まずは30秒以内の伴奏を作り、繰り返して使えます。</p>
+    <div class="mood-layout">
+      <aside class="brief" id="brief"></aside>
+      <div class="choices grid" id="moods"></div>
+    </div>
+  </section>
+
+  <section class="panel build" id="stepBuild"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">つぎに ここ</span>
+    <div class="buildcol">
+      <div class="buildbtns">
+        <button id="generate" class="primary">新しい曲を作る</button>
+        <button id="cancel" data-cancel disabled>中止</button>
+      </div>
+      <div id="status" class="status" role="status" aria-live="polite">準備完了</div>
+    </div>
+    <div class="summary"><h5>これから作る曲</h5><dl id="summary"></dl></div>
+  </section>
+
+  <section class="panel listen">
+    <h2><i>02</i>聴いて確かめる<span id="nowPlaying" class="nowplaying" role="status" hidden></span><button class="more" data-more="d-listen">詳細</button></h2>
+    <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" id="playGuide" aria-hidden="true">聴いてみる</span>
+      <button id="play" class="play" disabled>再生</button>
+      <button id="stop" disabled>停止</button>
+    </div>
+    <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output id="volumeValue" for="volume">50%</output></label>
+    <p class="note">試聴音量は保存するファイルに影響しません。会話をしながら、声が聞き取りやすい音量で確認してください。</p>
+    <canvas id="meter" class="meter" width="900" height="86"></canvas>
+    <div class="transport saves" id="stepSave"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">作成した曲を、ここからダウンロード（保存ボタンを押す）</span>
+      <button data-save="wav" disabled>WAVを保存</button>
+      <button data-save="mp3" disabled>MP3を保存（軽量）</button>
+      <button data-save="midi" disabled>MIDIを保存（編集用）</button>
+    </div>
+    <p class="note">気に入った曲は保存してください。ページを閉じると作った曲は消えます。</p>
+    <details class="advanced" id="adjustments">
+      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><button type="button" class="more" data-more="d-edit" aria-label="調整方法の詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">この曲を微調整したい場合は、ここ</span></summary>
+      <p class="note">ここで変えた設定は、下の「この設定で曲を作り直す」を押すまで曲に反映されません。押すと、同じテーマのまま新しい曲ができます。</p>
+      <fieldset id="editFields" disabled style="border:0;padding:0;margin:10px 0">
+      <div class="option-rows">
+        <div class="option-pair">
+          <div class="option-field"><label class="option-title" for="editSound">音色</label><select id="editSound"></select></div>
+          <div class="option-field"><label class="option-title" for="editPattern">伴奏の鳴らし方</label><select id="editPattern"></select><p class="note">おまかせは場面に合わせて選びます。選ぶと自動で試聴します。</p></div>
+          <div class="option-field"><label class="option-title" for="editTempo">テンポ</label><select id="editTempo"></select></div>
+        </div>
+        <div class="option-pair">
+          <div class="option-field"><label class="option-title" for="editLength">長さの目安</label><select id="editLength"></select></div>
+          <div class="option-field"><label class="option-title" for="editLevel">曲の音量</label><select id="editLevel"><option value="1">標準（100%）</option><option value="0.65">控えめ（65%）</option><option value="0.4">小さめ（40%）</option></select></div>
+        </div>
+        <div class="option-switches">
+          <label class="option-switch" for="editLead"><input id="editLead" type="checkbox"><span>メロディを鳴らす</span></label>
+          <select id="editPhrasing" aria-label="メロディの量"></select>
+          <label class="option-switch" for="editDrums"><input id="editDrums" type="checkbox"><span>打楽器を鳴らす</span></label>
+          <label class="option-switch" for="editLoop"><input id="editLoop" type="checkbox" checked><span>ループ用にする</span></label>
+          <label class="option-switch" for="editAccompaniment"><input id="editAccompaniment" type="checkbox"><span>伴奏を作り直す</span></label>
+        </div>
+        <p class="option-help">ループ用をオフにすると終止をつけます。伴奏を作り直すと、メロディと和音はそのままで伴奏の形だけ変わります。</p>
+        <div class="preview" data-preview="current"><button type="button" class="try">▶ 変更した設定で2小節聴く</button><div class="seek" role="button" tabindex="0" aria-label="試聴の位置"><i></i></div><span class="seek-time">—</span></div>
+      </div>
+        <p id="editSummary" class="note option-notes" role="status">曲を作ると調整できます。</p>
+        <div class="edit-submit" id="stepApply"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag edit-tag" aria-hidden="true">上記の設定で作り直すならここ</span>
+          <div class="edit-submit-buttons"><button id="applyEdits" class="primary" disabled>この設定で曲を作り直す</button><button id="resetEdits" disabled>未適用の変更を戻す</button>
+            <div id="editPending" class="note" role="status">設定を変えただけでは曲は変わりません。最後にこのボタンを押すと、調整した曲ができます。</div></div>
+        </div>
+      </fieldset>
+      <p class="note">もっと詳しく：<button type="button" class="more" data-more="d-sound">音づくり</button> <button type="button" class="more" data-more="d-form">曲の形</button></p>
+    </details>
+    <div class="transport" style="margin-top:12px">
+      <button id="compare" disabled>変更前を試聴</button>
+      <button id="undoEdit" disabled>直前の変更を取り消す</button>
+    </div>
+    <p id="comparisonStatus" class="note" role="status">直前の変更があると試聴・取り消しができます。</p>
+  </section>
+
+  <section class="panel" id="stepTakes"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">前の曲を聴くなら ここ</span>
+    <h2><i>■</i>テイク<span class="takecount"><span id="takeCount">0 / 12</span> 曲</span><span class="takenote">保持できるテイクは12曲までです</span><button class="more" data-more="d-save">詳細</button></h2>
+    <div id="takes" class="takes" role="radiogroup" aria-label="作った曲"></div>
+    <div id="fingerprint" class="fingerprint empty" role="note" aria-label="選んだ曲の内訳" hidden>まだ曲がありません</div>
+    <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。13曲目を作ると、いちばん古いテイクから消えます（長い曲では12曲より少なくなります）。ページを再読み込みすると全部消えます。</p>
+  </section>
+  <p class="note">このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。</p>
+  <p class="note">同梱音源はすべて <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> です。その為このツールで作った曲に素材由来の条件は付きません。</p>
+  <details class="material-credits">
+    <summary>使用素材・ライセンス</summary>
+  <p class="note">打楽器の強弱とタイミングは Groove MIDI Dataset（Magenta / Google · CC BY 4.0）の統計を参考にしています。データは同梱していません。<a href="https://magenta.tensorflow.org/datasets/groove">データセット</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></p>
+  <p class="note">音源: VSCO 2 Community Edition / Versilian Studios · CC0。32サンプルをモノラル32 kHzへ変換して同梱。<a href="https://github.com/sgossner/VSCO-2-CE">原典</a> · <a href="https://versilian-studios.com/vsco-community/">公式</a> · <a href="samples/vsco2/CREDITS.md">音源情報</a></p>
+  <p class="note">シタール: sitar01.flac / deleted_user_229898 · CC0。実録音から単音を加工して同梱。<a href="https://freesound.org/people/deleted_user_229898/sounds/42192/">Freesound 42192</a> · <a href="samples/sitar/CREDITS.md">音源情報</a></p>
+  <p class="note">箏: Japan_Koto_Improv / RutgerMuller · CC0。13分の即興演奏から6音を切り出して同梱。<a href="https://freesound.org/people/RutgerMuller/sounds/365242/">Freesound 365242</a> · <a href="samples/koto/CREDITS.md">音源情報</a></p>
+  <p class="note">笛: Oriental flute / t-man95 · CC0。独奏から8音を切り出し、ループ点を打って同梱。<a href="https://freesound.org/people/t-man95/sounds/553217/">Freesound 553217</a> · <a href="samples/shinobue/CREDITS.md">音源情報</a></p>
+  <p class="note">合唱: CRWDSing U Ooh Vowel / ShangusBurger · CC0。無指向成分のみを使用。<a href="https://freesound.org/people/ShangusBurger/sounds/764124/">Freesound 764124</a> · <a href="samples/choir/CREDITS.md">音源情報</a></p>
+<p class="note">MP3エンコーダー: lamejs 1.2.1 / LAME · LGPL（未改変）。<a href="vendor/lamejs/lamejs-1.2.1.tgz" download>ソース</a> · <a href="https://lame.sourceforge.net/">LAME</a> · <a href="https://github.com/zhuker/lamejs">lamejs</a> · <a href="https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html">LGPL 2.1</a></p>
+    <p class="note">ツール本体のコードは <a href="LICENSE">MIT License</a>（Copyright © 2026 air-nakamoto）。</p>
+  </details>
+  <!-- feedback:start -->
+  <p class="note feedback-note" hidden>このツールは個人が作って試験的に公開しているものです。不具合や改善点、ご意見がありましたら、<button class="linkbtn" data-feedback-open>意見を送る</button> からお寄せください。今後の参考にさせていただきます。</p>
+  <!-- feedback:end -->
+  <p class="backtop"><a href="#top">↑ ページの一番上に戻る</a></p>
+</main>
+<!-- feedback:start -->
+<div id="feedback" class="overlay" hidden>
+  <div class="card help" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+    <div class="card-head"><span class="led" style="animation:none"></span><span id="feedbackTitle">意見を送る</span><span class="rule"></span>
+      <button class="helpclose" data-feedback-close aria-label="閉じる">閉じる</button></div>
+    <div class="help-body">
+      <p class="note">不具合、こう鳴ってほしかった、欲しい場面。短くて構いません。作者にだけ届きます。</p>
+      <label class="sr-only" for="feedbackText">意見</label>
+      <textarea id="feedbackText" rows="7" maxlength="2000" placeholder="例：和風で高い音がときどき硬く鳴る気がします"></textarea>
+      <!-- 罠の欄。人には見えない。埋まっていたら機械なので Worker 側で捨てる。 -->
+      <input id="feedbackHp" class="sr-only" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <div class="feedback-foot">
+        <span id="feedbackCount" class="note">0 / 2000</span>
+        <button id="feedbackSend" class="helpbtn">送信する</button>
+      </div>
+      <p id="feedbackStatus" class="note" role="status"></p>
+      <p class="note">送るのは書いた本文だけです。作った曲も設定も送られません。名前や連絡先は取得していないので、返信はできません。</p>
+    </div>
+  </div>
+</div>
+<!-- feedback:end -->
+<div id="detail" class="overlay" hidden>
+  <div class="card help" role="dialog" aria-modal="true">
+    <div class="card-head"><span class="led" style="animation:none"></span><span id="detailTitle">詳細</span><span class="rule"></span>
+      <button class="helpclose" data-close aria-label="閉じる">閉じる</button></div>
+    <div class="help-body" id="detailBody"></div>
+  </div>
+</div>
+
+<div id="detailSource" hidden>
+  <div id="d-sound" data-title="音づくり">
+    <h4>音源</h4>
+    <dl id="soundList"></dl>
+    <h4>ループ用にする</h4>
+    <figure><svg viewBox="0 0 330 120" role="img" aria-label="ループ用と終止ありの違い"><g fill="rgba(113,196,213,.55)"><rect x="10" y="28.0" width="3" height="12.0" rx="1"/><rect x="15" y="22.8" width="3" height="22.4" rx="1"/><rect x="20" y="24.8" width="3" height="18.5" rx="1"/><rect x="25" y="24.9" width="3" height="18.3" rx="1"/><rect x="30" y="25.4" width="3" height="17.2" rx="1"/><rect x="35" y="24.6" width="3" height="18.9" rx="1"/><rect x="40" y="22.5" width="3" height="23.0" rx="1"/><rect x="45" y="28.6" width="3" height="10.9" rx="1"/><rect x="50" y="24.8" width="3" height="18.5" rx="1"/><rect x="55" y="22.0" width="3" height="24.0" rx="1"/><rect x="60" y="27.4" width="3" height="13.3" rx="1"/><rect x="65" y="25.4" width="3" height="17.2" rx="1"/><rect x="70" y="22.0" width="3" height="24.0" rx="1"/><rect x="75" y="25.9" width="3" height="16.3" rx="1"/><rect x="80" y="26.9" width="3" height="14.2" rx="1"/><rect x="85" y="25.0" width="3" height="18.0" rx="1"/><rect x="90" y="26.2" width="3" height="15.6" rx="1"/><rect x="95" y="26.9" width="3" height="14.3" rx="1"/><rect x="100" y="29.0" width="3" height="10.0" rx="1"/><rect x="105" y="27.8" width="3" height="12.4" rx="1"/><rect x="110" y="28.1" width="3" height="11.7" rx="1"/><rect x="115" y="31.9" width="3" height="4.2" rx="1"/><rect x="120" y="30.1" width="3" height="7.9" rx="1"/><rect x="125" y="30.6" width="3" height="6.9" rx="1"/><rect x="130" y="32.6" width="3" height="2.8" rx="1"/><rect x="135" y="32.5" width="3" height="2.9" rx="1"/><rect x="140" y="33.2" width="3" height="1.6" rx="1"/><rect x="145" y="33.5" width="3" height="0.9" rx="1"/></g><g fill="rgba(166,230,244,.9)"><rect x="160" y="26.0" width="3" height="16.0" rx="1"/><rect x="165" y="24.9" width="3" height="18.1" rx="1"/><rect x="170" y="23.4" width="3" height="21.3" rx="1"/><rect x="175" y="24.8" width="3" height="18.4" rx="1"/><rect x="180" y="27.1" width="3" height="13.8" rx="1"/><rect x="185" y="22.2" width="3" height="23.6" rx="1"/><rect x="190" y="23.8" width="3" height="20.5" rx="1"/><rect x="195" y="29.1" width="3" height="9.7" rx="1"/><rect x="200" y="22.3" width="3" height="23.4" rx="1"/><rect x="205" y="23.6" width="3" height="20.7" rx="1"/><rect x="210" y="27.1" width="3" height="13.7" rx="1"/><rect x="215" y="23.8" width="3" height="20.5" rx="1"/><rect x="220" y="24.3" width="3" height="19.4" rx="1"/><rect x="225" y="24.3" width="3" height="19.4" rx="1"/></g><g fill="rgba(113,196,213,.55)"><rect x="10" y="82.0" width="3" height="12.0" rx="1"/><rect x="15" y="76.8" width="3" height="22.4" rx="1"/><rect x="20" y="78.8" width="3" height="18.5" rx="1"/><rect x="25" y="78.8" width="3" height="18.3" rx="1"/><rect x="30" y="79.4" width="3" height="17.2" rx="1"/><rect x="35" y="78.5" width="3" height="18.9" rx="1"/><rect x="40" y="76.5" width="3" height="23.0" rx="1"/><rect x="45" y="82.5" width="3" height="10.9" rx="1"/><rect x="50" y="78.8" width="3" height="18.5" rx="1"/><rect x="55" y="76.0" width="3" height="24.0" rx="1"/><rect x="60" y="81.3" width="3" height="13.3" rx="1"/><rect x="65" y="79.4" width="3" height="17.2" rx="1"/><rect x="70" y="76.0" width="3" height="24.0" rx="1"/><rect x="75" y="79.8" width="3" height="16.3" rx="1"/><rect x="80" y="80.7" width="3" height="14.7" rx="1"/><rect x="85" y="77.8" width="3" height="20.3" rx="1"/><rect x="90" y="78.5" width="3" height="19.1" rx="1"/><rect x="95" y="78.3" width="3" height="19.3" rx="1"/><rect x="100" y="80.5" width="3" height="15.0" rx="1"/><rect x="105" y="77.5" width="3" height="21.0" rx="1"/><rect x="110" y="76.7" width="3" height="22.6" rx="1"/><rect x="115" y="83.3" width="3" height="9.4" rx="1"/><rect x="120" y="77.3" width="3" height="21.3" rx="1"/><rect x="125" y="76.3" width="3" height="23.3" rx="1"/><rect x="130" y="81.7" width="3" height="12.6" rx="1"/><rect x="135" y="78.2" width="3" height="19.6" rx="1"/><rect x="140" y="77.2" width="3" height="21.6" rx="1"/><rect x="145" y="79.4" width="3" height="17.2" rx="1"/></g><g fill="rgba(166,230,244,.9)"><rect x="160" y="80.0" width="3" height="16.0" rx="1"/><rect x="165" y="79.0" width="3" height="18.1" rx="1"/><rect x="170" y="77.3" width="3" height="21.3" rx="1"/><rect x="175" y="78.8" width="3" height="18.4" rx="1"/><rect x="180" y="81.1" width="3" height="13.8" rx="1"/><rect x="185" y="76.2" width="3" height="23.6" rx="1"/><rect x="190" y="77.8" width="3" height="20.5" rx="1"/><rect x="195" y="83.2" width="3" height="9.7" rx="1"/><rect x="200" y="76.3" width="3" height="23.4" rx="1"/><rect x="205" y="77.7" width="3" height="20.7" rx="1"/><rect x="210" y="81.2" width="3" height="13.7" rx="1"/><rect x="215" y="77.8" width="3" height="20.5" rx="1"/><rect x="220" y="78.3" width="3" height="19.4" rx="1"/><rect x="225" y="78.3" width="3" height="19.4" rx="1"/></g><line x1="152" y1="14" x2="152" y2="54" stroke="rgba(228,173,101,.8)" stroke-width="1" stroke-dasharray="3 3"/><line x1="152" y1="68" x2="152" y2="108" stroke="rgba(228,173,101,.8)" stroke-width="1" stroke-dasharray="3 3"/><text x="10" y="12" fill="#8fa1b2" font-size="9">終止あり</text><text x="258" y="40" fill="rgba(227,123,113,.95)" font-size="9">← ここで音量が落ちる</text><text x="10" y="66" fill="#8fa1b2" font-size="9">ループ用</text><text x="258" y="94" fill="rgba(166,230,244,.95)" font-size="9">← 落ち込まない</text><text x="120" y="118" fill="rgba(228,173,101,.8)" font-size="8">点線＝ループの継ぎ目</text></svg><figcaption>繰り返して流すなら「ループ用」。最後の小節も伴奏を鳴らしたまま切るので、1周ごとの音量の落ち込みが出ません。チェックを外すと「終止あり」になり、主音で締めて終わります。</figcaption></figure>
+    <h4>メロディを鳴らす／メロディの量</h4>
+    <figure><svg viewBox="0 0 330 110" role="img" aria-label="メロディの量の違い"><text x="0" y="27" fill="#8fa1b2" font-size="9">少なめ</text><rect x="46" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="63" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="80" y="14" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="97" y="14" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="114" y="14" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="131" y="14" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="148" y="14" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="165" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="182" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="199" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="216" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="233" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="250" y="14" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="267" y="14" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="284" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="301" y="20" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><text x="0" y="57" fill="#8fa1b2" font-size="9">ふつう</text><rect x="46" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="63" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="80" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="97" y="50" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="114" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="131" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="148" y="50" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="165" y="50" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="182" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="199" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="216" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="233" y="50" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="250" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="267" y="44" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="284" y="50" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="301" y="50" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><text x="0" y="87" fill="#8fa1b2" font-size="9">多め</text><rect x="46" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="63" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="80" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="97" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="114" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="131" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="148" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="165" y="80" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><rect x="182" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="199" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="216" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="233" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="250" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="267" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="284" y="74" width="14" height="17" rx="2" fill="rgba(166,230,244,.75)"/><rect x="301" y="80" width="14" height="5" rx="2" fill="rgba(122,190,208,.2)"/><line x1="112" y1="8" x2="112" y2="98" stroke="rgba(122,190,208,.18)" stroke-width="1"/><line x1="180" y1="8" x2="180" y2="98" stroke="rgba(122,190,208,.18)" stroke-width="1"/><line x1="248" y1="8" x2="248" y2="98" stroke="rgba(122,190,208,.18)" stroke-width="1"/><text x="46" y="108" fill="#8fa1b2" font-size="8">■ 音が鳴る　▬ 休み（伴奏だけ）　縦線＝小節</text></svg><figcaption>図は音数と休符のイメージです。1枠＝1拍、縦線＝小節を表し、実際の音の並びは曲ごとに変わります。オフにすると伴奏だけ。会話の下に敷くならこちらが既定です。オンにすると旋律が休む時間の多さを選べ、休んでいる間は伴奏だけが続きます。オンにした直後は「少なめ」から始まり、伴奏が2拍進んでから旋律が入ります。</figcaption></figure>
+  </div>
+  <div id="d-form" data-title="曲の形">
+    <figure><svg viewBox="0 0 330 96" role="img" aria-label="16小節テーマのA部とB部"><rect x="8" y="26" width="16" height="26" rx="2" fill="rgba(113,196,213,.34)"/><text x="16" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">1</text><rect x="27" y="26" width="16" height="26" rx="2" fill="rgba(113,196,213,.34)"/><text x="35" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">2</text><rect x="46" y="26" width="16" height="26" rx="2" fill="rgba(113,196,213,.34)"/><text x="54" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">3</text><rect x="65" y="26" width="16" height="26" rx="2" fill="rgba(113,196,213,.34)"/><text x="73" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">4</text><rect x="84" y="26" width="16" height="26" rx="2" fill="rgba(113,196,213,.34)"/><text x="92" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">5</text><rect x="103" y="26" width="16" height="26" rx="2" fill="rgba(113,196,213,.34)"/><text x="111" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">6</text><rect x="122" y="26" width="16" height="26" rx="2" fill="rgba(228,173,101,.45)"/><text x="130" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">7</text><rect x="141" y="26" width="16" height="26" rx="2" fill="rgba(228,173,101,.45)"/><text x="149" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">8</text><rect x="160" y="26" width="16" height="26" rx="2" fill="rgba(160,130,220,.34)"/><text x="168" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">9</text><rect x="179" y="26" width="16" height="26" rx="2" fill="rgba(160,130,220,.34)"/><text x="187" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">10</text><rect x="198" y="26" width="16" height="26" rx="2" fill="rgba(160,130,220,.34)"/><text x="206" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">11</text><rect x="217" y="26" width="16" height="26" rx="2" fill="rgba(160,130,220,.34)"/><text x="225" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">12</text><rect x="236" y="26" width="16" height="26" rx="2" fill="rgba(160,130,220,.34)"/><text x="244" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">13</text><rect x="255" y="26" width="16" height="26" rx="2" fill="rgba(160,130,220,.34)"/><text x="263" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">14</text><rect x="274" y="26" width="16" height="26" rx="2" fill="rgba(228,173,101,.45)"/><text x="282" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">15</text><rect x="293" y="26" width="16" height="26" rx="2" fill="rgba(228,173,101,.45)"/><text x="301" y="62" fill="#6b7b8b" font-size="7" text-anchor="middle">16</text><text x="8" y="20" fill="rgba(166,230,244,.95)" font-size="9">A部  和音進行①</text><text x="160" y="20" fill="rgba(190,170,240,.95)" font-size="9">B部  和音進行②</text><path d="M316 39 q10 0 10 22 l-310 0 q-10 0 -10 -22" fill="none" stroke="rgba(122,190,208,.4)" stroke-width="1" stroke-dasharray="3 3"/><text x="120" y="90" fill="rgba(228,173,101,.85)" font-size="8">■ 終止（V→I）　点線＝先頭へ戻る</text></svg><figcaption>テーマの長さは、選んだテンポと秒数から4〜16小節で自動的に決まります。16小節なら後半8小節は別の和音進行（B部）を通るので、同じ8小節の繰り返しにはなりません。</figcaption></figure>
+    <dl>
+      <dt>テンポ</dt><dd>とても遅い46／ゆっくり60／ふつう76／速め96／疾走116／めまぐるしい132 BPM。</dd>
+      <dt>長さ</dt><dd>20秒〜2分。ループ素材なら30秒〜1分で十分です。2分は生成に時間がかかります（生成中に「中止」で止められます）。</dd>
+    </dl>
+  </div>
+  <div id="d-listen" data-title="再生・保存・調整の使い方">
+    <p>作られる曲は、はじめからループ用です。「再生」で先頭から鳴り、最後まで進むと先頭に戻って繰り返します。ループ用をオフにした曲は、最後まで進むと止まります。波形の上を走る線が再生位置です。</p>
+    <p>試聴音量は聴くときの音量だけを変えます。保存するファイルには影響しません。</p>
+    <h4>保存</h4>
+    <p>最後まで聴かなくても保存できます。ページを閉じると作った曲は消えます。</p>
+    <dl>
+      <dt>WAV</dt><dd>そのままココフォリアなどに置けます。</dd>
+      <dt>MP3（軽量）</dt><dd>192kbps。共有やアップロード向け。再生機によってはループの継ぎ目にわずかな無音が入ります。</dd>
+      <dt>MIDI（編集用）</dt><dd>音符データだけ。音色と残響は含みません。</dd>
+    </dl>
+    <p>音色やテンポを変えたいときは「この曲を調整」へ。中身はその右上の「詳細」で説明しています。</p>
+  </div>
+  <div id="d-edit" data-title="この曲を調整 — 編集の使い方">
+    <p>メロディ・調・和音進行はそのままに、設定だけを変えて作り直します。設定を選んでから「この設定で曲を作り直す」で<b>まとめて反映</b>され、元の曲はテイクに残ります。適用前なら「未適用の変更を戻す」、適用後なら「直前の変更を取り消す」で戻せます。</p>
+    <dl>
+      <dt>音色</dt><dd>同じ楽譜を別の音源で鳴らします。</dd>
+      <dt>テンポ</dt><dd>速さを変えます。ループ用の長さはテーマが完結する位置に自動で合わせ直します。</dd>
+      <dt>長さの目安</dt><dd>目安です。ループ用はテーマ1周より短くはできません。</dd>
+      <dt>曲の音量</dt><dd>保存するファイルにも反映されます。</dd>
+      <dt>メロディを鳴らす／メロディの量</dt><dd>旋律の有無と密度。オンにすると既定は「少なめ」で、伴奏が2拍進んでから入ります。</dd>
+      <dt>打楽器を鳴らす</dt><dd>リズムの有無。会話中に打楽器が邪魔なときは外します。</dd>
+      <dt>ループ用にする</dt><dd>オンは繰り返し用。オフにすると主音で締める終止がつきます。</dd>
+      <dt>伴奏を作り直す</dt><dd>メロディと和音進行は保ったまま、伴奏の形と配置だけ変えます。オンにすると試聴がその伴奏に変わり、<b>押し直すたびに別の案</b>になります。気に入った案のまま作り直せます。</dd>
+    </dl>
+    <h4>試聴（▶ 試聴）</h4>
+    <p>「変更した設定で2小節聴く」は、<b>まだ作り直していない設定のまま2小節だけ</b>鳴らします。保存する曲は変わりません。音色・テンポ・曲の音量・メロディ・打楽器・伴奏を作り直すを変えると自動で鳴るので、切り替えて聴き比べられます。右のバーは再生位置、右端の数字はその2小節の長さです。ループ用はテーマ1周より短くできません。</p>
+    <h4>変更前との比較・取り消し</h4>
+    <p>作り直したあと「変更前を試聴」で元の曲を、「現在の曲を試聴」で変更後を聴けます。比較中も保存対象は変更後の曲です。</p>
+  </div>
+
+  <div id="d-save" data-title="テイクと保存">
+    <p>一覧の<b>行のどこをクリックしても</b>その曲に切り替わり、すぐ再生されます。行の真下に SIGNAL LOG が開き、上下の矢印キーでも選べます。</p>
+    <p>保存ボタンは「聴いて確かめる」の下にまとめてあります。<br>
+    テイクは最大12曲（長い曲では自動的に減ります）。ページを再読み込みすると消えるので、必要な曲は保存してください。</p>
+    <h4>作った曲の扱い</h4>
+    <p><b>作った曲はあなたのものです。自由に使ってください（CC0 1.0 相当）。</b>
+    クレジット表記も使用報告も要りません。商用利用・改変・再配布ができ、動画・配信・ゲーム・頒布物と用途も問いません。
+    同梱音源がCC0なので、素材由来の条件が曲に付いてくることはありません。</p>
+    <h4>SIGNAL LOG の見かた</h4>
+    <dl>
+      <dt>SEED</dt><dd>その曲の番号。同じシードと同じ設定なら、いつでも同じ曲になります。</dd>
+      <dt>KEY / PROG</dt><dd>調と和音進行（度数）。</dd>
+      <dt>MOTIF</dt><dd>旋律のもとになる8つの音。</dd>
+      <dt>FORM</dt><dd>テーマの小節数と、ループ用か終止ありか。</dd>
+      <dt>PEAK / SEAM</dt><dd>最大音量と、ループ境界の段差。SEAMが小さいほど継ぎ目が滑らかです。</dd>
+    </dl>
+  </div>
+</div>
+
+<div id="help" class="overlay" hidden>
+  <div class="card help" role="dialog" aria-modal="true" aria-label="使い方">
+    <div class="card-head"><span class="led" style="animation:none"></span>使い方<span class="rule"></span>
+      <button id="helpClose" class="helpclose" aria-label="閉じる">閉じる</button></div>
+    <div class="help-body">
+      <ol class="steps">
+        <li class="step"><span class="no">01</span><div><b>場面を選ぶ</b><span>どんな場面で流すかを押すだけ。迷ったらそのままで大丈夫です。<br>音色とテンポは場面に合わせて決まります。</span></div></li>
+        <li class="step"><span class="no">02</span><div><b>曲を作る</b><span>「新しい曲を作る」を押します。<br>ボタンの右の欄が、これから作る曲の確認です。</span></div></li>
+        <li class="step"><span class="no">03</span><div><b>聴く</b><span>できたら「再生」。気に入らなければ「新しい曲を作る」をもう一度押すと再作成されます。</span></div></li>
+        <li class="step"><span class="no">04</span><div><b>惜しければ直す</b><span>「この曲を調整」で音色やテンポを変え、「この設定で曲を作り直す」で反映します。<br>作り直す前に2小節だけ試聴できます。元の曲はテイクに残ります。（※最大１２個まで）</span></div></li>
+        <li class="step"><span class="no">05</span><div><b>保存する</b><span>「WAVを保存」「MP3を保存」から、好きな形式でダウンロードできます。<br>保存した曲は、TRPGのセッションや動画などのBGMに使えます。<br>（編集ソフトで曲を編集したい場合は「MIDIを保存（編集用）」を選択も可能）</span></div></li>
+      </ol>
+      <p class="help-foot">画面では、いま操作できる場所の枠が光ります。その枠をたどれば一通り作れます。<br>
+      過去に作った曲は下の「テイク」に残ります。（最大12曲まで）行をクリックすると切り替わって再生されます。<br>
+      各セクションの見出しにある「詳細」から、その項目だけの説明を開けます。<br>
+      ページを閉じると作った曲は消えるので、気に入ったものは保存してください。</p>
+    </div>
+  </div>
+</div>
+<div id="overlay" class="overlay" hidden>
+  <div class="card">
+    <div class="card-head"><span class="led"></span>generating<span class="rule"></span><span id="overlayStep">1 / 1</span></div>
+    <div id="overlayTitle" class="card-title">曲を作っています</div>
+    <div id="overlayMeta" class="card-meta"></div>
+    <div class="bar"><i id="overlayBar"></i></div>
+    <div class="card-foot"><span id="overlayPct">0%</span><button id="overlayCancel" data-cancel>中止</button></div>
+  </div>
+</div>
+
+<script src="vendor/lamejs/lame.min.js?v=20260916k-15d285e2"></script>
+<script src="samples/vsco2/bank.js?v=20260916g-86e68eb9"></script>
+<script src="samples/sitar/bank.js?v=20260920-sitar-9274123a"></script>
+<script src="samples/koto/bank.js?v=20260920b-koto-e8a5a6b1"></script>
+<script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
+<script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
+<script src="bgm-score.js?v=20260920-water-6b578ff2"></script>
+<script src="bgm-forge.js?v=20260920-url-55557978"></script>
+<!-- feedback:start -->
+<!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
+     曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。
+     単体起動版には入らない（build_standalone.py が印のついた塊を落とす）。 -->
+<script>
+(function(){
+  var meta=document.querySelector('meta[name="feedback-endpoint"]');
+  var url=meta&&meta.content?meta.content.trim():'';
+  if(!url)return;                                   // 送信先が無い版では機能ごと出さない
+  var $=function(id){return document.getElementById(id)};
+  var box=$('feedback'),ta=$('feedbackText'),hp=$('feedbackHp');
+  var count=$('feedbackCount'),send=$('feedbackSend'),status=$('feedbackStatus');
+  if(!box||!ta||!send)return;
+  var LIMIT=2000,opener=null,busy=false;
+  function lock(on){document.body.style.overflow=on?'hidden':''}
+  function tell(msg){status.textContent=msg||''}
+  function open(from){
+    opener=from||null;box.hidden=false;lock(true);tell('');ta.focus();
+  }
+  function close(){
+    box.hidden=true;lock(false);
+    if(opener&&opener.focus)opener.focus();
+  }
+  function tally(){
+    var n=ta.value.length;count.textContent=n+' / '+LIMIT;
+  }
+  var note=document.querySelector('.feedback-note');if(note)note.hidden=false;
+  [].forEach.call(document.querySelectorAll('[data-feedback-open]'),function(b){
+    b.hidden=false;b.onclick=function(){open(b)};
+  });
+  [].forEach.call(document.querySelectorAll('[data-feedback-close]'),function(b){b.onclick=close});
+  box.onclick=function(e){if(e.target===box)close()};
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!box.hidden)close()});
+  ta.oninput=tally;tally();
+  send.onclick=function(){
+    if(busy)return;
+    var text=ta.value.trim();
+    if(!text){tell('本文を書いてください。');ta.focus();return}
+    if(text.length>LIMIT){tell('長すぎます。'+LIMIT+'文字までにしてください。');return}
+    busy=true;send.disabled=true;tell('送っています…');
+    fetch(url,{method:'POST',headers:{'content-type':'application/json'},
+      body:JSON.stringify({text:text,hp:hp?hp.value:''})})
+      .then(function(r){return r.json().catch(function(){return{ok:r.ok}})})
+      .then(function(d){
+        if(d&&d.ok){ta.value='';tally();tell('送りました。ありがとうございます。');setTimeout(close,1200)}
+        else if(d&&d.error==='cooldown')tell('続けて送ることはできません。少し待ってからお願いします。');
+        else tell('送れませんでした。時間をおいて試してください。');
+      })
+      .catch(function(){tell('送れませんでした。通信を確認してください。')})
+      .then(function(){busy=false;send.disabled=false});
+  };
+})();
+</script>
+<!-- feedback:end -->
+</body>
+</html>

@@ -27,7 +27,7 @@ echo "▼ push中..."
 if git push; then
   echo
   echo "✅ 公開しました。GitHub Pagesの反映まで1〜2分ほどかかります。"
-  echo "   https://air-nakamoto.github.io/bgm-forge/bgm_forge_v2.html"
+  echo "   https://air-nakamoto.github.io/bgm-forge/bgm_forge.html"
 else
   echo
   echo "❌ 失敗しました。上のメッセージをAIに見せてください。"
