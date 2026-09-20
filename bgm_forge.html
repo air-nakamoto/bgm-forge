@@ -681,7 +681,21 @@
 
     /* 再生したあと場面を選び直すのに、手で上までスクロールするしかなかった。 */
     .backscene {
-      color: var(--dim)
+      color: var(--dim);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px
+    }
+
+    .backscene svg {
+      width: 13px;
+      height: 13px;
+      flex: none;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round
     }
 
     .backscene:hover:not(:disabled) {
@@ -2311,7 +2325,7 @@
           id="playGuide" aria-hidden="true">聴いてみる</span>
         <button id="play" class="play" disabled>▶ 再生</button>
         <button id="stop" disabled>■ 停止</button>
-        <button type="button" id="backToScene" class="backscene">← 場面から選び直す</button>
+        <button type="button" id="backToScene" class="backscene"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 12.5H7.5Q5.5 12.5 5.5 10.5V4"/><path d="M2.6 6.9L5.5 3.6L8.4 6.9"/></svg>場面から選び直す</button>
       </div>
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
           id="volumeValue" for="volume">50%</output></label>
