@@ -193,40 +193,20 @@ function measuredRoot(entry){
   for(const deg of prog)assert([0,1,3].includes(deg),
    '民族の進行に調が動く度数が入っている '+deg+' '+JSON.stringify(prog));
  }
- // シタールの「ジャラーン」。同梱シタールは1音（実音52.4）なので、音域を45〜61に
- // 限って早回しを抑えている。内声（62以上）と重ならないことも併せて見る。
+ // 民族の内声（part3）。シタールはこの内声が全部なので、鳴っていることを固定する。
+ // 毎小節だと「コードがたくさん続く」、全部止めると1曲6音で「民族っぽくない」と言われた。
+ // 奇数小節だけ＝アルペジオの小節が2つ続かず、必ず1小節空く。
+ // 撥弦の飾り（じゃらん）は2026-09-20に入れて同日に外した。再導入しないこと（§6.0）。
  for(const seed of [1,3,7,11,23]){
   const s=score.compose({mood:m,scale:MODES[m.mode],bpm:de[0],sound:de[1],
    length:30,ending:'loop',lead:false,phrasing:de[3]||'auto'},seed);
-  const ev=score.events(s);
-  const strum=ev.filter(n=>n.part===3&&n.pitch>=45&&n.pitch<=61).sort((a,b)=>a.beat-b.beat);
-  assert(strum.length>=3,'民族にシタールのジャラーンが無い seed='+seed);
-  // 撥弦は一本ずつずれる。0.04〜0.20拍のあいだに次が来ること（0.08=63ms、0.16=126msが自然な範囲）。
-   const gap=strum[1].beat-strum[0].beat;
-   assert(gap>0.02&&gap<0.20,'ジャラーンの間隔がおかしい '+gap);
-  assert(strum[1].pitch>strum[0].pitch,'ジャラーンが駆け上がっていない');
-  // 同時に鳴る音が2半音以内で並ぶと、弦の響きではなく音の塊になってうるさい。
-  // 2026-09-20 に音階順で駆け上げたときは、間隔の92%が2半音以下だった（半音だけで50%）。
-  const first=strum.filter(n=>n.beat<1).map(n=>n.pitch).sort((a,b)=>a-b);
-  assert(first.length>=3,'ジャラーンの音数が足りない seed='+seed);
-  // 撥弦は押さえっぱなしにしない。音符そのものは短くして、シタールの余韻(1.2秒)に任せる。
-  for(const n of strum)assert(n.duration<=0.6,
-   'ジャラーンが長すぎる（和音を押さえたように聞こえる） '+n.duration+'拍 seed='+seed);
-  for(let i=1;i<first.length;i++)assert(first[i]-first[i-1]>=3,
-   'ジャラーンが'+(first[i]-first[i-1])+'半音で重なっている（和音構成音だけを拾うこと） seed='+seed);
-   // 民族の内声（part3, pitch>61）は奇数小節だけに鳴る。全部止めると実録音シタールが
-   // 1曲6音になって「民族っぽくなくなった」、毎小節だと「コードがたくさん続く」になる。
-   // 中間として、(a) 鳴ること (b) アルペジオの小節が2つ続かないこと
-   // (c) じゃらんのある小節（4の倍数）には入らないこと、の3つを固定する。
-   const inner=ev.filter(n=>n.part===3&&n.pitch>61);
-   assert(inner.length>0,'民族の内声が鳴っていない（シタールがじゃらんだけになる） seed='+seed);
-   const innerBars=[...new Set(inner.map(n=>Math.floor(n.beat/4)))].sort((a,b)=>a-b);
-   for(const bar of innerBars){
-    assert(bar%2===1,'民族の内声が偶数小節に入っている bar='+bar+' seed='+seed);
-    assert(bar%4!==0,'民族の内声がじゃらんの小節に入っている bar='+bar+' seed='+seed);
-   }
-   for(let i=1;i<innerBars.length;i++)assert(innerBars[i]-innerBars[i-1]>=2,
-    '民族のアルペジオが2小節続いている bar='+innerBars[i]+' seed='+seed);
+  const inner=score.events(s).filter(n=>n.part===3);
+  assert(inner.length>0,'民族の内声が鳴っていない（シタールが消える） seed='+seed);
+  const innerBars=[...new Set(inner.map(n=>Math.floor(n.beat/4)))].sort((a,b)=>a-b);
+  for(const bar of innerBars)assert(bar%2===1,
+   '民族の内声が偶数小節に入っている bar='+bar+' seed='+seed);
+  for(let i=1;i<innerBars.length;i++)assert(innerBars[i]-innerBars[i-1]>=2,
+   '民族のアルペジオが2小節続いている bar='+innerBars[i]+' seed='+seed);
  }
  // 増2度（3半音）が隣り合う割合。ミクソリディアでは17.8%、ヒジャーズでは24.8%だった。
  assert(steps[3]/notes>0.21,'民族の旋律に増2度が出ていない '+(100*steps[3]/notes).toFixed(1)+'%');
