@@ -308,6 +308,10 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
 .editing{display:none;margin-left:10px;padding:1px 9px;border:1px solid var(--edit);border-radius:999px;
   font:10px var(--sans);letter-spacing:.12em;color:var(--edit-lit)}
 .advanced[open] .editing{display:inline-block}
+/* 閉じ方が分かりにくいという指摘。開いている間だけ、見出しに閉じ方を出す。 */
+.closehint{display:none;margin-left:auto;color:var(--dim);font:10.5px var(--mono);letter-spacing:.1em}
+.advanced[open] .closehint{display:inline-block}
+.adjustfoot{margin:14px 0 4px;text-align:center}
 .volume{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.volume input{width:min(240px,50vw);accent-color:var(--cyan)}
 :focus-visible{outline:2px solid var(--cyan-lit);outline-offset:4px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -405,12 +409,13 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
   .is-now{box-shadow:0 0 0 1px rgba(113,196,213,.3),0 0 30px -12px rgba(140,226,244,.7)}
 }
 
-#stepAdjust{display:flex;align-items:center;gap:12px}
+#stepAdjust{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#stepAdjust>.editing,#stepAdjust>.closehint{flex:none}
 #stepAdjust::before{content:"▸";color:var(--cyan);font-size:11px}
 #adjustments[open]>#stepAdjust::before{content:"▾"}
 #stepAdjust::-webkit-details-marker{display:none}
 #stepAdjust>.more{display:none;flex:none;margin-left:auto}
-#adjustments[open]>#stepAdjust>.more{display:inline-block}
+#adjustments[open]>#stepAdjust>.more{display:inline-block;margin-left:0}
 </style>
 </head>
 <!-- feedback:start -->
@@ -470,7 +475,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
     </div>
     <p class="note">気に入った曲は保存してください。ページを閉じると作った曲は消えます。</p>
     <details class="advanced" id="adjustments">
-      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><button type="button" class="more" data-more="d-edit" aria-label="調整方法の詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">この曲を微調整したい場合は、ここ</span></summary>
+      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><span class="closehint">ここを押すと閉じます</span><button type="button" class="more" data-more="d-edit" aria-label="調整方法の詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">この曲を微調整したい場合は、ここ</span></summary>
       <p class="note">ここで変えた設定は、下の「この設定で曲を作り直す」を押すまで曲に反映されません。押すと、同じテーマのまま新しい曲ができます。</p>
       <fieldset id="editFields" disabled style="border:0;padding:0;margin:10px 0">
       <div class="option-rows">
@@ -500,6 +505,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
         </div>
       </fieldset>
       <p class="note">もっと詳しく：<button type="button" class="more" data-more="d-sound">音づくり</button> <button type="button" class="more" data-more="d-form">曲の形</button></p>
+      <p class="adjustfoot"><button type="button" class="helpclose" id="adjustClose">✗ 調整を閉じる</button></p>
     </details>
     <div class="transport" style="margin-top:12px">
       <button id="compare" disabled>変更前を試聴</button>
@@ -514,8 +520,8 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
     <div id="fingerprint" class="fingerprint empty" role="note" aria-label="選んだ曲の内訳" hidden>まだ曲がありません</div>
     <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。13曲目を作ると、いちばん古いテイクから消えます（長い曲では12曲より少なくなります）。ページを再読み込みすると全部消えます。</p>
   </section>
-  <p class="note">このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。</p>
-  <p class="note licensenote"><span>同梱音源はすべて <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> です。その為このツールで作った曲に素材由来の条件は付きません。</span><button type="button" class="more" id="licenseOpen" aria-haspopup="dialog">詳細</button></p>
+  <p class="note licensenote"><span>このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。</span><button type="button" class="more" id="licenseOpen" aria-haspopup="dialog">詳細</button></p>
+  <p class="note">同梱音源はすべて <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> です。その為このツールで作った曲に素材由来の条件は付きません。</p>
   <!-- feedback:start -->
   <p class="note feedback-note" hidden>このツールは個人が作って試験的に公開しているものです。不具合や改善点、ご意見がありましたら、<button class="linkbtn" data-feedback-open>意見を送る</button> からお寄せください。今後の参考にさせていただきます。</p>
   <!-- feedback:end -->
@@ -670,7 +676,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
 <script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
 <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
 <script src="bgm-score.js?v=20260920-water-6b578ff2"></script>
-<script src="bgm-forge.js?v=20260920-license-05a09ca3"></script>
+<script src="bgm-forge.js?v=20260920-adjustclose-6abeda5c"></script>
 <!-- feedback:start -->
 <!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
      曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。

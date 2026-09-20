@@ -294,6 +294,10 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 .editing{display:none;margin-left:10px;padding:1px 9px;border:1px solid var(--edit);border-radius:999px;
   font:10px var(--sans);letter-spacing:.12em;color:var(--edit-lit)}
 .advanced[open] .editing{display:inline-block}
+/* 閉じ方が分かりにくいという指摘。開いている間だけ、見出しに閉じ方を出す。 */
+.closehint{display:none;margin-left:auto;color:var(--dim);font:10.5px var(--mono);letter-spacing:.1em}
+.advanced[open] .closehint{display:inline-block}
+.adjustfoot{margin:14px 0 4px;text-align:center}
 .volume{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.volume input{width:min(240px,50vw);accent-color:var(--cyan)}
 :focus-visible{outline:2px solid var(--cyan-lit);outline-offset:4px}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
@@ -391,12 +395,13 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
   .is-now{box-shadow:0 0 0 1px rgba(113,196,213,.3),0 0 30px -12px rgba(140,226,244,.7)}
 }
 
-#stepAdjust{display:flex;align-items:center;gap:12px}
+#stepAdjust{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#stepAdjust>.editing,#stepAdjust>.closehint{flex:none}
 #stepAdjust::before{content:"▸";color:var(--cyan);font-size:11px}
 #adjustments[open]>#stepAdjust::before{content:"▾"}
 #stepAdjust::-webkit-details-marker{display:none}
 #stepAdjust>.more{display:none;flex:none;margin-left:auto}
-#adjustments[open]>#stepAdjust>.more{display:inline-block}
+#adjustments[open]>#stepAdjust>.more{display:inline-block;margin-left:0}
 </style>
 </head>
 <body>
@@ -448,7 +453,7 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
     </div>
     <p class="note">気に入った曲は保存してください。ページを閉じると作った曲は消えます。</p>
     <details class="advanced" id="adjustments">
-      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><button type="button" class="more" data-more="d-edit" aria-label="調整方法の詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">この曲を微調整したい場合は、ここ</span></summary>
+      <summary id="stepAdjust">この曲を調整<span class="editing">調整中</span><span class="closehint">ここを押すと閉じます</span><button type="button" class="more" data-more="d-edit" aria-label="調整方法の詳細">詳細</button><span class="nowbeam" aria-hidden="true"></span><span class="nowtag" aria-hidden="true">この曲を微調整したい場合は、ここ</span></summary>
       <p class="note">ここで変えた設定は、下の「この設定で曲を作り直す」を押すまで曲に反映されません。押すと、同じテーマのまま新しい曲ができます。</p>
       <fieldset id="editFields" disabled style="border:0;padding:0;margin:10px 0">
       <div class="option-rows">
@@ -478,6 +483,7 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
         </div>
       </fieldset>
       <p class="note">もっと詳しく：<button type="button" class="more" data-more="d-sound">音づくり</button> <button type="button" class="more" data-more="d-form">曲の形</button></p>
+      <p class="adjustfoot"><button type="button" class="helpclose" id="adjustClose">✗ 調整を閉じる</button></p>
     </details>
     <div class="transport" style="margin-top:12px">
       <button id="compare" disabled>変更前を試聴</button>
@@ -492,8 +498,8 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
     <div id="fingerprint" class="fingerprint empty" role="note" aria-label="選んだ曲の内訳" hidden>まだ曲がありません</div>
     <p class="note">曲を選ぶとその場で再生し、内訳を下に表示します。保存は上の「聴いて確かめる」から行います。13曲目を作ると、いちばん古いテイクから消えます（長い曲では12曲より少なくなります）。ページを再読み込みすると全部消えます。</p>
   </section>
-  <p class="note">このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。</p>
-  <p class="note licensenote"><span>同梱音源はすべて <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> です。その為このツールで作った曲に素材由来の条件は付きません。</span><button type="button" class="more" id="licenseOpen" aria-haspopup="dialog">詳細</button></p>
+  <p class="note licensenote"><span>このツールで作った曲は自由に使えます（CC0 1.0 相当・クレジット不要・商用可）。</span><button type="button" class="more" id="licenseOpen" aria-haspopup="dialog">詳細</button></p>
+  <p class="note">同梱音源はすべて <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> です。その為このツールで作った曲に素材由来の条件は付きません。</p>
     <p class="backtop"><a href="#top">↑ ページの一番上に戻る</a></p>
 </main>
 <div id="license" class="overlay" hidden>
@@ -2416,7 +2422,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   const $ = id => document.getElementById(id);
   const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'wood'],ethnic:[76,'folk'],japanese:[76,'koto',true,'minimal'],decision:[60,'synth',true,'sparse'],kagura:[76,'shinobue'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[96,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'choir',true,'minimal'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood'],water:[76,'softpiano']};
   function selectMood(mood){state.mood=mood;const d=DEFAULTS[mood.id];state.bpm=d[0];state.sound=d[1];state.length=30;state.ending='loop';state.lead=d[2]===true;state.phrasing=d[3]||'auto'}
-  const state={sound:'synth',mood:MOODS.find(m=>m.id==='town'),bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
+  const state={sound:'synth',mood:MOODS.find(m=>m.id==='bright'),bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
   function rng(seed){let a=seed|0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
   function midiFreq(m){return 440*Math.pow(2,(m-69)/12)}
@@ -3332,6 +3338,10 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openDetail(b.dataset.more)});
   // 使用素材・ライセンス。中身はHTMLに書いてあるので、他の詳細のように複製せず、そのまま出す
   // （単体版では全文ライセンスが数MBになり、innerHTMLで複製すると開くたびに重い）。
+  // 調整欄は details なので見出しを押せば閉じるが、それが分かりにくいという指摘があった。
+  // 一番下の閉じるボタンから閉じたときは、見出しが画面の外へ行かないよう戻す。
+  {const b=$('adjustClose'),d=$('adjustments');if(b&&d)b.onclick=()=>{d.open=false;
+    const h=$('stepAdjust');if(h&&h.scrollIntoView)h.scrollIntoView({block:'center'})}}
   {const b=$('licenseOpen'),o=$('license');if(b&&o)b.onclick=()=>{o.hidden=false;lockScroll(true);
     const c=o.querySelector('[data-close]');if(c&&c.focus)c.focus()}}
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);

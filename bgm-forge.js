@@ -190,7 +190,7 @@
   const $ = id => document.getElementById(id);
   const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'wood'],ethnic:[76,'folk'],japanese:[76,'koto',true,'minimal'],decision:[60,'synth',true,'sparse'],kagura:[76,'shinobue'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[96,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'choir',true,'minimal'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood'],water:[76,'softpiano']};
   function selectMood(mood){state.mood=mood;const d=DEFAULTS[mood.id];state.bpm=d[0];state.sound=d[1];state.length=30;state.ending='loop';state.lead=d[2]===true;state.phrasing=d[3]||'auto'}
-  const state={sound:'synth',mood:MOODS.find(m=>m.id==='town'),bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
+  const state={sound:'synth',mood:MOODS.find(m=>m.id==='bright'),bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
   function rng(seed){let a=seed|0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
   function midiFreq(m){return 440*Math.pow(2,(m-69)/12)}
@@ -1106,6 +1106,10 @@
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openDetail(b.dataset.more)});
   // 使用素材・ライセンス。中身はHTMLに書いてあるので、他の詳細のように複製せず、そのまま出す
   // （単体版では全文ライセンスが数MBになり、innerHTMLで複製すると開くたびに重い）。
+  // 調整欄は details なので見出しを押せば閉じるが、それが分かりにくいという指摘があった。
+  // 一番下の閉じるボタンから閉じたときは、見出しが画面の外へ行かないよう戻す。
+  {const b=$('adjustClose'),d=$('adjustments');if(b&&d)b.onclick=()=>{d.open=false;
+    const h=$('stepAdjust');if(h&&h.scrollIntoView)h.scrollIntoView({block:'center'})}}
   {const b=$('licenseOpen'),o=$('license');if(b&&o)b.onclick=()=>{o.hidden=false;lockScroll(true);
     const c=o.querySelector('[data-close]');if(c&&c.focus)c.focus()}}
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
