@@ -28,10 +28,13 @@ TRPGの場面に合わせたループBGMを、ブラウザ内で自動作曲す�
 - `bgm-forge.js`：音声生成・再生・保存・画面処理
 - `samples/vsco2/`：内蔵音源とクレジット
 - `samples/sitar/`：CC0実録音シタール、測定音高・加工情報とクレジット
+- `samples/koto/` `samples/shinobue/` `samples/choir/`：CC0実録音の箏・笛・合唱。各フォルダに測定音高と加工情報
+- `worker/`：「意見を送る」をDiscordへ中継する Cloudflare Worker（分割版だけの機能。単体版には入りません）
 - `vendor/lamejs/`：MP3エンコーダー
 - `favicon.svg`：ブラウザのタブ用アイコン（単体版には埋め込み）
 - `ogp.svg` / `ogp.png`：共有画像の編集元 / 公開用PNG（1200×630px）
 - `scripts/build_standalone.py`：分割ソースから単体版を生成
+- `scripts/build_sitar.py` `build_koto.py` `build_shinobue.py` `build_choir.py`：原音から同梱バンクを作り直す
 
 AIに作業を頼むときは、先に `AGENTS.md`（開発ルール）と `HANDOVER.md`（経緯と計測値）を読ませてください。
 
@@ -45,7 +48,7 @@ python3 scripts/build_standalone.py
 
 「凱旋」は「🎉 クリア」に変更しました。謎や事件が解決した喜びを目指し、116 BPMの木のマレットと弦、軽い打楽器、短く弾む伴奏を使います。4小節ごとに主和音へ戻る構成です。
 
-メロディーは全場面で初期状態オフです。伴奏だけで場面の違いが出るよう、23場面それぞれにリズム・音域・和音の移動間隔・休符・打楽器のルールを持たせています。各場面には3通りの伴奏構成があり、同じ場面で続けて生成すると直前と異なる構成を選びます。
+メロディーは全場面で初期状態オフです。伴奏だけで場面の違いが出るよう、24場面それぞれにリズム・音域・和音の移動間隔・休符・打楽器のルールを持たせています。各場面には3通りの伴奏構成があり、同じ場面で続けて生成すると直前と異なる構成を選びます。
 
 「神秘」は「幻想」に統合しました。「夜空」の初期音色は「オルゴール」です。「穏やか」は「のどか」に変え、ミクソリディアのカントリー調にしました。初期音色は新しく追加した「スチール弦」で、96拍・シャッフルです。「まどろみ」は「疑惑」に置き換えました。行き来するアルペジオを既定にした、調査パート用の場面です。音色に「フルート」を追加しました。旋律をフルート、和音を弦、低音をピアノが受け持つので、メロディありで使う音色です。追加した「柔らかいピアノ」も、調整欄から各場面で選べます。
 
@@ -59,8 +62,8 @@ node tests/scene-variation.cjs
 
 ## 収録内容
 
-- 23種類のTRPG場面、実録音シタール・和琴・神楽笛・コーラスを含む17種類の音色
-- 13種類の音色
+- 24種類のTRPG場面（6列×4行。行ごとに 日常／旅／情緒／緊張、行の中は左から右が物語の順）
+- 17種類の音色。うち4種は実録音（シタール・箏・笛・合唱。すべてCC0）
 - 場面別・手動選択の伴奏パターン
 - ループ用／終止あり
 - WAV、MP3（192 kbps）、MIDI出力
@@ -89,6 +92,9 @@ MIT License（`LICENSE`）。著作権表示を残せば、自由に使用・改
 
 - VS Chamber Orchestra: Community Edition（VSCO 2 CE）：CC0 1.0
 - sitar01.flac / deleted_user_229898（Freesound 42192）：CC0 1.0。民族の旋律・内声に使用。出典・加工情報は `samples/sitar/CREDITS.md`。
+- Japan_Koto_Improv / RutgerMuller（Freesound 365242）：CC0 1.0。和風に使用。`samples/koto/CREDITS.md`。
+- Oriental flute / t-man95（Freesound 553217）：CC0 1.0。神楽の笛に使用。`samples/shinobue/CREDITS.md`。
+- CRWDSing U Ooh Vowel / ShangusBurger（Freesound 764124）：CC0 1.0。合唱に使用。`samples/choir/CREDITS.md`。
 - lamejs 1.2.1 / LAME：LGPL 2.1（未改変。原本一式を `vendor/lamejs/lamejs-1.2.1.tgz` として同梱）
 - Groove MIDI Dataset：CC BY 4.0。打楽器の強弱とタイミングの統計を参考にしています。データ自体は収録していません。
 

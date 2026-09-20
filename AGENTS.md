@@ -11,7 +11,7 @@ BGM Forge は、TRPGの場面に合うループBGMをブラウザだけで自動
 ## 0. 着手前に必ず
 
 ```sh
-node tests/scene-variation.cjs      # 646ケース。PASSを確認してから触る
+node tests/scene-variation.cjs      # 816ケース。PASSを確認してから触る
 ```
 
 PASSしない状態で作業を始めないでください。先に原因を報告すること。
