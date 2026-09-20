@@ -22,6 +22,19 @@
   const RECORDED_KINDS={sitar:'シタール',koto:'箏',choir:'合唱'};
   // 音符の中でどこまで引くか。ループして伸び続ける音源だけを対象にする。
   const SUSTAIN_FADE={choir:.33};
+  // 実録音を音源よりずっと上へ早回しすると、余韻ごと縮んで細く硬い「ぴーん」になる。
+  // 箏の同梱は5音（最高 MIDI 70.4）なのに和風の旋律は五音音階のぶん MIDI 88 まで上がり、
+  // +8〜+18半音まで早回しされた音が2.6%混ざっていた（30秒1曲あたり最大10回、75%の曲は0回）。
+  // 音源の上限からこれ以上離れる音はオクターブ下げて鳴らす。跳躍の制限と同じく半音で書く。
+  // シタールと合唱は同梱が1音だけで全部の音が一律に早回しされる（＝それが音色）ので対象にしない。
+  const SAMPLE_LIFT={koto:7};
+  function foldToBank(kind,choices,pitch){
+    const lift=SAMPLE_LIFT[kind];if(lift===undefined)return pitch;
+    const top=choices.reduce((a,b)=>Math.max(a,b.meta.root),-Infinity);
+    if(!Number.isFinite(top))return pitch;
+    while(pitch-top>lift)pitch-=12;
+    return pitch;
+  }
   const partTrim=(score,part)=>part===0?(score.sound==='choir'?.25:1):
     part>=1&&part<=3?(ACCOMP_TRIM[score.moodId]||1):1;
   // 持続音（パッドと低音）の引き方。[どこまで下がるか, 何拍かけて下がるか]。
@@ -285,11 +298,12 @@
     if(!choices.length&&RECORDED_KINDS[kind])throw Error('同梱'+RECORDED_KINDS[kind]+'音源が見つかりません。samples/'+kind+'を確認してください。');
     if(!choices.length)choices=bank;
     if(!choices.length)return;
-    const sample=choices.reduce((a,b)=>Math.abs(b.meta.root-n.pitch)<Math.abs(a.meta.root-n.pitch)?b:a);
+    const pitch=foldToBank(kind,choices,n.pitch);
+    const sample=choices.reduce((a,b)=>Math.abs(b.meta.root-pitch)<Math.abs(a.meta.root-pitch)?b:a);
     const at=n.beat*beat,duration=n.duration*beat,release=kind==='sitar'?1.2:kind==='koto'?1:kind==='choir'?.8:kind==='strings'?.3:kind==='flute'?.26:kind==='drums'?.15:soft?.35:.2;
     const end=Math.min(at+duration+release,ctx.length/SR-.001);if(end-at<.01)return;
     const source=ctx.createBufferSource(),g=ctx.createGain(),p=ctx.createStereoPanner(),f=ctx.createBiquadFilter();
-    source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(n.pitch-sample.meta.root)/12);
+    source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(pitch-sample.meta.root)/12);
     if((kind==='strings'||kind==='flute'||kind==='choir')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
     const gain=[.24,.095,.18,.10,.22][n.part]*trim*Math.pow(n.velocity/80,1.3);
     const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):soft?Math.min(.018,duration*.2):.003;
@@ -943,7 +957,7 @@
     const events=BGMScore.events(a),melody=events.filter(n=>n.part===0).map(n=>n.pitch),inner=events.filter(n=>n.part===3).map(n=>n.pitch);
     if(inner.length&&Math.min.apply(null,melody)<=Math.max.apply(null,inner))throw Error('Register overlap failed');
   }
-  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,partTrim,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
+  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,partTrim,foldToBank,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
   choiceGroup('moods',MOODS,x=>x.name,x=>x.id,m=>{
     // Browsing scenes is not a step you finish — 作る simply becomes available beside it.
     state.tourReady=true;if(state.take)state.tourRemake=true;

@@ -96,6 +96,33 @@ function valid(s){
  return events;
 }
 selfTest();
+// 箏を音源よりずっと上へ早回しすると、2.5秒の収録が1秒に縮んで細く硬い「ぴーん」になる。
+// 同梱は5音で最高が MIDI 70.4。和風の旋律は五音音階のぶん MIDI 88 まで上がるため、
+// 2026-09-20 まで +8〜+18半音の音が2.6%混ざっていた（30秒1曲あたり最大10回）。
+// foldToBank が音源の上限+7半音を超える音をオクターブ下げる。ここはその上限を固定する。
+{
+ const {foldToBank}=context.window.BGM_TEST;
+ const kotoRoots=Array.from(
+  fs.readFileSync(path.join(root,'samples/koto/bank.js'),'utf8').matchAll(/"root":([0-9.]+)/g),
+  m=>parseFloat(m[1]));
+ assert(kotoRoots.length>=2,'箏の同梱音源が読めていない');
+ const kotoChoices=kotoRoots.map(r=>({meta:{root:r}})),kotoTop=Math.max(...kotoRoots);
+ const m=MOODS.find(x=>x.id==='japanese'),d=DEFAULTS.japanese;
+ let worst=0,raw=0;
+ for(let seed=1;seed<=200;seed++){
+  const s=score.compose({mood:m,scale:MODES[m.mode],bpm:d[0],sound:d[1],
+   length:30,ending:'loop',lead:d[2]===true,phrasing:d[3]||'auto'},seed);
+  for(const n of score.events(s)){
+   if(n.part!==0&&n.part!==3)continue;
+   raw=Math.max(raw,n.pitch-kotoTop);
+   worst=Math.max(worst,foldToBank('koto',kotoChoices,n.pitch)-kotoTop);
+  }
+ }
+ assert(raw>7,'和風が箏の音域を超えなくなったなら、この検査ではなく折り返しの要否から見直すこと');
+ assert(worst<=7+1e-9,'箏を音源の上限より'+worst.toFixed(1)+'半音上へ早回ししている（ぴーんの再発）');
+ // シタールと合唱は同梱が1音だけ。全部の音が一律に早回しされるのが音色なので折り返さない。
+ for(const kind of ['sitar','choir'])assert.equal(foldToBank(kind,[{meta:{root:52.44}}],88),88);
+}
 // 儀式のコーラスだけを減衰し、和琴などの音量を密度設定で下げない。
 for(const mood of MOODS){
  const {partTrim}=context.window.BGM_TEST;
