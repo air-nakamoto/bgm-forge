@@ -524,7 +524,7 @@
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
     state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();syncTakeTransport();
-    if(revision===state.playRevision){$('play').textContent='再生';$('stop').disabled=true;renderMeter(-1);clearPreviews()}
+    if(revision===state.playRevision){$('play').textContent='▶ 再生';$('stop').disabled=true;renderMeter(-1);clearPreviews()}
   }
   async function play(target=state.take,once=false,offset=0){
     if(!state.take||state.busy)return;
@@ -547,7 +547,7 @@
     state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
-    $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;syncTakeTransport();startMeter();guide();
+    $('play').textContent=t===state.take?'▶ 再生中':'▶ 現在の曲を再生';$('stop').disabled=false;syncTakeTransport();startMeter();guide();
     if(c.state!=='running'){
       status('ブラウザが音を止めています。画面のどこかをクリックすると再生が始まります','error');
       c.onstatechange=()=>{if(c.state==='running'&&state.playCtx===c){state.playStartedAt=(c.currentTime||0)-from;status('再生しています','')}};

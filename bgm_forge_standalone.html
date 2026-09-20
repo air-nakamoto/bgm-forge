@@ -698,6 +698,11 @@ SOFTWARE.
       margin-top: 3px
     }
 
+    /* 再生だけ padding が厚く、停止と背丈が違っていた。この行は高さをそろえる。 */
+    #stepPlay {
+      align-items: stretch
+    }
+
     /* 再生したあと場面を選び直すのに、手で上までスクロールするしかなかった。 */
     .backscene {
       color: var(--dim)
@@ -2044,9 +2049,9 @@ SOFTWARE.
           data-more="d-listen">詳細</button></h2>
       <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag"
           id="playGuide" aria-hidden="true">聴いてみる</span>
-        <button id="play" class="play" disabled>再生</button>
+        <button id="play" class="play" disabled>▶ 再生</button>
+        <button id="stop" disabled>■ 停止</button>
         <button type="button" id="backToScene" class="backscene">← 場面から選び直す</button>
-        <button id="stop" disabled>停止</button>
       </div>
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
           id="volumeValue" for="volume">50%</output></label>
@@ -4651,7 +4656,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
     state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();syncTakeTransport();
-    if(revision===state.playRevision){$('play').textContent='再生';$('stop').disabled=true;renderMeter(-1);clearPreviews()}
+    if(revision===state.playRevision){$('play').textContent='▶ 再生';$('stop').disabled=true;renderMeter(-1);clearPreviews()}
   }
   async function play(target=state.take,once=false,offset=0){
     if(!state.take||state.busy)return;
@@ -4674,7 +4679,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
-    $('play').textContent=t===state.take?'再生中':'現在の曲を再生';$('stop').disabled=false;syncTakeTransport();startMeter();guide();
+    $('play').textContent=t===state.take?'▶ 再生中':'▶ 現在の曲を再生';$('stop').disabled=false;syncTakeTransport();startMeter();guide();
     if(c.state!=='running'){
       status('ブラウザが音を止めています。画面のどこかをクリックすると再生が始まります','error');
       c.onstatechange=()=>{if(c.state==='running'&&state.playCtx===c){state.playStartedAt=(c.currentTime||0)-from;status('再生しています','')}};

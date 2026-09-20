@@ -674,6 +674,11 @@
       margin-top: 3px
     }
 
+    /* 再生だけ padding が厚く、停止と背丈が違っていた。この行は高さをそろえる。 */
+    #stepPlay {
+      align-items: stretch
+    }
+
     /* 再生したあと場面を選び直すのに、手で上までスクロールするしかなかった。 */
     .backscene {
       color: var(--dim)
@@ -2304,9 +2309,9 @@
           data-more="d-listen">詳細</button></h2>
       <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag"
           id="playGuide" aria-hidden="true">聴いてみる</span>
-        <button id="play" class="play" disabled>再生</button>
+        <button id="play" class="play" disabled>▶ 再生</button>
+        <button id="stop" disabled>■ 停止</button>
         <button type="button" id="backToScene" class="backscene">← 場面から選び直す</button>
-        <button id="stop" disabled>停止</button>
       </div>
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
           id="volumeValue" for="volume">50%</output></label>
@@ -2841,7 +2846,7 @@
   <script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
   <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
   <script src="bgm-score.js?v=20260920-water-6b578ff2"></script>
-  <script src="bgm-forge.js?v=20260920-backscene-ad8849dc"></script>
+  <script src="bgm-forge.js?v=20260920-playicons-6c3c2b3d"></script>
   <!-- feedback:start -->
   <!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
      曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。
