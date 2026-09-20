@@ -4,43 +4,81 @@
  "sourceSha256": "a67d8c80efbe2e144065b5207fead09d7d35b74c6e2ed50f20dfc70e12565ad2",
  "sourceDuration": 779.03,
  "sampleRate": 32000,
- "cropSeconds": 2.5,
- "candidates": 36,
+ "cropSeconds": 1.5,
+ "candidates": 10,
+ "pitchMethod": "harmonic product spectrum, attack and sustain must agree within 30 cents",
+ "gates": {
+  "minHarmonicRatio": 0.4,
+  "maxStrayPeaks": 2,
+  "minUpperOverFundamental": 0.1,
+  "maxHighBandRatio": 0.09
+ },
  "notes": [
   {
-   "atSeconds": 701.0,
-   "hz": 81.42,
-   "rootMidi": 39.792,
-   "periodicity": 0.987,
-   "originalPeak": 0.2444
+   "atSeconds": 426.9,
+   "hz": 151.5,
+   "rootMidi": 50.542,
+   "harmonicRatio": 0.637,
+   "strayPeaks": 2,
+   "upperOverFundamental": 23.465,
+   "highBandRatio": 0.027,
+   "centroidHz": 950.8,
+   "originalPeak": 0.1221
   },
   {
-   "atSeconds": 692.88,
-   "hz": 160.0,
-   "rootMidi": 51.487,
-   "periodicity": 0.994,
-   "originalPeak": 0.1902
+   "atSeconds": 716.94,
+   "hz": 227.62,
+   "rootMidi": 57.59,
+   "harmonicRatio": 0.799,
+   "strayPeaks": 0,
+   "upperOverFundamental": 1.253,
+   "highBandRatio": 0.0389,
+   "centroidHz": 1144.5,
+   "originalPeak": 0.1193
   },
   {
    "atSeconds": 704.94,
-   "hz": 301.89,
-   "rootMidi": 62.478,
-   "periodicity": 0.989,
+   "hz": 302.25,
+   "rootMidi": 62.499,
+   "harmonicRatio": 0.663,
+   "strayPeaks": 0,
+   "upperOverFundamental": 3.31,
+   "highBandRatio": 0.033,
+   "centroidHz": 1289.7,
    "originalPeak": 0.1124
   },
   {
-   "atSeconds": 697.84,
-   "hz": 405.06,
-   "rootMidi": 67.568,
-   "periodicity": 0.997,
-   "originalPeak": 0.1823
+   "atSeconds": 33.0,
+   "hz": 319.38,
+   "rootMidi": 63.453,
+   "harmonicRatio": 0.714,
+   "strayPeaks": 0,
+   "upperOverFundamental": 0.213,
+   "highBandRatio": 0.0215,
+   "centroidHz": 715.7,
+   "originalPeak": 0.1306
   },
   {
-   "atSeconds": 670.42,
-   "hz": 477.61,
-   "rootMidi": 70.42,
-   "periodicity": 0.999,
-   "originalPeak": 0.1635
+   "atSeconds": 688.2,
+   "hz": 410.0,
+   "rootMidi": 67.777,
+   "harmonicRatio": 0.768,
+   "strayPeaks": 0,
+   "upperOverFundamental": 0.223,
+   "highBandRatio": 0.0229,
+   "centroidHz": 926.6,
+   "originalPeak": 0.1733
+  },
+  {
+   "atSeconds": 666.6,
+   "hz": 453.25,
+   "rootMidi": 69.514,
+   "harmonicRatio": 0.851,
+   "strayPeaks": 0,
+   "upperOverFundamental": 0.204,
+   "highBandRatio": 0.0264,
+   "centroidHz": 866.2,
+   "originalPeak": 0.1989
   }
  ]
 }

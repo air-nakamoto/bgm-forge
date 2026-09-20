@@ -96,6 +96,71 @@ function valid(s){
  return events;
 }
 selfTest();
+// 同梱音源の root は「実音」でなければならない。箏は13分の即興から自動抽出しているため、
+// 2026-09-20 まで5音中4音の root が +1.0〜+18.7半音ずれていた（自己相関が倍音や隣の弦を
+// 基音と誤認していた）。表示を信じて早回しするので、和風は実際に音を外して鳴っていた。
+// ここでは波形そのものから調和積スペクトルで基音を測り直し、root と一致することを見る。
+function fft(re,im){
+ const n=re.length;
+ for(let i=1,j=0;i<n;i++){
+  let bit=n>>1;
+  for(;j&bit;bit>>=1)j^=bit;
+  j^=bit;
+  if(i<j){[re[i],re[j]]=[re[j],re[i]];[im[i],im[j]]=[im[j],im[i]]}
+ }
+ for(let len=2;len<=n;len<<=1){
+  const ang=-2*Math.PI/len,wr=Math.cos(ang),wi=Math.sin(ang);
+  for(let i=0;i<n;i+=len){
+   let cr=1,ci=0;
+   for(let k=0;k<len/2;k++){
+    const ur=re[i+k],ui=im[i+k],j2=i+k+len/2;
+    const vr=re[j2]*cr-im[j2]*ci,vi=re[j2]*ci+im[j2]*cr;
+    re[i+k]=ur+vr;im[i+k]=ui+vi;re[j2]=ur-vr;im[j2]=ui-vi;
+    const nr=cr*wr-ci*wi;ci=cr*wi+ci*wr;cr=nr;
+   }
+  }
+ }
+}
+function measuredRoot(entry){
+ const raw=Buffer.from(entry.pcm,'base64'),n=raw.length/2,x=new Float64Array(n);
+ for(let i=0;i<n;i++)x[i]=raw.readInt16LE(i*2)/32768;
+ let peak=0;for(let i=0;i<n;i++)if(Math.abs(x[i])>Math.abs(x[peak]))peak=i;
+ const N=32768,re=new Float64Array(N),im=new Float64Array(N);
+ for(let i=0;i<N&&peak+i<n;i++)re[i]=x[peak+i]*(0.5-0.5*Math.cos(2*Math.PI*i/(N-1)));
+ fft(re,im);
+ const half=N/2,S=new Float64Array(half);
+ for(let i=0;i<half;i++)S[i]=Math.hypot(re[i],im[i]);
+ const hz=i=>i*entry.rate/N;
+ let best=-1,bestP=-1;
+ for(let i=1;i<half/5;i++){
+  if(hz(i)<100||hz(i)>1400)continue;
+  const p=S[i]*S[2*i]*S[3*i]*S[4*i]*S[5*i];
+  if(p>bestP){bestP=p;best=i}
+ }
+ return 69+12*Math.log2(hz(best)/440);
+}
+{
+ const kotoCtx={window:{}};
+ vm.runInNewContext(fs.readFileSync(path.join(root,'samples/koto/bank.js'),'utf8'),kotoCtx);
+ const bank=kotoCtx.window.BGM_KOTO_BANK;
+ assert(bank.length>=5,'箏の同梱音源が5音未満');
+ for(const entry of bank){
+  assert.equal(entry.kind,'koto');
+  const got=measuredRoot(entry);
+  assert(Math.abs(got-entry.root)<0.5,
+   '箏の音源 root='+entry.root.toFixed(2)+' は実測 '+got.toFixed(2)
+   +'（ずれ '+(got-entry.root).toFixed(2)+'半音）。scripts/build_koto.py で作り直すこと');
+ }
+ // 倍音を持たない純音的な音は、早回しすると「ぴーん」と鳴る。混ざっていないことを見る。
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'samples/koto/manifest.json'),'utf8'));
+ assert.equal(manifest.license,'CC0-1.0');
+ assert.equal(manifest.notes.length,bank.length);
+ for(const note of manifest.notes){
+  assert(note.upperOverFundamental>=0.10,'純音的な箏（上倍音/基音 '+note.upperOverFundamental+'）が混ざっている');
+  assert(note.highBandRatio<=0.09,'明るすぎる箏（4kHz以上 '+note.highBandRatio+'）が混ざっている');
+  assert(note.harmonicRatio>=0.40,'倍音列に乗らない箏（'+note.harmonicRatio+'）が混ざっている');
+ }
+}
 // 箏を音源よりずっと上へ早回しすると、2.5秒の収録が1秒に縮んで細く硬い「ぴーん」になる。
 // 同梱は5音で最高が MIDI 70.4。和風の旋律は五音音階のぶん MIDI 88 まで上がるため、
 // 2026-09-20 まで +8〜+18半音の音が2.6%混ざっていた（30秒1曲あたり最大10回）。

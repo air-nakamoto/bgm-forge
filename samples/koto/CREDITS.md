@@ -6,10 +6,15 @@
 - License text: https://creativecommons.org/publicdomain/zero/1.0/
 - Description: a 13-minute amateur improvisation on a Japanese koto (2ch, 96 kHz).
 - Processing: the recording is a performance, not isolated notes. `scripts/build_koto.py`
-  finds plucks whose preceding 0.24 s is quiet and whose pitch stays steady for a further
-  0.6 s, bins them by semitone, keeps the cleanest one per bin and spreads five across the
-  range. Each is cropped to 2.5 s, mono 32 kHz, DC removed, peak normalized to 0.85,
-  2 ms attack fade and 400 ms tail fade, signed 16-bit PCM embedded in bank.js.
+  finds plucks whose preceding 0.24 s is quiet, whose pitch agrees across three windows
+  (harmonic product spectrum, within 20 cents), whose loudest moment is the attack itself,
+  and which are single notes with harmonic content and no excessive high band. It bins the
+  survivors by semitone, keeps the cleanest one per bin and spreads six evenly across the
+  range. Each is cropped to 1.5 s, mono 32 kHz, DC removed, peak normalized to 0.85,
+  2 ms attack fade and 450 ms tail fade, signed 16-bit PCM embedded in bank.js.
+  The crop is 1.5 s rather than 2.5 s because the source is a continuous improvisation:
+  at 2.5 s another string is nearly always struck inside the window, and peak
+  normalization then scales the take to that later note instead of the intended one.
 - Pitch is measured from the waveform, not inferred. The koto is not in equal temperament,
   so the roots are fractional MIDI numbers. Exact values and the original checksum are in
   manifest.json.
