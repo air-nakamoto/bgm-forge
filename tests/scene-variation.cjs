@@ -124,9 +124,12 @@ function fft(re,im){
 function measuredRoot(entry){
  const raw=Buffer.from(entry.pcm,'base64'),n=raw.length/2,x=new Float64Array(n);
  for(let i=0;i<n;i++)x[i]=raw.readInt16LE(i*2)/32768;
- let peak=0;for(let i=0;i<n;i++)if(Math.abs(x[i])>Math.abs(x[peak]))peak=i;
- const N=32768,re=new Float64Array(N),im=new Float64Array(N);
- for(let i=0;i<N&&peak+i<n;i++)re[i]=x[peak+i]*(0.5-0.5*Math.cos(2*Math.PI*i/(N-1)));
+ // ループする音源は伸びているところ（loopStart）を、一度鳴りの音源は最大振幅の位置を測る。
+ let from=0;
+ if(entry.loopEnd>entry.loopStart)from=Math.round(entry.loopStart*entry.rate);
+ else{let peak=0;for(let i=0;i<n;i++)if(Math.abs(x[i])>Math.abs(x[peak]))peak=i;from=peak}
+ const N=32768,L=Math.min(N,n-from),re=new Float64Array(N),im=new Float64Array(N);
+ for(let i=0;i<L;i++)re[i]=x[from+i]*(0.5-0.5*Math.cos(2*Math.PI*i/(L-1)));
  fft(re,im);
  const half=N/2,S=new Float64Array(half);
  for(let i=0;i<half;i++)S[i]=Math.hypot(re[i],im[i]);
@@ -160,6 +163,36 @@ function measuredRoot(entry){
   assert(note.highBandRatio<=0.09,'明るすぎる箏（4kHz以上 '+note.highBandRatio+'）が混ざっている');
   assert(note.harmonicRatio>=0.40,'倍音列に乗らない箏（'+note.harmonicRatio+'）が混ざっている');
  }
+}
+// 笛は減衰しない持続音なので、収録をループさせて伸ばす。ループ点が壊れていると
+// 神楽の音が伸びない／ぷつぷつ鳴る。音高の実測と、ループが成立していることを見る。
+{
+ const fluteCtx={window:{}};
+ vm.runInNewContext(fs.readFileSync(path.join(root,'samples/shinobue/bank.js'),'utf8'),fluteCtx);
+ const bank=fluteCtx.window.BGM_SHINOBUE_BANK;
+ assert(bank.length>=5,'笛の同梱音源が5音未満');
+ for(const entry of bank){
+  assert.equal(entry.kind,'shinobue');
+  const seconds=Buffer.from(entry.pcm,'base64').length/2/entry.rate;
+  assert(entry.loopEnd>entry.loopStart,'笛のループ点が立っていない root='+entry.root);
+  assert(entry.loopEnd-entry.loopStart>=0.2,'笛のループが短すぎる root='+entry.root);
+  assert(entry.loopEnd<=seconds,'笛のループ終点が収録の外 root='+entry.root);
+  const got=measuredRoot(entry);
+  assert(Math.abs(got-entry.root)<0.5,
+   '笛の音源 root='+entry.root.toFixed(2)+' は実測 '+got.toFixed(2)
+   +'（ずれ '+(got-entry.root).toFixed(2)+'半音）。scripts/build_shinobue.py で作り直すこと');
+ }
+ const manifest=JSON.parse(fs.readFileSync(path.join(root,'samples/shinobue/manifest.json'),'utf8'));
+ assert.equal(manifest.license,'CC0-1.0');
+ assert.equal(manifest.notes.length,bank.length);
+ for(const note of manifest.notes)assert(note.harmonicRatio>=0.45,'倍音の薄い笛が混ざっている');
+ // 神楽は既定で旋律を鳴らさない。内声(3)も差し替えないと笛が一度も鳴らない。
+ const {DEFAULTS:D}=context.window.BGM_TEST;
+ assert.equal(D.kagura[1],'shinobue');
+ assert.notEqual(D.kagura[2],true,'神楽に旋律が付いたなら、下の内声の検査を見直すこと');
+ assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),
+  /shinobue:\{kinds:\['shinobue','strings','piano','shinobue','drums'\],parts:\[0,3\]\}/,
+  '笛が内声(3)に割り当たっていない。神楽は旋律を鳴らさないので、これだと無音になる');
 }
 // 箏を音源よりずっと上へ早回しすると、2.5秒の収録が1秒に縮んで細く硬い「ぴーん」になる。
 // 同梱は5音で最高が MIDI 70.4。和風の旋律は五音音階のぶん MIDI 88 まで上がるため、

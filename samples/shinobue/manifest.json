@@ -1,0 +1,130 @@
+{
+ "source": "https://freesound.org/people/t-man95/sounds/553217/",
+ "license": "CC0-1.0",
+ "sourceSha256": "c83055f4f9fdc18ff9bc6bd5104d95d1bc6cbc96b5d1de13f95e8aa868e87928",
+ "sourceDuration": 125.663,
+ "instrument": "unidentified oriental flute; the uploader does not name it",
+ "sampleRate": 32000,
+ "cropSeconds": 1.15,
+ "steadyRuns": 25,
+ "pitchMethod": "harmonic product spectrum per 0.25 s frame; a run must hold within 25 cents",
+ "gates": {
+  "minRunSeconds": 0.8,
+  "maxCents": 25,
+  "minHarmonicRatio": 0.45
+ },
+ "notes": [
+  {
+   "atSeconds": 2.55,
+   "hz": 259.77,
+   "rootMidi": 59.876,
+   "steadySeconds": 1.25,
+   "harmonicRatio": 0.653,
+   "highBandRatio": 0.02,
+   "loopSeconds": [
+    0.30138,
+    1.00803
+   ],
+   "loopCycles": 184,
+   "originalPeak": 0.0452
+  },
+  {
+   "atSeconds": 117.3,
+   "hz": 384.77,
+   "rootMidi": 66.678,
+   "steadySeconds": 1.75,
+   "harmonicRatio": 0.718,
+   "highBandRatio": 0.0152,
+   "loopSeconds": [
+    0.30081,
+    1.00825
+   ],
+   "loopCycles": 272,
+   "originalPeak": 0.1108
+  },
+  {
+   "atSeconds": 109.9,
+   "hz": 430.66,
+   "rootMidi": 68.629,
+   "steadySeconds": 1.9,
+   "harmonicRatio": 0.715,
+   "highBandRatio": 0.0261,
+   "loopSeconds": [
+    0.29903,
+    1.01012
+   ],
+   "loopCycles": 306,
+   "originalPeak": 0.066
+  },
+  {
+   "atSeconds": 106.7,
+   "hz": 509.77,
+   "rootMidi": 71.548,
+   "steadySeconds": 1.95,
+   "harmonicRatio": 0.679,
+   "highBandRatio": 0.0296,
+   "loopSeconds": [
+    0.30053,
+    1.00816
+   ],
+   "loopCycles": 361,
+   "originalPeak": 0.0821
+  },
+  {
+   "atSeconds": 43.25,
+   "hz": 574.22,
+   "rootMidi": 73.609,
+   "steadySeconds": 2.35,
+   "harmonicRatio": 0.665,
+   "highBandRatio": 0.0456,
+   "loopSeconds": [
+    0.29997,
+    1.00791
+   ],
+   "loopCycles": 407,
+   "originalPeak": 0.0798
+  },
+  {
+   "atSeconds": 88.1,
+   "hz": 766.6,
+   "rootMidi": 78.612,
+   "steadySeconds": 1.8,
+   "harmonicRatio": 0.637,
+   "highBandRatio": 0.09,
+   "loopSeconds": [
+    0.29991,
+    1.00972
+   ],
+   "loopCycles": 544,
+   "originalPeak": 0.1359
+  },
+  {
+   "atSeconds": 91.25,
+   "hz": 855.47,
+   "rootMidi": 80.511,
+   "steadySeconds": 1.15,
+   "harmonicRatio": 0.627,
+   "highBandRatio": 0.138,
+   "loopSeconds": [
+    0.29966,
+    0.91012
+   ],
+   "loopCycles": 522,
+   "originalPeak": 0.2038
+  },
+  {
+   "atSeconds": 69.85,
+   "hz": 1044.92,
+   "rootMidi": 83.974,
+   "steadySeconds": 0.95,
+   "harmonicRatio": 0.585,
+   "highBandRatio": 0.0918,
+   "loopSeconds": [
+    0.29975,
+    0.70913
+   ],
+   "loopCycles": 428,
+   "originalPeak": 0.3859
+  }
+ ]
+}

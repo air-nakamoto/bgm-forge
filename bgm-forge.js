@@ -17,11 +17,16 @@
   const RECORDED={
     folk :{kinds:['sitar','strings','piano','sitar','drums'],parts:[0,3]},
     koto :{kinds:['koto','strings','piano','koto','drums'],  parts:[0,3]},
+    // 神楽は既定で旋律を鳴らさない（DEFAULTS.kagura に lead が無い）。内声(3)を入れないと
+    // 笛が一度も鳴らないので、合唱と違って旋律と内声の両方を差し替える。
+    shinobue:{kinds:['shinobue','strings','piano','shinobue','drums'],parts:[0,3]},
     choir:{kinds:['choir','strings','piano','piano','drums'],parts:[0]}
   };
-  const RECORDED_KINDS={sitar:'シタール',koto:'箏',choir:'合唱'};
+  const RECORDED_KINDS={sitar:'シタール',koto:'箏',choir:'合唱',shinobue:'笛'};
   // 音符の中でどこまで引くか。ループして伸び続ける音源だけを対象にする。
-  const SUSTAIN_FADE={choir:.33};
+  // 笛も合唱と同じくループして伸び続ける。減衰しないぶん前に出るので、音符の中で少し引く。
+  // 合唱(.33)ほど下げないのは、神楽では笛が主役だから。うるさければここを先に下げること。
+  const SUSTAIN_FADE={choir:.33,shinobue:.55};
   // 実録音を音源よりずっと上へ早回しすると、余韻ごと縮んで細く硬い「ぴーん」になる。
   // 箏の同梱は5音（最高 MIDI 70.4）なのに和風の旋律は五音音階のぶん MIDI 88 まで上がり、
   // +8〜+18半音まで早回しされた音が2.6%混ざっていた（30秒1曲あたり最大10回、75%の曲は0回）。
@@ -35,7 +40,12 @@
     while(pitch-top>lift)pitch-=12;
     return pitch;
   }
+  // 神楽は既定で旋律を鳴らさないので、実録音の笛は内声(3)だけで鳴る。そのままだと伴奏に
+  // 埋もれる（計測：ピーク合計で笛0.651 対 和音+低音1.705＝0.38倍、打楽器4.072）。
+  // 笛が主役の場面なので、内声に回った笛だけ持ち上げる。合唱の旋律を下げるのと同じ仕組み。
+  const LEAD_LIFT={shinobue:2.2};
   const partTrim=(score,part)=>part===0?(score.sound==='choir'?.25:1):
+    part===3&&LEAD_LIFT[score.sound]?LEAD_LIFT[score.sound]*(ACCOMP_TRIM[score.moodId]||1):
     part>=1&&part<=3?(ACCOMP_TRIM[score.moodId]||1):1;
   // 持続音（パッドと低音）の引き方。[どこまで下がるか, 何拍かけて下がるか]。
   // 拍数が0なら音符の長さの9割をかけて下がる（長い音ほどゆっくり）。
@@ -82,7 +92,7 @@
     {id:'chip',name:'チップチューン',note:'8bit風の矩形波'},
     {id:'folk',name:'シタール',note:'実録音の弦と共鳴する余韻'},
     {id:'koto',name:'箏',note:'実録音の琴と長い余韻'},
-    {id:'shinobue',name:'神楽笛',note:'息の混じる細い笛の音'}
+    {id:'shinobue',name:'神楽笛',note:'実録音の笛と息の音'}
     ,{id:'choir',name:'合唱',note:'実録音の人の声。母音を伸ばす'}
   ];
   const PHRASINGS=[{id:'minimal',name:'ごく少ない',note:'要所だけ鳴る'},{id:'sparse',name:'少なめ',note:'休みが多い'},{id:'auto',name:'ふつう',note:'雰囲気の既定'},{id:'dense',name:'多め',note:'よく歌う'}];
@@ -137,7 +147,7 @@
       key:{wave:'triangle',parts:[[1,0,.42],[2,4,.2],[3,-7,.1],[6,11,.035]],a:.002,r:.48,decay:.045,filt:[19,5],floor:1200},
       pad:{wave:'sine',parts:[[1,-4,.3],[1,4,.28],[2,0,.1]],a:.02,r:.58,decay:.1,filt:[13,4],floor:800},
       bass:{wave:'triangle',parts:[[1,0,.82],[2,0,.1]],a:.006,r:.32,decay:.07,filt:[8,3],floor:430}},
-    shinobue:{wet:[.46,.56],drums:.65,gains:[.25,.055,.085,.06],
+    shinobue:{wet:[.46,.56],drums:.5,gains:[.25,.055,.085,.06],
       key:{wave:'triangle',parts:[[1,0,.52],[2,8,.18],[3,-6,.08],[4,12,.035]],a:.035,r:.3,hold:.72,filt:[10,5],floor:1100},
       pad:{wave:'sine',parts:[[1,-3,.34],[2,4,.14],[3,-5,.05]],a:.25,r:.7,hold:.8,fixed:[2500,1500]},
       bass:{wave:'sine',parts:[[1,0,.86],[2,0,.12]],a:.08,r:.45,hold:.78,fixed:[620,300]}},
@@ -283,7 +293,7 @@
   function sampleBuffers(ctx){
     if(sampleCache)return sampleCache;
     if(!window.BGM_SAMPLE_BANK)throw Error('同梱音源が見つかりません。samplesフォルダをHTMLと一緒に置いてください。');
-    sampleCache=[...window.BGM_SAMPLE_BANK,...(window.BGM_SITAR_BANK||[]),...(window.BGM_KOTO_BANK||[]),...(window.BGM_CHOIR_BANK||[])].map(meta=>{
+    sampleCache=[...window.BGM_SAMPLE_BANK,...(window.BGM_SITAR_BANK||[]),...(window.BGM_KOTO_BANK||[]),...(window.BGM_CHOIR_BANK||[]),...(window.BGM_SHINOBUE_BANK||[])].map(meta=>{
       const bytes=atob(meta.pcm),buffer=ctx.createBuffer(1,bytes.length/2,meta.rate),d=buffer.getChannelData(0);
       for(let i=0;i<d.length;i++){let v=bytes.charCodeAt(i*2)|(bytes.charCodeAt(i*2+1)<<8);d[i]=(v>=32768?v-65536:v)/32768}
       delete meta.pcm; // the decoded buffer is the copy that is used from here on
@@ -300,13 +310,13 @@
     if(!choices.length)return;
     const pitch=foldToBank(kind,choices,n.pitch);
     const sample=choices.reduce((a,b)=>Math.abs(b.meta.root-pitch)<Math.abs(a.meta.root-pitch)?b:a);
-    const at=n.beat*beat,duration=n.duration*beat,release=kind==='sitar'?1.2:kind==='koto'?1:kind==='choir'?.8:kind==='strings'?.3:kind==='flute'?.26:kind==='drums'?.15:soft?.35:.2;
+    const at=n.beat*beat,duration=n.duration*beat,release=kind==='sitar'?1.2:kind==='koto'?1:kind==='choir'?.8:kind==='shinobue'?.3:kind==='strings'?.3:kind==='flute'?.26:kind==='drums'?.15:soft?.35:.2;
     const end=Math.min(at+duration+release,ctx.length/SR-.001);if(end-at<.01)return;
     const source=ctx.createBufferSource(),g=ctx.createGain(),p=ctx.createStereoPanner(),f=ctx.createBiquadFilter();
     source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(pitch-sample.meta.root)/12);
-    if((kind==='strings'||kind==='flute'||kind==='choir')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
+    if((kind==='strings'||kind==='flute'||kind==='choir'||kind==='shinobue')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
     const gain=[.24,.095,.18,.10,.22][n.part]*trim*Math.pow(n.velocity/80,1.3);
-    const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):soft?Math.min(.018,duration*.2):.003;
+    const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):kind==='shinobue'?Math.min(.08,duration*.2):soft?Math.min(.018,duration*.2):.003;
     // 伸ばす音（ループする合唱）は、音符の中でもゆっくり引く。伴奏には FADE を入れたのに
     // 旋律を平らなままにすると、旋律だけがずっと同じ音量で鳴り続けて前に出すぎる。
     // 減衰する撥弦（箏・シタール・ピアノ）は勝手に小さくなるので何もしない。
@@ -318,7 +328,7 @@
       g.gain.setValueAtTime(floor,hold);
     }else g.gain.setValueAtTime(gain,hold);
     g.gain.exponentialRampToValueAtTime(.00001,end);
-    p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='flute'?6200:kind==='drums'?9000:soft?1800+n.velocity*10:2500+n.velocity*60;f.Q.value=.4;
+    p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='flute'?6200:kind==='shinobue'?6500:kind==='drums'?9000:soft?1800+n.velocity*10:2500+n.velocity*60;f.Q.value=.4;
     source.connect(f);f.connect(g);g.connect(p);p.connect(bus);source.start(at);source.stop(end);
   }
   async function render(score,onProgress,isCancelled){

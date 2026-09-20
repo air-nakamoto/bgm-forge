@@ -27,6 +27,7 @@ SCRIPTS = [
     ("samples/sitar/bank.js", ""),
     ("samples/koto/bank.js", ""),
     ("samples/choir/bank.js", ""),
+    ("samples/shinobue/bank.js", ""),
     ("bgm-score.js", ""),
     ("bgm-forge.js", ""),
 ]
@@ -48,7 +49,7 @@ def read(rel, mode="r"):
 def bundled_credits():
     """クレジットは要点だけを見せ、全文は開かないと出てこない入れ子にする。
     LGPLは全文の同梱が要るので消さないこと。CC0は義務ではないが同じ形で残している。"""
-    credits = "\n\n".join(read("samples/%s/CREDITS.md" % d) for d in ("vsco2", "sitar", "koto", "choir"))
+    credits = "\n\n".join(read("samples/%s/CREDITS.md" % d) for d in ("vsco2", "sitar", "koto", "choir", "shinobue"))
     cc0 = read("samples/vsco2/LICENSE")
     with tarfile.open(os.path.join(ROOT, TGZ)) as t:
         lgpl = t.extractfile("package/src/main/java/COPYING").read().decode("utf-8")
