@@ -263,6 +263,31 @@
     g.gain.setValueAtTime(gain,at);g.gain.exponentialRampToValueAtTime(.0001,end);
     s.connect(f);f.connect(g);g.connect(p);p.connect(bus);s.start(at,(at*7.3)%Math.max(.01,buffer.duration-dur-.01));s.stop(end);
   }
+  // 神楽鈴は小さな鈴の束。ひと振りで十数個が数ミリ秒ずれて鳴り、高い非整数倍の成分が
+  // 重なって「シャン」になる。金属音をひとつ鳴らしても鈴にはならないので、粒を撒いて重ねる。
+  // 粒の位置・音程・減衰は渡された乱数から決める。種から作るので同じ曲は毎回同じに鳴る。
+  // CC0の神楽鈴の録音が存在しないため合成にした（そりの鈴で代用するとジングルベルに寄る）。
+  const SUZU_BELLS=14;
+  function suzuTone(ctx,bus,noiseBuffer,at,dur,gain,random,pan=0){
+    if(at>=ctx.length/SR)return;
+    const p=ctx.createStereoPanner();p.pan.value=pan;p.connect(bus);
+    // 触れ合う金属の「シャッ」。鈴の粒より先に、ごく短い高域の雑音を置く。
+    noiseSource(ctx,noiseBuffer,p,at,.16,gain*.22,3800,0);
+    for(let i=0;i<SUZU_BELLS;i++){
+      // 鈴はぴったり同時には鳴らない。45ミリ秒のあいだに散らすと束に聞こえる。
+      const t=at+random()*.045;
+      const hz=2300+random()*4200;               // 2.3〜6.5kHz。倍音列に乗せない
+      const decay=Math.min(dur,.25+random()*.65);
+      const end=Math.min(t+decay,ctx.length/SR-.001);if(end-t<.02)continue;
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.type='sine';o.frequency.value=hz;
+      const level=gain*(.05+random()*.05);
+      g.gain.setValueAtTime(.00001,t);
+      g.gain.linearRampToValueAtTime(level,t+.002);
+      g.gain.exponentialRampToValueAtTime(.00001,end);
+      o.connect(g);g.connect(p);o.start(t);o.stop(end);
+    }
+  }
   // A kick needs a pitch drop; a fixed sine reads as a soft blip.
   function scheduleKick(ctx,bus,at,dur,gain){
     const end=Math.min(at+dur+.14,ctx.length/SR-.001);if(end-at<.02)return;
@@ -368,6 +393,9 @@
       if(n.part===4){
         if(n.pitch===36){bank?sampleNote(ctx,bus,n,beat,bank):scheduleKick(ctx,bus,n.beat*beat,n.duration*beat,(chip?.26:.32)*drumGain*n.velocity/80)}
         else if(n.pitch===42)noiseSource(ctx,noiseBuffer,bus,n.beat*beat,Math.min(n.duration*beat,.09),.05*drumGain*n.velocity/80,6500,n.pan||.2);
+        // 神楽鈴。同梱音源ではなく合成なので、音色を切り替えても鳴り方は変わらない。
+        else if(n.pitch===84)suzuTone(ctx,bus,noiseBuffer,n.beat*beat,n.duration*beat,
+          .9*drumGain*n.velocity/80,rng(score.seed^0x53555A55^Math.round(n.beat*16)),n.pan||0);
         else if(bank)sampleNote(ctx,bus,n,beat,bank);
         else noiseSource(ctx,noiseBuffer,bus,n.beat*beat,n.duration*beat,.045*drumGain*n.velocity/80,n.pitch===38?900:2800,n.pan||0);
         continue;

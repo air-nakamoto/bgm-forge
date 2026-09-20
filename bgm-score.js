@@ -353,6 +353,13 @@
       add(2,base-12+pitch(s.scale,next),b+2,1.9, bv-12);
     }
     if(s.drums==='none')return;
+    // 神楽鈴。4小節の頭で一振りだけ。MIDI 84 は General MIDI の Belltree なので、
+    // 書き出したMIDIでも鈴として読める。合成音（bgm-forge.js の suzuTone）なので同梱音源は不要。
+    // 打楽器の枠の中に置いてあるため、打楽器を切ると鈴も止まる。part 4 は打楽器だけ、という
+    // 約束をテストが見ているので、鈴だけ残したいなら約束のほうから直すこと。
+    // 神楽の打楽器はこの場面ごとの経路で作られる。events() の後半にある `s.drums!=='none'`
+    // の塊は伴奏が legacy のときだけ通る道で、神楽はそこを通らない（2026-09-20 に踏んだ）。
+    if(s.moodId==='kagura'&&bar%4===0)add(4,84,b,1.6,54,-.15);
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
     const kind=c.drum==='none'?'light':c.drum;
     const hit=(pitch,at,velocity,duration=.2)=>add(4,pitch,b+at,duration,velocity);

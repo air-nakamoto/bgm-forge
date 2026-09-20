@@ -164,6 +164,30 @@ function measuredRoot(entry){
   assert(note.harmonicRatio>=0.40,'倍音列に乗らない箏（'+note.harmonicRatio+'）が混ざっている');
  }
 }
+// 神楽鈴。4小節の頭で一振りだけ鳴る。打楽器の枠の中にあるので、打楽器を切ると止まる。
+// 神楽の打楽器は場面ごとの経路で作られる。events() 後半の legacy 用の塊に書いても鳴らない
+// （2026-09-20 に踏んだ）。ここは「実際に音符として出てくるか」を見ている。
+{
+ const m=MOODS.find(x=>x.id==='kagura'),dk=DEFAULTS.kagura;
+ let withDrums=0,withoutDrums=0;
+ for(let seed=1;seed<=40;seed++){
+  const s=score.compose({mood:m,scale:MODES[m.mode],bpm:dk[0],sound:dk[1],
+   length:30,ending:'loop',lead:dk[2]===true,phrasing:dk[3]||'auto'},seed);
+  const suzu=score.events(s).filter(n=>n.part===4&&n.pitch===84);
+  assert(suzu.length>0,'神楽に神楽鈴が入っていない seed='+seed);
+  withDrums+=suzu.length;
+  // 4小節（16拍）の頭。humanize でミリ秒ずれるので許容を持たせる。
+  for(const n of suzu)assert(Math.abs(n.beat-Math.round(n.beat/16)*16)<0.2,
+   '神楽鈴が4小節の頭にない beat='+n.beat);
+  const off={...s,drums:'none'};
+  withoutDrums+=score.events(off).filter(n=>n.part===4).length;
+ }
+ assert(withDrums>=40,'神楽鈴の数が少なすぎる '+withDrums);
+ assert.equal(withoutDrums,0,'打楽器を切っても part4 が残っている');
+ // 鈴は合成音。同梱音源に頼っていないこと（音色を変えても鳴る）。
+ assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),
+  /n\.pitch===84\)suzuTone\(/,'神楽鈴の合成が発音経路に繋がっていない');
+}
 // 笛は減衰しない持続音なので、収録をループさせて伸ばす。ループ点が壊れていると
 // 神楽の音が伸びない／ぷつぷつ鳴る。音高の実測と、ループが成立していることを見る。
 {
