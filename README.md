@@ -1,6 +1,6 @@
 # BGM Forge
 
-TRPGの場面に合わせたループBGMを、ブラウザ内で自動作曲するツールです。
+場面に合わせたループBGMを、ブラウザ内で自動作曲するツールです。
 
 公開サイト: https://bgm-forge.suihei.workers.dev/
 
