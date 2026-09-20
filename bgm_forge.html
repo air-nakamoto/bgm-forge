@@ -195,9 +195,9 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
 #feedback{grid-template-columns:minmax(0,1fr);background:rgba(10,15,24,.55);padding:18px;box-sizing:border-box}
 #feedback .feedback-card{color-scheme:dark;background:linear-gradient(180deg,#142a36,#00080e);color:var(--ink);width:min(440px,100%);min-width:0;box-sizing:border-box;max-height:calc(100dvh - 36px);overflow:auto;border:1px solid rgba(122,190,208,.34);border-radius:3px;box-shadow:0 0 60px -12px rgba(113,196,213,.3);font:13px/1.65 var(--sans)}
 .feedback-head{padding:14px 18px 12px;border-bottom:1px solid var(--line);position:relative}
-#feedbackTitle{margin:0 32px 3px 0;font-size:16px;line-height:1.5;letter-spacing:.02em}
+#feedbackTitle{margin:0 92px 3px 0;font-size:16px;line-height:1.5;letter-spacing:.02em}
 .feedback-version{margin:0;color:var(--dim);font-size:11px}
-#feedback [data-feedback-close]{position:absolute;right:12px;top:11px;width:26px;height:26px;border:0;border-radius:2px;background:rgba(113,196,213,.06);color:var(--dim);font:20px/1 var(--sans);padding:0}
+#feedback [data-feedback-close]{position:absolute;right:14px;top:12px}
 .feedback-body{padding:16px 18px 18px}
 .feedback-types{border:0;padding:0;margin:0 0 14px;min-width:0}
 .feedback-types legend,.feedback-label{display:block;margin-bottom:7px;font-size:12px;font-weight:600}
@@ -537,7 +537,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
   <div class="feedback-card" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
     <div class="feedback-head"><h2 id="feedbackTitle">意見・要望を送る</h2>
       <p class="feedback-version">対象バージョン: <span id="feedbackVersion">2026.09.20.3</span></p>
-      <button data-feedback-close aria-label="閉じる">×</button></div>
+      <button class="helpclose" data-feedback-close aria-label="閉じる">✗ 閉じる</button></div>
     <div class="feedback-body">
       <fieldset class="feedback-types"><legend>投稿の種類 <span class="feedback-required">*</span></legend><div class="feedback-options"><label class="feedback-choice"><input type="radio" name="feedbackType" value="bug"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 7h8v9a4 4 0 0 1-8 0V7Zm2-3 2 3 2-3M4 10h4m8 0h4M4 16h4m8 0h4M6 5l3 3m6 0 3-3M6 21l3-3m6 0 3 3M12 8v11"/></svg>不具合</span></label><label class="feedback-choice"><input type="radio" name="feedbackType" value="request" checked><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18h6m-5 3h4M8 12a6 6 0 1 1 8 0c-2 2-2 3-2 3h-4s0-1-2-3Z"/></svg>要望</span></label><label class="feedback-choice"><input type="radio" name="feedbackType" value="impression"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a2 2 0 0 1 2 2v12H8l-5 4V5a2 2 0 0 1 2-2Z"/></svg>感想</span></label></div></fieldset>
       <label class="feedback-label" for="feedbackText">内容 <span class="feedback-required">*</span></label>
@@ -558,7 +558,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
 <div id="detail" class="overlay" hidden>
   <div class="card help" role="dialog" aria-modal="true">
     <div class="card-head"><span class="led" style="animation:none"></span><span id="detailTitle">詳細</span><span class="rule"></span>
-      <button class="helpclose" data-close aria-label="閉じる">閉じる</button></div>
+      <button class="helpclose" data-close aria-label="閉じる">✗ 閉じる</button></div>
     <div class="help-body" id="detailBody"></div>
   </div>
 </div>
@@ -631,7 +631,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
 <div id="help" class="overlay" hidden>
   <div class="card help" role="dialog" aria-modal="true" aria-label="使い方">
     <div class="card-head"><span class="led" style="animation:none"></span>使い方<span class="rule"></span>
-      <button id="helpClose" class="helpclose" aria-label="閉じる">閉じる</button></div>
+      <button id="helpClose" class="helpclose" aria-label="閉じる">✗ 閉じる</button></div>
     <div class="help-body">
       <ol class="steps">
         <li class="step"><span class="no">01</span><div><b>場面を選ぶ</b><span>どんな場面で流すかを押すだけ。迷ったらそのままで大丈夫です。<br>音色とテンポは場面に合わせて決まります。</span></div></li>
