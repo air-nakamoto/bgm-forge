@@ -59,6 +59,8 @@ for(const token of ['feedback-endpoint','data-feedback-open','feedbackText','fee
  assert(!standalone.includes(token),'単体版に意見送信の痕跡が残っている: '+token);
 }
 
+require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'feedback.cjs')],{stdio:'inherit'});
+
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
 vm.runInNewContext(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),context);
