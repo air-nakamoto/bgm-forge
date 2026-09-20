@@ -2168,7 +2168,9 @@ window.BGM_CHOIR_BANK=[{"kind":"choir","root":53.31085769769303,"rate":32000,"lo
     choir:{kinds:['choir','strings','piano','piano','drums'],parts:[0]}
   };
   const RECORDED_KINDS={sitar:'シタール',koto:'箏',choir:'合唱'};
-  const partTrim=(score,part)=>part===0?(score.moodId==='ritual'&&score.sound==='choir'?.55:1):
+  // 音符の中でどこまで引くか。ループして伸び続ける音源だけを対象にする。
+  const SUSTAIN_FADE={choir:.45};
+  const partTrim=(score,part)=>part===0?(score.sound==='choir'?.38:1):
     part>=1&&part<=3?(ACCOMP_TRIM[score.moodId]||1):1;
   // 持続音（パッドと低音）の引き方。[どこまで下がるか, 何拍かけて下がるか]。
   // 拍数が0なら音符の長さの9割をかけて下がる（長い音ほどゆっくり）。
@@ -2439,8 +2441,17 @@ window.BGM_CHOIR_BANK=[{"kind":"choir","root":53.31085769769303,"rate":32000,"lo
     if((kind==='strings'||kind==='flute'||kind==='choir')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
     const gain=[.24,.095,.18,.10,.22][n.part]*trim*Math.pow(n.velocity/80,1.3);
     const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):soft?Math.min(.018,duration*.2):.003;
+    // 伸ばす音（ループする合唱）は、音符の中でもゆっくり引く。伴奏には FADE を入れたのに
+    // 旋律を平らなままにすると、旋律だけがずっと同じ音量で鳴り続けて前に出すぎる。
+    // 減衰する撥弦（箏・シタール・ピアノ）は勝手に小さくなるので何もしない。
+    const sustain=SUSTAIN_FADE[kind]||1,hold=Math.max(at+attack,end-release);
     g.gain.setValueAtTime(.00001,at);g.gain.linearRampToValueAtTime(gain,at+attack);
-    g.gain.setValueAtTime(gain,Math.max(at+attack,end-release));g.gain.exponentialRampToValueAtTime(.00001,end);
+    if(sustain<1){
+      const floor=Math.max(gain*sustain,1e-5);
+      g.gain.exponentialRampToValueAtTime(floor,Math.min(at+attack+2,hold));
+      g.gain.setValueAtTime(floor,hold);
+    }else g.gain.setValueAtTime(gain,hold);
+    g.gain.exponentialRampToValueAtTime(.00001,end);
     p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='flute'?6200:kind==='drums'?9000:soft?1800+n.velocity*10:2500+n.velocity*60;f.Q.value=.4;
     source.connect(f);f.connect(g);g.connect(p);p.connect(bus);source.start(at);source.stop(end);
   }

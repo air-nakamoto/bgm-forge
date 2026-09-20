@@ -103,10 +103,18 @@ for(const mood of MOODS){
   const base={moodId:mood.id,sound};
   for(const phrasing of ['minimal','sparse','auto','dense']){
    const s={...base,phrasing};
-   assert.equal(partTrim(s,0),mood.id==='ritual'&&sound==='choir'?.55:1);
+   // 合唱は伸び続けるので、どの場面で旋律に使っても音量を下げる。
+   assert.equal(partTrim(s,0),sound==='choir'?.38:1);
    for(let part=1;part<=4;part++)assert.equal(partTrim(s,part),partTrim(base,part));
   }
  }
+}
+// ループして伸び続ける音源だけ、音符の中でも引く。撥弦は勝手に小さくなるので対象外。
+{
+ const src=fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8');
+ assert.match(src,/const SUSTAIN_FADE=\{choir:/,'合唱には音符内の減衰が要る');
+ assert(!/SUSTAIN_FADE=\{[^}]*(koto|sitar|piano)/.test(src),'撥弦に音符内の減衰を掛けないこと');
+ assert.match(src,/const sustain=SUSTAIN_FADE\[kind\]\|\|1/,'sampleNote が SUSTAIN_FADE を見ていること');
 }
 // 儀式の最後の声をループ末尾まで引き伸ばさず、伴奏にも休む長さを残す。
 for(let seed=1;seed<=24;seed++){
