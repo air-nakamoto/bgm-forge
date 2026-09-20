@@ -1428,7 +1428,9 @@ for(const m of api.MOODS){ const s=S.compose({mood:m,scale:api.MODES[m.mode],bpm
    (b) 笛が鳴るのは25秒中10.1秒（40%）。旋律を出せば増えるが、`lead` を立てると内声が MIDI 47
        まで下がって笛として成立しない。やるなら「旋律だけ実録音、内声は合成」に作り分ける。
 6. **神楽鈴が無い**（2026-09-20 に要望）。「シャン」と鳴る鈴が欲しい。CC0に神楽鈴は無く、
-   近いのはそりの鈴・ハンドベル（Freesound 493835 se2001 ほか）。合成でも作れる
+   近いのはそりの鈴・ハンドベル（Freesoundで license:"Creative Commons 0" を付けて
+   「sleigh bells shake」で検索すると se2001 / Oldome / ktandry / arseniiv が出る。
+   音IDは採用を決めるときに実ページで確認すること）。合成でも作れる
    （高域の帯域ノイズ＋非整数倍の金属成分を数十ミリ秒ずらして重ねる）。方針は未定。
 
 **やってみて却下されたこと（再導入しないこと）**
