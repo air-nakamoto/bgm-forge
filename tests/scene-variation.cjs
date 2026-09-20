@@ -66,6 +66,17 @@ for(const token of ['feedback-endpoint','data-feedback-open','feedbackText','fee
 require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'feedback.cjs')],{stdio:'inherit'});
 require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'hosting.cjs')],{stdio:'inherit'});
 
+// 使用素材・ライセンスは、他の詳細と同じ重ねて出す画面（#license）に入れる。折りたたみへ戻さないこと。
+// 中身はHTMLに置いたまま開く（単体版では全文ライセンスが数MBになり、複製すると開くたびに重い）。
+for(const [name,html] of [['分割版',v2html],['単体版',standalone]]){
+ assert(html.includes('id="license"'),name+' に使用素材・ライセンスの画面が無い');
+ assert(html.includes('id="licenseOpen"'),name+' に使用素材・ライセンスを開くボタンが無い');
+ assert(!html.includes('material-credits'),name+' が折りたたみ（material-credits）に戻っている');
+ const modal=html.slice(html.indexOf('id="license"'));
+ assert(modal.slice(0,modal.indexOf('</div>\n</div>')).includes('音源: VSCO 2 Community Edition')
+   ||modal.slice(0,modal.indexOf('id="detail"')).includes('VSCO 2'),name+' の画面に音源のクレジットが入っていない');
+}
+
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
 vm.runInNewContext(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),context);

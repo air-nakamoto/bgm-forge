@@ -772,7 +772,7 @@
   function lockScroll(on){if(document.body&&document.body.style)document.body.style.overflow=on?'hidden':''}
   function showOverlay(on){const o=$('overlay');if(!o)return;o.hidden=!on;lockScroll(on)}
   // One controller for the help sheet and the per-section detail sheets.
-  function closeSheets(){['help','detail'].forEach(id=>{const o=$(id);if(o)o.hidden=true});lockScroll(false)}
+  function closeSheets(){['help','detail','license'].forEach(id=>{const o=$(id);if(o)o.hidden=true});lockScroll(false)}
   function openDetail(key){
     const src=$(key),body=$('detailBody'),title=$('detailTitle'),sheet=$('detail');
     if(!src||!body||!sheet||body.innerHTML===undefined)return;
@@ -1104,9 +1104,13 @@
   $('helpOpen').onclick=()=>showHelp(true);
   $('helpClose').onclick=()=>showHelp(false);
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openDetail(b.dataset.more)});
+  // 使用素材・ライセンス。中身はHTMLに書いてあるので、他の詳細のように複製せず、そのまま出す
+  // （単体版では全文ライセンスが数MBになり、innerHTMLで複製すると開くたびに重い）。
+  {const b=$('licenseOpen'),o=$('license');if(b&&o)b.onclick=()=>{o.hidden=false;lockScroll(true);
+    const c=o.querySelector('[data-close]');if(c&&c.focus)c.focus()}}
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
-  ['help','detail'].forEach(id=>{const o=$(id);if(o)o.onclick=e=>{if(e.target===o)closeSheets()}});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&(!$('help').hidden||!$('detail').hidden))closeSheets()});
+  ['help','detail','license'].forEach(id=>{const o=$(id);if(o)o.onclick=e=>{if(e.target===o)closeSheets()}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&['help','detail','license'].some(id=>{const o=$(id);return o&&!o.hidden}))closeSheets()});
   // Build the context on the user's first touch of the page, while the gesture is still live.
   ['pointerdown','keydown'].forEach(type=>document.addEventListener(type,unlockAudio,{capture:true}));
   $('volume').oninput=e=>setVolume(Number(e.target.value)/100);

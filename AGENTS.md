@@ -184,7 +184,13 @@ console.log(score.events(s).length);
 - **音源を足したら、画面のクレジットに載せたか確かめる。** 笛を実録音に差し替えた日に、
   「使用素材・ライセンス」への追記を忘れていた。同梱音源がCC0であることが生成物をCC0と
   言い切れる根拠（§6）なので、載っていないのは表示の穴。`bgm_forge.html` の
-  `details.material-credits` と `scripts/build_standalone.py` の `bundled_credits()` の両方。
+  `bgm_forge.html` の `#license`（重ねて出す画面）と `scripts/build_standalone.py` の
+  `bundled_credits()` の両方。
+- **使用素材・ライセンスの画面は、中身を複製せずにそのまま出す。** 他の詳細（`data-more`）は
+  `openDetail` が `innerHTML` を `#detailBody` へ複製する作りだが、単体版のこの画面は
+  CC0とLGPLの全文とエンコーダー原本（base64）で **4.1MB** ある。複製すると開くたびに
+  その分の文字列を作ることになる。`#license` はHTMLに置いたまま `hidden` を外すだけにしてある
+  （実測: 単体版で開くまで157ms、JSエラー0）。
 - **クレジット行の行頭の文言を書き換えない。** `build_standalone.py` が `NOTE_SOURCE` /
   `NOTE_LAME` / `NOTE_GROOVE` の正規表現で行を探して差し替えている。リンクなどは行の末尾に
   足すこと。`NOTE_GROOVE` はアサート無しで消すだけなので、外すと静かに二重表示になる。
