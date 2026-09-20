@@ -77,8 +77,20 @@ def bundled_credits():
         '<a href="https://lame.sourceforge.net/">LAME</a> · '
         '<a href="https://github.com/zhuker/lamejs">lamejs</a> · '
         '<a download="lamejs-1.2.1.tgz" href="data:application/gzip;base64,' + b64 + '">ソース一式を保存</a></p>'
+        '<p><b>実録音の音源</b>　いずれも Freesound · CC0 1.0。'
+        'シタール ／ deleted_user_229898 '
+        '<a href="https://freesound.org/people/deleted_user_229898/sounds/42192/">42192</a>、'
+        '箏 ／ RutgerMuller '
+        '<a href="https://freesound.org/people/RutgerMuller/sounds/365242/">365242</a>、'
+        '笛 ／ t-man95 '
+        '<a href="https://freesound.org/people/t-man95/sounds/553217/">553217</a>、'
+        '合唱 ／ ShangusBurger '
+        '<a href="https://freesound.org/people/ShangusBurger/sounds/764124/">764124</a>。'
+        '加工の内容は下の「音源の原典・加工内容」に全部あります。</p>'
         '<p><b>打楽器の強弱とタイミング</b>　Groove MIDI Dataset ／ Magenta · Google · CC BY 4.0。'
-        '統計だけを参考にしており、データは同梱していません。</p>'
+        '統計だけを参考にしており、データは同梱していません。'
+        '<a href="https://magenta.tensorflow.org/datasets/groove">データセット</a> · '
+        '<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a></p>'
         + sheet("音源の原典・加工内容", credits)
         + sheet("CC0 1.0 全文（音源）", cc0)
         + sheet("LGPL 2.1 全文（MP3エンコーダー）", lame)

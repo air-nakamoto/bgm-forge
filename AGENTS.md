@@ -180,6 +180,13 @@ console.log(score.events(s).length);
   legacy のときだけ通る `events()` 後半の `s.drums!=='none'` の塊がある。神楽は前者しか通らない。
   打楽器に音を足すときは、その場面がどちらを通るか確かめること。「打楽器が鳴っているのだから
   この塊が動いている」は成り立たない（2026-09-20 に神楽鈴で踏んだ）。
+- **音源を足したら、画面のクレジットに載せたか確かめる。** 笛を実録音に差し替えた日に、
+  「使用素材・ライセンス」への追記を忘れていた。同梱音源がCC0であることが生成物をCC0と
+  言い切れる根拠（§6）なので、載っていないのは表示の穴。`bgm_forge_v2.html` の
+  `details.material-credits` と `scripts/build_standalone.py` の `bundled_credits()` の両方。
+- **クレジット行の行頭の文言を書き換えない。** `build_standalone.py` が `NOTE_SOURCE` /
+  `NOTE_LAME` / `NOTE_GROOVE` の正規表現で行を探して差し替えている。リンクなどは行の末尾に
+  足すこと。`NOTE_GROOVE` はアサート無しで消すだけなので、外すと静かに二重表示になる。
 - **`autoPattern` を持つ場面では `SCENES` の一部の設定が効かなくなる。** 効くのは `harmony` と `high` だけです。
 - **伴奏の音量に手を入れるときは、発音の3経路すべてに掛ける。** `synthNote` / `sampleNote` / `chipTone`。
   片方だけだと音色を切り替えたときにバランスが変わります。
