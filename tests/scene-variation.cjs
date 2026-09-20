@@ -164,6 +164,35 @@ function measuredRoot(entry){
   assert(note.harmonicRatio>=0.40,'倍音列に乗らない箏（'+note.harmonicRatio+'）が混ざっている');
  }
 }
+// 民族は東方旋法（ヒジャーズ）。オリエンタルに聞こえる正体は♭2と3のあいだの増2度なので、
+// 音階そのものと、旋律に増2度が現れることを固定する。ミクソリディアに戻ると落ちる。
+{
+ const m=MOODS.find(x=>x.id==='ethnic'),de=DEFAULTS.ethnic;
+ assert.equal(m.mode,'phrygianDominant');
+ // MODES は vm のサンドボックス側で作られた配列なので、deepEqual は原型が違って落ちる。
+ assert.equal(MODES.phrygianDominant.join(','),'0,1,4,5,7,8,10','ヒジャーズの音程が違う');
+ let steps={},notes=0,tonicBass=0,bassTotal=0;
+ for(let seed=1;seed<=40;seed++){
+  const s=score.compose({mood:m,scale:MODES[m.mode],bpm:de[0],sound:de[1],
+   length:30,ending:'loop',lead:true,phrasing:de[3]||'auto'},seed);
+  const beat=60/s.bpm,ev=score.events(s);
+  const mel=ev.filter(n=>n.part===0).sort((a,b)=>a.beat-b.beat);
+  for(let i=1;i<mel.length;i++){
+   const d=Math.abs(mel[i].pitch-mel[i-1].pitch);
+   if(d>0&&d<=4){steps[d]=(steps[d]||0)+1;notes++}
+  }
+  for(const n of ev.filter(n=>n.part===2)){
+   bassTotal+=n.duration*beat;
+   if(((n.pitch-s.root)%12+12)%12===0)tonicBass+=n.duration*beat;
+  }
+ }
+ // 増2度（3半音）が隣り合う割合。ミクソリディアでは17.8%、ヒジャーズでは24.8%だった。
+ assert(steps[3]/notes>0.21,'民族の旋律に増2度が出ていない '+(100*steps[3]/notes).toFixed(1)+'%');
+ // 半音の隣接。ミクソリディア17.4% → ヒジャーズ37.7%。
+ assert(steps[1]/notes>0.30,'民族の旋律に半音が足りない '+(100*steps[1]/notes).toFixed(1)+'%');
+ // 持続低音。歩く低音だけに戻ると33%まで落ちる。
+ assert(tonicBass/bassTotal>0.45,'民族の低音が主音を保っていない '+(100*tonicBass/bassTotal).toFixed(1)+'%');
+}
 // 神楽鈴。4小節の頭で一振りだけ鳴る。打楽器の枠の中にあるので、打楽器を切ると止まる。
 // 神楽の打楽器は場面ごとの経路で作られる。events() 後半の legacy 用の塊に書いても鳴らない
 // （2026-09-20 に踏んだ）。ここは「実際に音符として出てくるか」を見ている。

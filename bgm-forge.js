@@ -6,7 +6,10 @@
     ionian:[0,2,4,5,7,9,11], dorian:[0,2,3,5,7,9,10],
     aeolian:[0,2,3,5,7,8,10], phrygian:[0,1,3,5,7,8,10],
     locrian:[0,1,3,5,6,8,10], harmonic:[0,2,3,5,7,8,11],
-    lydian:[0,2,4,6,7,9,11], mixolydian:[0,2,4,5,7,9,10], japanese:[0,2,4,7,9]
+    lydian:[0,2,4,6,7,9,11], mixolydian:[0,2,4,5,7,9,10], japanese:[0,2,4,7,9],
+    // ヒジャーズ（フリジア旋法の第3音を上げたもの／和声的短音階の第5旋法）。
+    // ♭2と3のあいだが3半音（増2度）あり、これが「オリエンタル」と聞こえる正体。
+    phrygianDominant:[0,1,4,5,7,8,10]
   };
   // Mood-level accompaniment trim for parts 1-3 (pad / bass / inner voice).
   // 1 = unchanged. Lower = quieter backing under the melody.
@@ -56,7 +59,7 @@
     {id:'town',style:'walk',desc:'人の行き交う広場、酒場での情報収集、市場での値切り。賑やかな雑談の下に流しても邪魔になりません。爪弾きの弦が三連で跳ねます。',name:'🍺 街・酒場',mode:'mixolydian',roots:[7,2,5],wave:'triangle',progs:[[0,6,3,0],[0,3,6,0],[0,6,0,3],[3,0,6,0],[0,6,3,4],[6,0,3,0]],drums:'light',energy:.8,density:.85},
     {id:'casino',style:'walk',desc:'ルーレット、カード勝負、華やかな遊技場。陽気な駆け引きやコミカルな騒動に。速いピアノと歩く低音が三連で跳ねます。',name:'🎲 カジノ',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,5,1,4],[0,2,5,4],[3,0,1,4],[0,5,3,4],[0,3,1,4],[5,1,4,0]],drums:'light',energy:.72,density:.65},
     {id:'victory',style:'full',desc:'問題が解決した。事件が解決した。脅威が去った。探索や依頼をクリアした喜びに。木のマレットが弾む伴奏と軽い打楽器で、明るい達成感を目指します。',name:'🎉 クリア',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,3,4,0],[0,5,3,0],[3,1,4,0],[0,2,3,0],[5,3,4,0],[3,4,0,0]],drums:'light',energy:.8,density:.75},
-    {id:'ethnic',style:'walk',desc:'異国の街、草原、砂漠、遠い土地への旅。土地の暮らしや文化に触れる場面に。民族弦の乾いた撥弦と歩くリズムで、素朴な旅情を描きます。',name:'🌍 民族',mode:'mixolydian',roots:[0,5,7],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,4,5,3],[3,0,4,0],[0,5,3,4],[5,3,0,4]],drums:'swing',energy:.65,density:.65},
+    {id:'ethnic',style:'walk',desc:'異国の街、市場、砂漠、遠い土地への旅。見知らぬ文化に触れる場面や、素性の知れない相手との取引に。民族弦の乾いた撥弦と、増2度を含む東方の音階。持続する低音が下に一本通ります。',name:'🌍 民族',mode:'phrygianDominant',roots:[0,5,7],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,4,5,3],[3,0,4,0],[0,5,3,4],[5,3,0,4]],drums:'swing',energy:.65,density:.65},
     {id:'japanese',style:'walk',desc:'城下町、山道、祭り、和風の街並み。静かな旅や人々の暮らしを感じる場面に。実録音の箏が、硬質な撥弦と長い余韻を置いていきます。',name:'🎐 和風',mode:'japanese',roots:[0,2,7],wave:'triangle',progs:[[0,2,4,0],[0,4,2,0],[2,0,4,0],[0,3,2,0],[4,0,2,0],[0,2,3,0]],drums:'none',energy:.48,density:.45},
     {id:'decision',style:'hymn',desc:'重大な選択、対立、真相を前にした沈黙。引き返せない決断を迫られる場面に。低い持続音と重い和音で、張りつめた時間を支えます。',name:'⚖️ 決断',mode:'aeolian',roots:[0,5,7],wave:'sine',progs:[[0,5,3,0],[0,2,5,0],[5,0,3,0],[0,3,5,0],[0,6,5,0],[3,0,5,0]],drums:'none',energy:.52,density:.35},
     {id:'kagura',style:'stab',desc:'神社、呪い、封印、神降ろし、和風の儀式。人ならざるものと向き合う場面に。神楽笛の息の混じる音と低い持続音、遠い太鼓で神秘を描きます。',name:'⛩️ 神楽',mode:'harmonic',roots:[0,2,7],wave:'sine',progs:[[0,3,0,4],[0,6,3,0],[3,0,6,0],[0,4,3,0],[0,3,4,6],[6,3,0,4]],drums:'heart',energy:.58,density:.4},
@@ -780,7 +783,8 @@
     return [mood?mood.name:score.moodId,(tempo?tempo.name+' ':'')+score.bpm+' BPM',lengthLabel(score.length),sound?sound.name:score.sound].join(' · ');
   }
   const MODE_JA={ionian:'イオニア（長調）',dorian:'ドリア',aeolian:'エオリア（自然短調）',phrygian:'フリギア',
-    locrian:'ロクリア',harmonic:'和声的短音階',lydian:'リディア',mixolydian:'ミクソリディア',japanese:'和風五音音階'};
+    locrian:'ロクリア',harmonic:'和声的短音階',lydian:'リディア',mixolydian:'ミクソリディア',japanese:'和風五音音階',
+    phrygianDominant:'ヒジャーズ（東方旋法）'};
   const densityWord=d=>d<.5?'少なめ':d>.75?'多め':'ふつう';
   const DRUM_JA={none:'なし',swing:'シャッフル（三連）',ticks:'時計（まばら）',light:'軽い（2・4拍）',pulse:'鼓動（1拍）',heart:'心音（二連）',drive:'ドライブ（8分＋太鼓）'};
   // The mood card sells the scene; the build panel confirms the spec just before generating.

@@ -31,7 +31,9 @@
     town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
     // クリア：4小節で主和音に着地。裏拍を交えた短い伴奏と二拍の低音で弾ませる。
     victory:{inner:[[0,.5,1.5,2,3],[.5,1,2,2.5,3.5],[0,1,1.5,2.5,3]],bass:['fifth','two','fifth'],pad:[0,2.5],padBars:1,hold:1.1,harmony:[1,1,1],high:74,gate:.38,drum:'light'},
-    ethnic:  {inner:[[0,1.5,2.5],[.5,2,3],[0,1,2,3.5]],bass:['walk','fifth','two'],pad:[0,2.5],padBars:2,hold:1.1,harmony:[1,2,1],high:73,gate:.42,drum:'swing'},
+    // 民族は東方の音階に合わせて、低音を歩かせる編成のひとつを持続低音（ドローン）にし、
+    // 和音の変化も減らした。機能和声で動き回ると民謡になり、オリエンタルに聞こえない。
+    ethnic:  {inner:[[0,1.5,2.5],[.5,2,3],[0,1,2,3.5]],bass:['pedal','walk','fifth'],pad:[0,2.5],padBars:2,hold:1.1,harmony:[2,2,4],high:73,gate:.42,drum:'swing'},
     japanese:{inner:[[0,1.5,3],[.5,2.5],[0,1,2.5,3.5]],bass:['pedal','fifth','hold'],pad:[0],padBars:2,hold:2.4,harmony:[2,2,1],high:70,gate:.7,drum:'none'},
     decision:{inner:[[1.5],[.5,2.5],[0,2.75]],bass:['hold','pedal','fifth'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:67,gate:1.05,drum:'distant'},
     kagura:  {inner:[[0,1.5,3],[.5,2.5],[0,2,3.5]],bass:['pedal','ritual','pedal'],pad:[0],padBars:2,hold:5.2,harmony:[4,2,4],high:75,gate:.8,drum:'ritual'},
@@ -119,6 +121,8 @@
     dorian:[[4,'plain'],[3,'seven'],[2,'nine'],[1,'sus']],
     aeolian:[[4,'plain'],[3,'seven'],[2,'nine'],[1,'sus']],
     phrygian:[[6,'plain'],[2,'sus'],[2,'seven']],
+    // 東方旋法は機能和声で動かさない。素の三和音とsusを多めにして、旋法のまま置く。
+    phrygianDominant:[[6,'plain'],[3,'sus'],[1,'seven']],
     harmonic:[[6,'plain'],[2,'seven'],[2,'sus']],
     locrian:[[6,'plain'],[3,'sus'],[1,'seven']]
   };
