@@ -72,10 +72,15 @@ for(const [name,html] of [['分割版',v2html],['単体版',standalone]]){
  assert(html.includes('id="license"'),name+' に使用素材・ライセンスの画面が無い');
  assert(html.includes('id="licenseOpen"'),name+' に使用素材・ライセンスを開くボタンが無い');
  assert(!html.includes('material-credits'),name+' が折りたたみ（material-credits）に戻っている');
+ assert(html.includes('https://github.com/air-nakamoto/bgm-forge'),name+' にGitHubへのリンクが無い');
  const modal=html.slice(html.indexOf('id="license"'));
  assert(modal.slice(0,modal.indexOf('</div>\n</div>')).includes('音源: VSCO 2 Community Edition')
    ||modal.slice(0,modal.indexOf('id="detail"')).includes('VSCO 2'),name+' の画面に音源のクレジットが入っていない');
 }
+
+// 単体版は1ファイルで配るので、隣に LICENSE が無い。相対リンクのままだと開けない。
+assert(!standalone.includes('<a href="LICENSE">'),'単体版のMITリンクがGitHubへ向いていない');
+assert(v2html.includes('<a href="LICENSE">'),'分割版は同じフォルダのLICENSEを指すこと');
 
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
