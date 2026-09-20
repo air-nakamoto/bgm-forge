@@ -1,0 +1,46 @@
+{
+ "source": "https://freesound.org/people/RutgerMuller/sounds/365242/",
+ "license": "CC0-1.0",
+ "sourceSha256": "a67d8c80efbe2e144065b5207fead09d7d35b74c6e2ed50f20dfc70e12565ad2",
+ "sourceDuration": 779.03,
+ "sampleRate": 32000,
+ "cropSeconds": 2.5,
+ "candidates": 36,
+ "notes": [
+  {
+   "atSeconds": 701.0,
+   "hz": 81.42,
+   "rootMidi": 39.792,
+   "periodicity": 0.987,
+   "originalPeak": 0.2444
+  },
+  {
+   "atSeconds": 692.88,
+   "hz": 160.0,
+   "rootMidi": 51.487,
+   "periodicity": 0.994,
+   "originalPeak": 0.1902
+  },
+  {
+   "atSeconds": 704.94,
+   "hz": 301.89,
+   "rootMidi": 62.478,
+   "periodicity": 0.989,
+   "originalPeak": 0.1124
+  },
+  {
+   "atSeconds": 697.84,
+   "hz": 405.06,
+   "rootMidi": 67.568,
+   "periodicity": 0.997,
+   "originalPeak": 0.1823
+  },
+  {
+   "atSeconds": 670.42,
+   "hz": 477.61,
+   "rootMidi": 70.42,
+   "periodicity": 0.999,
+   "originalPeak": 0.1635
+  }
+ ]
+}

@@ -48,7 +48,7 @@
     requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
     dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
-    ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:2,hold:7.8,harmony:[4,2,4],high:65,gate:.45,drum:'none'},
+    ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],bassHold:2.4,pad:[0],padBars:2,hold:3,harmony:[4,2,4],high:65,gate:.45,drum:'none'},
     machine:{inner:[[0,.5,1,1.75,2.5,3],[0,.75,1.5,2,3,3.5],[0,.5,1.5,2.5,3.25]],bass:['motor','two','motor'],pad:[],padBars:1,hold:0,harmony:[2,4,2],high:66,gate:.22,drum:'motor'},
     chase:  {inner:[[0,.5,1,1.5,2,2.5,3,3.5],[0,.5,1.5,2,2.5,3.5],[0,.75,1.5,2,2.75,3.5]],bass:['motor','walk','motor'],pad:[0],padBars:2,hold:.9,harmony:[1,1,2],high:73,gate:.32,drum:'running'},
     tense:  {inner:[[0,.75,1.5,2.5,3],[0,.5,1.75,2.5,3.5],[0,1.5,2,2.75]],bass:['ritual','motor','march'],pad:[0,2.5],padBars:1,hold:.7,harmony:[1,2,1],high:67,gate:.35,drum:'battle'},
@@ -309,7 +309,7 @@
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,add}){
     const c=SCENES[s.moodId],v=s.arrangementVariant||0,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
-    const sparse=['wonder','mystic','dark','horror','doubt'].includes(s.moodId);
+    const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
     const breath=sparse&&local%4===(v===1?1:3);
     const n=raw.length,vel=43+energy*17;
     if(bar%c.padBars===0){
@@ -517,7 +517,8 @@
         const lift=[0,-4,6,2][cycle%4],closes=loop&&(cycle+1)*span>=total;
         for(const n of s.melody){
           const beat=n.beat+cycle*span;if(!loop&&beat>=lastBar*4)continue;
-          add(n.part,n.pitch,beat,closes&&n===closing?Math.max(n.duration,total-beat):n.duration,Math.max(1,n.velocity+lift),n.pan);
+          // 儀式の声は息継ぎを残す。最後の音を曲末まで伸ばすと、後半が持続音になる。
+          add(n.part,n.pitch,beat,closes&&n===closing&&s.moodId!=='ritual'?Math.max(n.duration,total-beat):n.duration,Math.max(1,n.velocity+lift),n.pan);
         }
       }
     }

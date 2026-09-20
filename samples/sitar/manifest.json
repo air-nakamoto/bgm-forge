@@ -1,0 +1,18 @@
+{
+  "source": "https://freesound.org/people/deleted_user_229898/sounds/42192/",
+  "license": "CC0-1.0",
+  "sourceSha256": "5f420914252765dcc7b6d07b7ebf6680c3fb9adda510a914995e3254cff349a9",
+  "sourceDuration": 40.83953125,
+  "cropSeconds": [
+    0,
+    8
+  ],
+  "fundamentalHz": 169.05223599724255,
+  "rootMidi": 52.43958689581349,
+  "originalPeak": 0.2702629566192627,
+  "processedPeak": 0.8500000238418579,
+  "sampleRate": 32000,
+  "pcmBytes": 512000,
+  "fadeInSeconds": 0.002,
+  "fadeOutSeconds": 0.5
+}

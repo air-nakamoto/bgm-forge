@@ -27,6 +27,7 @@ TRPGの場面に合わせたループBGMを、ブラウザ内で自動作曲す�
 - `bgm-score.js`：作曲エンジン
 - `bgm-forge.js`：音声生成・再生・保存・画面処理
 - `samples/vsco2/`：内蔵音源とクレジット
+- `samples/sitar/`：CC0実録音シタール、測定音高・加工情報とクレジット
 - `vendor/lamejs/`：MP3エンコーダー
 - `favicon.svg`：ブラウザのタブ用アイコン（単体版には埋め込み）
 - `ogp.svg` / `ogp.png`：共有画像の編集元 / 公開用PNG（1200×630px）
@@ -58,7 +59,7 @@ node tests/scene-variation.cjs
 
 ## 収録内容
 
-- 23種類のTRPG場面、民族弦・和琴・神楽笛を含む16種類の音色
+- 23種類のTRPG場面、実録音シタール・和琴・神楽笛・コーラスを含む17種類の音色
 - 13種類の音色
 - 場面別・手動選択の伴奏パターン
 - ループ用／終止あり
@@ -87,6 +88,7 @@ MIT License（`LICENSE`）。著作権表示を残せば、自由に使用・改
 ## 第三者素材
 
 - VS Chamber Orchestra: Community Edition（VSCO 2 CE）：CC0 1.0
+- sitar01.flac / deleted_user_229898（Freesound 42192）：CC0 1.0。民族の旋律・内声に使用。出典・加工情報は `samples/sitar/CREDITS.md`。
 - lamejs 1.2.1 / LAME：LGPL 2.1（未改変。原本一式を `vendor/lamejs/lamejs-1.2.1.tgz` として同梱）
 - Groove MIDI Dataset：CC BY 4.0。打楽器の強弱とタイミングの統計を参考にしています。データ自体は収録していません。
 

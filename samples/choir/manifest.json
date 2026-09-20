@@ -1,0 +1,20 @@
+{
+ "source": "https://freesound.org/people/ShangusBurger/sounds/764124/",
+ "license": "CC0-1.0",
+ "sourceSha256": "8dabda9a05733f43e58915f6e0bc2e9f3747f47a7f75ac2d721b81481f4d6fb4",
+ "sourceChannels": "4ch B-format (FuMa); only the omnidirectional W channel is used",
+ "cropSeconds": [
+  1.45,
+  8.3
+ ],
+ "sampleRate": 32000,
+ "fundamentalHz": 177.778,
+ "rootMidi": 53.311,
+ "periodicity": 0.98,
+ "originalPeak": 0.072,
+ "processedPeak": 0.85,
+ "loopSeconds": [
+  1.19691,
+  5.19672
+ ]
+}

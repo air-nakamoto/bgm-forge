@@ -11,6 +11,17 @@
   // Mood-level accompaniment trim for parts 1-3 (pad / bass / inner voice).
   // 1 = unchanged. Lower = quieter backing under the melody.
   const ACCOMP_TRIM = { wonder: .72, night: .62, doubt: .68 };
+  // 儀式の持続するコーラスを伴奏になじませる。密度で和琴などまで下げない。
+  // 実録音を使う音色。kinds はパート番号ごとの音源、parts は実録音に差し替えるパート。
+  // 旋律（0）と内声（3）だけを差し替え、和音と低音は合成音のまま土台にする。
+  const RECORDED={
+    folk :{kinds:['sitar','strings','piano','sitar','drums'],parts:[0,3]},
+    koto :{kinds:['koto','strings','piano','koto','drums'],  parts:[0,3]},
+    choir:{kinds:['choir','strings','piano','piano','drums'],parts:[0]}
+  };
+  const RECORDED_KINDS={sitar:'シタール',koto:'箏',choir:'合唱'};
+  const partTrim=(score,part)=>part===0?(score.moodId==='ritual'&&score.sound==='choir'?.55:1):
+    part>=1&&part<=3?(ACCOMP_TRIM[score.moodId]||1):1;
   // 持続音（パッドと低音）の引き方。[どこまで下がるか, 何拍かけて下がるか]。
   // 拍数が0なら音符の長さの9割をかけて下がる（長い音ほどゆっくり）。
   // 拍数を入れると音符の長さによらずその時間で引ききるので、長い音が途中で退場する。
@@ -21,7 +32,7 @@
     {id:'casino',style:'walk',desc:'ルーレット、カード勝負、華やかな遊技場。陽気な駆け引きやコミカルな騒動に。速いピアノと歩く低音が三連で跳ねます。',name:'🎲 カジノ',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,5,1,4],[0,2,5,4],[3,0,1,4],[0,5,3,4],[0,3,1,4],[5,1,4,0]],drums:'light',energy:.72,density:.65},
     {id:'victory',style:'full',desc:'問題が解決した。事件が解決した。脅威が去った。探索や依頼をクリアした喜びに。木のマレットが弾む伴奏と軽い打楽器で、明るい達成感を目指します。',name:'🎉 クリア',mode:'ionian',roots:[0,5,7],wave:'triangle',progs:[[0,3,4,0],[0,5,3,0],[3,1,4,0],[0,2,3,0],[5,3,4,0],[3,4,0,0]],drums:'light',energy:.8,density:.75},
     {id:'ethnic',style:'walk',desc:'異国の街、草原、砂漠、遠い土地への旅。土地の暮らしや文化に触れる場面に。民族弦の乾いた撥弦と歩くリズムで、素朴な旅情を描きます。',name:'🌍 民族',mode:'mixolydian',roots:[0,5,7],wave:'triangle',progs:[[0,3,4,0],[0,6,3,0],[0,4,5,3],[3,0,4,0],[0,5,3,4],[5,3,0,4]],drums:'swing',energy:.65,density:.65},
-    {id:'japanese',style:'walk',desc:'城下町、山道、祭り、和風の街並み。静かな旅や人々の暮らしを感じる場面に。和琴の硬質な余韻と間を活かした、素朴な和風の響きです。',name:'🎐 和風',mode:'japanese',roots:[0,2,7],wave:'triangle',progs:[[0,2,4,0],[0,4,2,0],[2,0,4,0],[0,3,2,0],[4,0,2,0],[0,2,3,0]],drums:'none',energy:.48,density:.45},
+    {id:'japanese',style:'walk',desc:'城下町、山道、祭り、和風の街並み。静かな旅や人々の暮らしを感じる場面に。実録音の箏が、硬質な撥弦と長い余韻を置いていきます。',name:'🎐 和風',mode:'japanese',roots:[0,2,7],wave:'triangle',progs:[[0,2,4,0],[0,4,2,0],[2,0,4,0],[0,3,2,0],[4,0,2,0],[0,2,3,0]],drums:'none',energy:.48,density:.45},
     {id:'decision',style:'hymn',desc:'重大な選択、対立、真相を前にした沈黙。引き返せない決断を迫られる場面に。低い持続音と重い和音で、張りつめた時間を支えます。',name:'⚖️ 決断',mode:'aeolian',roots:[0,5,7],wave:'sine',progs:[[0,5,3,0],[0,2,5,0],[5,0,3,0],[0,3,5,0],[0,6,5,0],[3,0,5,0]],drums:'none',energy:.52,density:.35},
     {id:'kagura',style:'stab',desc:'神社、呪い、封印、神降ろし、和風の儀式。人ならざるものと向き合う場面に。神楽笛の息の混じる音と低い持続音、遠い太鼓で神秘を描きます。',name:'⛩️ 神楽',mode:'harmonic',roots:[0,2,7],wave:'sine',progs:[[0,3,0,4],[0,6,3,0],[3,0,6,0],[0,4,3,0],[0,3,4,6],[6,3,0,4]],drums:'heart',energy:.58,density:.4},
     {id:'wonder',style:'drift',desc:'夢や異世界、精霊との邂逅、神秘的な遺跡の探索。日常を離れる場面に。澄んだ鐘が、長く伸びる持続音の上に落ちます。',name:'✨ 幻想',mode:'lydian',roots:[0,5,2],wave:'triangle',progs:[[0,1,4,0],[0,4,1,0],[0,1,0,4],[1,0,4,0],[0,1,5,4],[4,0,1,0]],drums:'none',energy:.5,density:.55},
@@ -34,7 +45,7 @@
     {id:'requiem',style:'hymn',desc:'葬送、慰霊、鎮魂、終幕。悲哀が個人の悲しみなら、こちらは儀式としての弔い。オルガンの持続音が、切れ目なく場を埋めます。',name:'🕊️ 鎮魂',mode:'aeolian',roots:[7,0,5],wave:'sine',progs:[[0,5,2,6],[0,2,5,6],[5,6,0,2],[0,6,5,2],[2,6,0,5],[0,5,6,0]],drums:'none',energy:.35,density:.35},
     {id:'puzzle',style:'walk',desc:'推理、議論、盤面を睨む時間、調査パート。同じ形を回しながら頭を使う時間に。木のマレットの短い音が、淡々と続きます。',name:'🧩 思索',mode:'dorian',roots:[7,0,2],wave:'triangle',progs:[[0,3,0,6],[3,6,3,0],[3,0,6,3],[0,3,6,0],[6,0,3,6],[0,6,0,3]],drums:'light',energy:.6,density:.6},
     {id:'dark',style:'stab',desc:'地下道、夜の路地、尾行されている気配。まだ何も起きていないのに安心できない場面に。輪郭のない持続音と、遠い鼓動。',name:'🌙 暗い',mode:'phrygian',roots:[0,2,6],wave:'sine',progs:[[0,1,0,4],[0,6,1,0],[1,0,3,6],[0,1,6,0],[0,3,1,0],[6,0,1,0]],drums:'pulse',energy:.55,density:.55},
-    {id:'ritual',style:'stab',desc:'召喚、カルトの集会、封印の儀、生贄の祭壇。人ならざるものを呼び出す場面に。重なった声が立ち上がり、低い持続音がゆっくり引いていきます。',name:'🕯️ 儀式',mode:'harmonic',roots:[9,2,4],wave:'sine',progs:[[0,3,0,4],[0,6,3,0],[3,0,6,0],[0,4,3,0],[0,3,4,6],[6,3,0,4]],drums:'heart',energy:.6,density:.4},
+    {id:'ritual',style:'stab',desc:'召喚、カルトの集会、封印の儀、生贄の祭壇。人ならざるものを呼び出す場面に。実録音の合唱が母音を伸ばし、低い持続音がゆっくり引いていきます。',name:'🕯️ 儀式',mode:'harmonic',roots:[9,2,4],wave:'sine',progs:[[0,3,0,4],[0,6,3,0],[3,0,6,0],[0,4,3,0],[0,3,4,6],[6,3,0,4]],drums:'heart',energy:.6,density:.4},
     {id:'machine',style:'drive',desc:'工場、艦内、無人の管制室、電子の迷宮。人の気配がない人工物の中で。8bit風の矩形波が、等間隔で動き続けます。',name:'⚙️ 機械',mode:'phrygian',roots:[2,7,0],wave:'sawtooth',progs:[[0,6,0,1],[0,1,6,0],[6,0,1,0],[0,6,1,6],[1,0,6,0],[0,3,6,1]],drums:'pulse',energy:.8,density:.6},
     {id:'chase',style:'drive',desc:'逃走、追いかけっこ、時間制限のある移動。プレイヤーに息を切らせたい場面に。爪弾きの連打と走る太鼓で、休みません。',name:'🏃 追跡',mode:'dorian',roots:[4,9,11],wave:'sawtooth',progs:[[0,6,3,0],[0,3,6,4],[0,4,3,6],[3,6,0,4],[0,6,4,3],[6,0,3,4]],drums:'drive',energy:1,density:.85},
     {id:'tense',style:'drive',desc:'対峙、交渉決裂、戦闘。相手と刃を合わせる直前から、決着がつくまで。速い室内楽と、打ち込む太鼓。',name:'🔥 緊迫',mode:'harmonic',roots:[2,7,9],wave:'sawtooth',progs:[[0,3,4,0],[0,5,4,0],[3,4,0,6],[0,4,3,4],[5,3,4,0],[0,3,0,4]],drums:'drive',energy:1,density:.9},
@@ -54,10 +65,10 @@
     {id:'tape',name:'ローファイ・テープ',note:'高域を落とした揺れる音'},
     {id:'drone',name:'アンビエント',note:'輪郭のない持続音'},
     {id:'chip',name:'チップチューン',note:'8bit風の矩形波'},
-    {id:'folk',name:'民族弦',note:'乾いた撥弦とゆるい揺れ'},
-    {id:'koto',name:'和琴',note:'硬質な琴の余韻'},
+    {id:'folk',name:'シタール',note:'実録音の弦と共鳴する余韻'},
+    {id:'koto',name:'箏',note:'実録音の琴と長い余韻'},
     {id:'shinobue',name:'神楽笛',note:'息の混じる細い笛の音'}
-    ,{id:'choir',name:'コーラス',note:'ゆっくり立ち上がる重なった声'}
+    ,{id:'choir',name:'合唱',note:'実録音の人の声。母音を伸ばす'}
   ];
   const PHRASINGS=[{id:'minimal',name:'ごく少ない',note:'要所だけ鳴る'},{id:'sparse',name:'少なめ',note:'休みが多い'},{id:'auto',name:'ふつう',note:'雰囲気の既定'},{id:'dense',name:'多め',note:'よく歌う'}];
   const TEMPOS=[{bpm:46,name:'とても遅い'},{bpm:60,name:'ゆっくり'},{bpm:76,name:'ふつう'},{bpm:96,name:'速め'},{bpm:116,name:'疾走'},{bpm:132,name:'めまぐるしい'}];
@@ -257,7 +268,7 @@
   function sampleBuffers(ctx){
     if(sampleCache)return sampleCache;
     if(!window.BGM_SAMPLE_BANK)throw Error('同梱音源が見つかりません。samplesフォルダをHTMLと一緒に置いてください。');
-    sampleCache=window.BGM_SAMPLE_BANK.map(meta=>{
+    sampleCache=[...window.BGM_SAMPLE_BANK,...(window.BGM_SITAR_BANK||[]),...(window.BGM_KOTO_BANK||[]),...(window.BGM_CHOIR_BANK||[])].map(meta=>{
       const bytes=atob(meta.pcm),buffer=ctx.createBuffer(1,bytes.length/2,meta.rate),d=buffer.getChannelData(0);
       for(let i=0;i<d.length;i++){let v=bytes.charCodeAt(i*2)|(bytes.charCodeAt(i*2+1)<<8);d[i]=(v>=32768?v-65536:v)/32768}
       delete meta.pcm; // the decoded buffer is the copy that is used from here on
@@ -269,14 +280,15 @@
     const kind=kinds?kinds[n.part]:n.part===4?'drums':n.part===1&&!soft?'strings':'piano';
     let choices=bank.filter(x=>x.meta.kind===kind&&(kind!=='piano'||x.meta.velocity===(soft||n.velocity<65?'pp':'mf')));
     if(!choices.length)choices=bank.filter(x=>x.meta.kind===kind);
+    if(!choices.length&&RECORDED_KINDS[kind])throw Error('同梱'+RECORDED_KINDS[kind]+'音源が見つかりません。samples/'+kind+'を確認してください。');
     if(!choices.length)choices=bank;
     if(!choices.length)return;
     const sample=choices.reduce((a,b)=>Math.abs(b.meta.root-n.pitch)<Math.abs(a.meta.root-n.pitch)?b:a);
-    const at=n.beat*beat,duration=n.duration*beat,release=kind==='strings'?.3:kind==='flute'?.26:kind==='drums'?.15:soft?.35:.2;
+    const at=n.beat*beat,duration=n.duration*beat,release=kind==='sitar'?1.2:kind==='koto'?1:kind==='choir'?.8:kind==='strings'?.3:kind==='flute'?.26:kind==='drums'?.15:soft?.35:.2;
     const end=Math.min(at+duration+release,ctx.length/SR-.001);if(end-at<.01)return;
     const source=ctx.createBufferSource(),g=ctx.createGain(),p=ctx.createStereoPanner(),f=ctx.createBiquadFilter();
     source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(n.pitch-sample.meta.root)/12);
-    if((kind==='strings'||kind==='flute')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
+    if((kind==='strings'||kind==='flute'||kind==='choir')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
     const gain=[.24,.095,.18,.10,.22][n.part]*trim*Math.pow(n.velocity/80,1.3);
     const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):soft?Math.min(.018,duration*.2):.003;
     g.gain.setValueAtTime(.00001,at);g.gain.linearRampToValueAtTime(gain,at+attack);
@@ -296,13 +308,14 @@
     const buses=spaceBus(ctx,score.seed,wet);
     buses.master.gain.value=.72;
     const beat=60/score.bpm,events=BGMScore.events(score),bank=bank0?sampleBuffers(ctx):null;
+    const recorded=RECORDED[score.sound],recordedBank=recorded?sampleBuffers(ctx):null;
     const drumGain=chip?1:bank0?1:V.drums;
     // One seeded noise bed keeps hats and snares reproducible from the seed.
     const noiseRandom=rng(score.seed^0x4E4F4953),noiseBuffer=ctx.createBuffer(1,Math.floor(SR*1.5),SR),nd=noiseBuffer.getChannelData(0);
     for(let i=0;i<nd.length;i++)nd[i]=noiseRandom()*2-1;
     for(const n of events){
       // Quiet the backing parts for moods whose harmony crowds the melody.
-      const trim=(n.part>=1&&n.part<=3)?(ACCOMP_TRIM[score.moodId]||1):1;
+      const trim=partTrim(score,n.part);
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
       // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
@@ -326,7 +339,9 @@
       }
       if(bank){sampleNote(ctx,bus,n,beat,bank,soft,trim,sampleKinds);continue}
       if(chip){chipTone(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,[.11,.05,.095,.045][n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan);continue}
-      if(score.sound==='folk'&&n.part===3)noiseSource(ctx,noiseBuffer,bus,n.beat*beat,.065,.018*trim*n.velocity/80,3600,n.pan||0);
+      if(recordedBank&&recorded.parts.indexOf(n.part)>=0){
+        sampleNote(ctx,bus,n,beat,recordedBank,false,trim,recorded.kinds);continue;
+      }
       synthNote(ctx,bus,midiFreq(n.pitch),n.beat*beat,n.duration*beat,V.gains[n.part]*trim*n.velocity/80,['key','pad','bass','key'][n.part],n.pan||0,V,bright);
     }
     let abortReject=null,aborted=false;const abort=new Promise((_,reject)=>{abortReject=reject});
@@ -917,7 +932,7 @@
     const events=BGMScore.events(a),melody=events.filter(n=>n.part===0).map(n=>n.pitch),inner=events.filter(n=>n.part===3).map(n=>n.pitch);
     if(inner.length&&Math.min.apply(null,melody)<=Math.max.apply(null,inner))throw Error('Register overlap failed');
   }
-  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
+  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,partTrim,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
   choiceGroup('moods',MOODS,x=>x.name,x=>x.id,m=>{
     // Browsing scenes is not a step you finish — 作る simply becomes available beside it.
     state.tourReady=true;if(state.take)state.tourRemake=true;

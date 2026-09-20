@@ -24,6 +24,9 @@ OUT = os.path.join(ROOT, "bgm_forge_standalone.html")
 SCRIPTS = [
     ("vendor/lamejs/lame.min.js", ' id="lamejs-1-2-1"'),
     ("samples/vsco2/bank.js", ""),
+    ("samples/sitar/bank.js", ""),
+    ("samples/koto/bank.js", ""),
+    ("samples/choir/bank.js", ""),
     ("bgm-score.js", ""),
     ("bgm-forge.js", ""),
 ]
@@ -45,7 +48,7 @@ def read(rel, mode="r"):
 def bundled_credits():
     """クレジットは要点だけを見せ、全文は開かないと出てこない入れ子にする。
     LGPLは全文の同梱が要るので消さないこと。CC0は義務ではないが同じ形で残している。"""
-    credits = read("samples/vsco2/CREDITS.md")
+    credits = "\n\n".join(read("samples/%s/CREDITS.md" % d) for d in ("vsco2", "sitar", "koto", "choir"))
     cc0 = read("samples/vsco2/LICENSE")
     with tarfile.open(os.path.join(ROOT, TGZ)) as t:
         lgpl = t.extractfile("package/src/main/java/COPYING").read().decode("utf-8")

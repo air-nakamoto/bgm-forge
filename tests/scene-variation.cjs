@@ -25,7 +25,10 @@ for(const file of ['bgm_forge_v2.html','bgm_forge_standalone.html']){
 }
 // 単体版は分割ソースの生成物であって別系統ではない。埋め込まれた4本が原本と1文字でも違えば、
 // python3 scripts/build_standalone.py を忘れたということ。2026-09-16 の乖離はここを見ていなかった。
-const EMBEDDED=['vendor/lamejs/lame.min.js','samples/vsco2/bank.js','bgm-score.js','bgm-forge.js'];
+// 読み込む順と本数は bgm_forge_v2.html が正。ここに書き写すと音源を足すたびに古くなる。
+const v2html=fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8');
+const EMBEDDED=Array.from(v2html.matchAll(/<script src="([^"?]+)\?v=[^"]*"><\/script>/g),m=>m[1]);
+assert(EMBEDDED.length>=5,'bgm_forge_v2.html の <script src> が読めていない');
 const embedded=Array.from(standalone.matchAll(/<script[^>]*>\n([\s\S]*?)\n<\/script>/g),m=>m[1]);
 assert.equal(embedded.length,EMBEDDED.length,'単体版の <script> は '+EMBEDDED.length+' 本のはず');
 EMBEDDED.forEach((rel,i)=>{
@@ -35,7 +38,6 @@ EMBEDDED.forEach((rel,i)=>{
 });
 // ?v= を上げ忘れると、ブラウザが古いJSを使い続けて「直したのに直らない」になる。
 // 版の末尾に中身のsha256先頭8桁を付ける決まりにして、忘れたらここで落とす。
-const v2html=fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8');
 for(const rel of EMBEDDED){
  const digest=crypto.createHash('sha256').update(fs.readFileSync(path.join(root,rel))).digest('hex').slice(0,8);
  const tag=v2html.match(new RegExp('<script src="'+rel.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')+'\\?v=([^"]+)"'));
@@ -48,6 +50,18 @@ const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};
 vm.runInNewContext(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),context);
 const {MOODS,MODES,DEFAULTS,selfTest,playGuideLabel}=context.window.BGM_TEST;
+const sitarContext={window:{}};
+vm.runInNewContext(fs.readFileSync(path.join(root,'samples/sitar/bank.js'),'utf8'),sitarContext);
+const sitar=sitarContext.window.BGM_SITAR_BANK[0];
+const sitarManifest=JSON.parse(fs.readFileSync(path.join(root,'samples/sitar/manifest.json'),'utf8'));
+assert.equal(sitarManifest.license,'CC0-1.0');
+assert.equal(sitar.kind,'sitar');
+assert(Math.abs(sitar.root-52.44)<.05,'sitar root must follow measured pitch, not the source octave label');
+const sitarPcm=Buffer.from(sitar.pcm,'base64');
+assert.equal(sitarPcm.length,8*32000*2);
+let sitarPeak=0;for(let i=0;i<sitarPcm.length;i+=2)sitarPeak=Math.max(sitarPeak,Math.abs(sitarPcm.readInt16LE(i)/32768));
+assert(sitarPeak>.84&&sitarPeak<.86);
+assert.equal(sitarPcm.readInt16LE(sitarPcm.length-2),0,'sitar tail must fade to zero');
 // 文言は現在のテイクの作成経路で決まる。切替・取り消しでも元の表示へ戻る。
 const freshTake={adjusted:false},adjustedTake={adjusted:true};
 for(const [take,label] of [[null,'聴いてみる'],[freshTake,'聴いてみる'],[adjustedTake,'作り直した曲を　聴いてみる'],[freshTake,'聴いてみる'],[adjustedTake,'作り直した曲を　聴いてみる']])assert.equal(playGuideLabel(take),label);
@@ -82,6 +96,28 @@ function valid(s){
  return events;
 }
 selfTest();
+// 儀式のコーラスだけを減衰し、和琴などの音量を密度設定で下げない。
+for(const mood of MOODS){
+ const {partTrim}=context.window.BGM_TEST;
+ for(const sound of ['choir','koto','samples','chip']){
+  const base={moodId:mood.id,sound};
+  for(const phrasing of ['minimal','sparse','auto','dense']){
+   const s={...base,phrasing};
+   assert.equal(partTrim(s,0),mood.id==='ritual'&&sound==='choir'?.55:1);
+   for(let part=1;part<=4;part++)assert.equal(partTrim(s,part),partTrim(base,part));
+  }
+ }
+}
+// 儀式の最後の声をループ末尾まで引き伸ばさず、伴奏にも休む長さを残す。
+for(let seed=1;seed<=24;seed++){
+ const mood=MOODS.find(m=>m.id==='ritual');
+ const s=score.compose({mood,scale:MODES[mood.mode],bpm:60,sound:'choir',length:30,ending:'loop',lead:true,phrasing:'minimal'},seed);
+ const notes=score.events(s);
+ assert(notes.some(n=>n.part===0),'ritual must contain melody');
+ assert(notes.filter(n=>n.part===0).every(n=>n.duration<=2.2),'ritual voice must breathe at the loop end');
+ assert(notes.filter(n=>n.part===1).every(n=>n.duration<=3),'ritual harmony must leave room after each entry');
+ assert(notes.filter(n=>n.part===2).every(n=>n.duration<=2.4),'ritual bass must release between entries');
+}
 // クリアは軽い打楽器と弾む内声を持ち、4小節の終わりに主和音へ着地する。
 const resolution=MOODS.find(m=>m.id==='victory');
 assert(context.window.BGM_TEST.TEMPOS.some(t=>t.bpm===DEFAULTS.victory[0]));
