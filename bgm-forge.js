@@ -21,8 +21,8 @@
   };
   const RECORDED_KINDS={sitar:'シタール',koto:'箏',choir:'合唱'};
   // 音符の中でどこまで引くか。ループして伸び続ける音源だけを対象にする。
-  const SUSTAIN_FADE={choir:.45};
-  const partTrim=(score,part)=>part===0?(score.sound==='choir'?.38:1):
+  const SUSTAIN_FADE={choir:.33};
+  const partTrim=(score,part)=>part===0?(score.sound==='choir'?.25:1):
     part>=1&&part<=3?(ACCOMP_TRIM[score.moodId]||1):1;
   // 持続音（パッドと低音）の引き方。[どこまで下がるか, 何拍かけて下がるか]。
   // 拍数が0なら音符の長さの9割をかけて下がる（長い音ほどゆっくり）。

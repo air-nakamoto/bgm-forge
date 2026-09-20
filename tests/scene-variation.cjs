@@ -104,7 +104,7 @@ for(const mood of MOODS){
   for(const phrasing of ['minimal','sparse','auto','dense']){
    const s={...base,phrasing};
    // 合唱は伸び続けるので、どの場面で旋律に使っても音量を下げる。
-   assert.equal(partTrim(s,0),sound==='choir'?.38:1);
+   assert.equal(partTrim(s,0),sound==='choir'?.25:1);
    for(let part=1;part<=4;part++)assert.equal(partTrim(s,part),partTrim(base,part));
   }
  }
