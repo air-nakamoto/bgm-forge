@@ -20,7 +20,7 @@ assert.equal(ogp.readUInt32BE(16),1200);
 assert.equal(ogp.readUInt32BE(20),630);
 for(const file of ['bgm_forge.html','bgm_forge_standalone.html']){
  const html=fs.readFileSync(path.join(root,file),'utf8');
- assert.match(html, /property="og:image" content="https:\/\/air-nakamoto\.github\.io\/bgm-forge\/ogp\.png"/);
+ assert.match(html, /property="og:image" content="https:\/\/bgm-forge\.suihei\.workers\.dev\/ogp\.png"/);
  assert.match(html, /name="twitter:card" content="summary_large_image"/);
 }
 // 単体版は分割ソースの生成物であって別系統ではない。埋め込まれた4本が原本と1文字でも違えば、
@@ -30,7 +30,8 @@ const v2html=fs.readFileSync(path.join(root,'bgm_forge.html'),'utf8');
 const oldPage=fs.readFileSync(path.join(root,'bgm_forge_v2.html'),'utf8');
 assert.match(oldPage,/http-equiv="refresh" content="0;url=bgm_forge\.html"/);
 assert(oldPage.includes("location.replace('bgm_forge.html'+location.search+location.hash)"));
-assert(v2html.includes('https://air-nakamoto.github.io/bgm-forge/bgm_forge.html'));
+assert(v2html.includes('https://bgm-forge.suihei.workers.dev/'));
+assert(v2html.includes("if(location.hostname==='air-nakamoto.github.io')location.replace("));
 const EMBEDDED=Array.from(v2html.matchAll(/<script src="([^"?]+)\?v=[^"]*"><\/script>/g),m=>m[1]);
 assert(EMBEDDED.length>=5,'bgm_forge.html の <script src> が読めていない');
 const embedded=Array.from(standalone.matchAll(/<script[^>]*>\n([\s\S]*?)\n<\/script>/g),m=>m[1]);
@@ -63,6 +64,7 @@ for(const token of ['feedback-endpoint','data-feedback-open','feedbackText','fee
 }
 
 require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'feedback.cjs')],{stdio:'inherit'});
+require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'hosting.cjs')],{stdio:'inherit'});
 
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};

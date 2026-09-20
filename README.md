@@ -2,6 +2,8 @@
 
 TRPGの場面に合わせたループBGMを、ブラウザ内で自動作曲するツールです。
 
+公開サイト: https://bgm-forge.suihei.workers.dev/
+
 ## 使い方
 
 手軽に使う場合は `bgm_forge_standalone.html` をダウンロードし、ブラウザで開いてください。音源・作曲処理・MP3エンコーダーを1ファイルに収録しています。
@@ -99,3 +101,8 @@ MIT License（`LICENSE`）。著作権表示を残せば、自由に使用・改
 - Groove MIDI Dataset：CC BY 4.0。打楽器の強弱とタイミングの統計を参考にしています。データ自体は収録していません。
 
 詳しいクレジットとライセンスは、単体版HTML内および各素材フォルダに収録しています。
+
+## Cloudflareへの公開
+
+`公開する.command` は単体版生成・テスト・公開用ファイルの抽出を行い、意見フォーム用Worker、本体の静的アセットを順にデプロイしてからGitHubへpushします。初回はCloudflareログインが必要です。
+本体の設定は `hosting/wrangler.toml`、配布用生成物は `.cloudflare-public/`（Git管理外）。`scripts/build_hosting.py` が必要なファイルとライセンスだけを集めます。GitHub Pagesの旧ページは新サイトへ移動します。

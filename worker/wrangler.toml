@@ -6,4 +6,4 @@ compatibility_date = "2026-09-20"
 # 秘密ではないのでここに書いてよい。Webhook だけは secret に入れること。
 #   npx wrangler secret put DISCORD_WEBHOOK
 [vars]
-ALLOWED_ORIGINS = "https://air-nakamoto.github.io"
+ALLOWED_ORIGINS = "https://air-nakamoto.github.io,https://bgm-forge.suihei.workers.dev"

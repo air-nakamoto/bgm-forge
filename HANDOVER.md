@@ -8,10 +8,10 @@
 この文書は経緯と計測値の記録です。
 
 **置き場所が変わりました。** 2026-09-17にGitリポジトリ（`air-nakamoto/bgm-forge`）へ移り、
-GitHub Pages で公開しています。旧作業フォルダ `inside-rooms` は凍結扱いです。
+現在は Cloudflare Workers Static Assets で公開しています。旧作業フォルダ `inside-rooms` は凍結扱いです。
 
 - 作業フォルダ: `~/Documents/Codex/2026-09-17/documents-plugin-documents-openai-primary-runtime/work/bgm-forge`
-- 公開: https://air-nakamoto.github.io/bgm-forge/bgm_forge.html
+- 公開: https://bgm-forge.suihei.workers.dev/
 - 公開手順: リポジトリ直下の `公開する.command` をダブルクリック
 
 ---
@@ -42,7 +42,7 @@ GitHub Pages で公開しています。旧作業フォルダ `inside-rooms` は
   **単体起動版には入らない**（ビルドが丸ごと落とし、痕跡ゼロをアサート）。
 - 検証は **816ケースPASS**。単体版と分割ソースの一致、`?v=` のハッシュ照合、音源の実測音高、
   旋律の跳躍の上限、場面ごとの伴奏の相異、単体版に送信機能が無いことをテストが見ている。
-- 作業ツリーはクリーン。**未pushのコミットが2件ある**（`公開する.command` で公開する）。
+- 公開は `公開する.command`。Cloudflareへデプロイ後、ソースをGitHubへpushする。
 - **次にやること**は §6.0 にまとめてある。音の話はすべて「鳴らして確かめる」が残っている。
 
 
@@ -225,6 +225,22 @@ const INNER_GAP=4, INNER_SPAN=11, PAD_LOW=55, PAD_HIGH=79;
 ---
 
 ## 3. これまでの修正履歴（すべて計測つき）
+
+### 2026-09-20 · 本体をCloudflare Workers Static Assetsへ移行
+
+公開URLを https://bgm-forge.suihei.workers.dev/ に変更。`hosting/wrangler.toml` と
+`scripts/build_hosting.py` を追加し、公開用に必要なHTML・JS・同梱素材・ライセンスだけを抽出。
+最大ファイル20,833,251 bytes（単体版）、Cloudflareの25MiB上限内。
+原音・秘密・Workerソース・未追跡favicon.pngは公開対象外。公開上の /.git/config と /worker/feedback.js は404。
+旧ファイル名2つは302でルートへ。GitHub Pages上の分割版は新ドメインへ移動（検索文字列とハッシュ保持）。
+単体版からはこの転送も除去するので、オフライン配布の振る舞いは維持。
+OG URLと画像URLを移行先へ更新。中継のOrigin許可に新ドメインを追加。
+新Originから空本文で400 empty、Access-Control-Allow-Originが新ドメインと一致。Discordへ実投稿はしていない。
+公開コマンドはビルド・テスト→中継更新→本体更新→GitHub保存。未pushがなくても再デプロイできる。
+配信対象・旧URL・CORS・単体版の隔離をtests/hosting.cjsで回帰テストに固定（816ケースもPASS）。
+初回のhtml_handling=noneではルートが404になるため、auto-trailing-slashへ修正して再公開。
+公開サイトの820px／390pxで24場面・意見フォームを確認、JSエラー0。820pxで実際に1曲生成しWAVダウンロード成功。画面も目視確認済み。
+
 
 ### 2026-09-20 · 意見フォームをページの配色に合わせ、入口を右上へ移動
 
@@ -2098,9 +2114,8 @@ Workerの公開と送信先URLの設定は完了（2026-09-20）。Webhook登録
 `worker/wrangler.toml` の `ALLOWED_ORIGINS` は GitHub Pages のドメインだけを許している。
 独自ドメインや Cloudflare Pages へ移すときは、ここに足さないと403で弾かれる。
 
-**Cloudflare Pages への移行そのもの**（「そろそろCloudflare Worker移行もしようか」）は未着手。
-Worker は今回のフォーム専用で、ページの配信は GitHub Pages のまま。移すならアカウントとDNSの
-判断が要るので、やるときに相談すること。
+**本体のCloudflare移行は2026-09-20に完了**（PagesではなくWorkers Static Assets）。旧記録：
+本体は `bgm-forge.suihei.workers.dev`、中継は `bgm-forge-feedback.suihei.workers.dev` に分離。独自ドメインは未設定。
 
 **やってみて却下されたこと（再導入しないこと）**
 

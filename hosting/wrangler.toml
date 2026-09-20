@@ -1,0 +1,8 @@
+name = "bgm-forge"
+compatibility_date = "2026-09-20"
+workers_dev = true
+
+[assets]
+directory = "../.cloudflare-public"
+html_handling = "auto-trailing-slash"
+not_found_handling = "none"

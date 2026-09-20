@@ -97,7 +97,8 @@ console.log(score.events(s).length);
 - `git push --force`、`rebase`、`commit --amend` したあとのpushは使わない。
 - 取り消しは、push前なら `git reset --soft HEAD~1`、push済みなら `git revert`。
 - コミットしていない編集が消える操作（`reset --hard` など）は、実行前に日本語で確認を取る。
-- 公開はリポジトリ直下の `公開する.command` をダブルクリック。未公開のコミットを表示してから `git push` します。
+- 公開はリポジトリ直下の `公開する.command` をダブルクリック。未公開のコミットを表示し、ビルドとテスト後にCloudflareの中継・本体をデプロイし、`git push` します。
+  本体設定は `hosting/wrangler.toml`、公開用ファイルの生成は `scripts/build_hosting.py`（原音や秘密を含めない）。
   環境によっては push を代行できないので、その場合はこれを案内すること。
 - Cowork経由で触ると `.git/index.lock` などが消せずに残ります。`.git/_stale_locks/` へ退避してください。
 

@@ -8,8 +8,8 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="BGM FORGE / THEME &amp; SCENE EDITION">
 <meta property="og:description" content="場面に合ったBGMを、ブラウザでつくれる。TRPG向けループBGM自動作曲ツール。">
-<meta property="og:url" content="https://air-nakamoto.github.io/bgm-forge/bgm_forge.html">
-<meta property="og:image" content="https://air-nakamoto.github.io/bgm-forge/ogp.png">
+<meta property="og:url" content="https://bgm-forge.suihei.workers.dev/">
+<meta property="og:image" content="https://bgm-forge.suihei.workers.dev/ogp.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="BGM FORGE / THEME &amp; SCENE EDITION。場面に合ったBGMを、ブラウザで自動作曲。つくった曲は無料でダウンロードできる。">
@@ -418,6 +418,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
      秘密ではないのでここに書いてよい。Discord の Webhook は Worker の secret にある。
      空にすると送信欄もボタンも出ない。単体起動版ではこの塊ごと削られる。 -->
 <meta name="feedback-endpoint" content="https://bgm-forge-feedback.suihei.workers.dev">
+<script>if(location.hostname==='air-nakamoto.github.io')location.replace('https://bgm-forge.suihei.workers.dev/'+location.search+location.hash);</script>
 <!-- feedback:end -->
 <body>
 <main id="top">
@@ -663,7 +664,7 @@ header:has(.feedback-top:not([hidden])){position:relative;padding-top:42px}
 <script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
 <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
 <script src="bgm-score.js?v=20260920-water-6b578ff2"></script>
-<script src="bgm-forge.js?v=20260920-form-theme-55557978"></script>
+<script src="bgm-forge.js?v=20260920-cloudflare-55557978"></script>
 <!-- feedback:start -->
 <!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
      曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。

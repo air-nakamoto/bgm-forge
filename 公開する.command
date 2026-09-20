@@ -1,36 +1,25 @@
 #!/bin/bash
-# BGM Forge — 変更をGitHubへ公開する
-# ダブルクリックで実行されます。このファイルはリポジトリの中に置いてあるので、
-# フォルダごと移動しても動きます。
-
+# BGM Forge — Cloudflareへ公開し、ソースをGitHubへ保存する
 cd "$(dirname "$0")" || exit 1
-
-if [ ! -d .git ]; then
-  echo "このファイルはリポジトリの中に置いてください。"
-  read -n 1 -s -r -p "何かキーを押すと閉じます"
-  exit 1
+finish() { echo; read -n 1 -s -r -p "何かキーを押すと閉じます"; }
+fail() { echo "❌ 失敗しました。上のメッセージをAIに見せてください。"; finish; exit 1; }
+[ -d .git ] || fail
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  echo "未コミットの変更があります。先に変更を確認してコミットしてください。"
+  finish; exit 1
 fi
-
-echo "▼ 場所"
-pwd
-echo
 echo "▼ 未公開のコミット"
-git log --oneline "@{u}..HEAD" 2>/dev/null || git log --oneline -5
-echo
-if [ -z "$(git log --oneline '@{u}..HEAD' 2>/dev/null)" ]; then
-  echo "公開するものはありません。"
-  read -n 1 -s -r -p "何かキーを押すと閉じます"
-  exit 0
-fi
-
-echo "▼ push中..."
-if git push; then
-  echo
-  echo "✅ 公開しました。GitHub Pagesの反映まで1〜2分ほどかかります。"
-  echo "   https://air-nakamoto.github.io/bgm-forge/bgm_forge.html"
-else
-  echo
-  echo "❌ 失敗しました。上のメッセージをAIに見せてください。"
-fi
-echo
-read -n 1 -s -r -p "何かキーを押すと閉じます"
+git log --oneline '@{u}..HEAD'
+echo "▼ 単体版の生成と検証"
+python3 scripts/build_standalone.py || fail
+node tests/scene-variation.cjs || fail
+git diff --quiet || { echo "生成物が更新されました。内容を確認してコミットしてください。"; finish; exit 1; }
+python3 scripts/build_hosting.py || fail
+echo "▼ 意見フォームの中継を更新"
+npx --yes wrangler@4.72.0 deploy --config worker/wrangler.toml || fail
+echo "▼ BGM ForgeをCloudflareへ公開"
+npx --yes wrangler@4.72.0 deploy --config hosting/wrangler.toml || fail
+echo "▼ ソースをGitHubへ保存"
+git push || fail
+echo "✅ 公開しました。 https://bgm-forge.suihei.workers.dev/"
+finish
