@@ -55,6 +55,9 @@ for(const rel of EMBEDDED){
 assert.match(v2html,/<meta name="feedback-endpoint" content="[^"]*">/,'v2 に送信先の <meta> が無い');
 assert(v2html.includes('data-feedback-open'),'v2 に「意見を送る」のボタンが無い');
 assert(v2html.includes('id="feedbackText"'),'v2 に意見の入力欄が無い');
+assert.match(v2html,/<header>\s*<!-- feedback:start --><button class="helpbtn feedback-top"/,'意見ボタンはヘッダ右上に独立して置く');
+assert(!v2html.match(/<div class="lead">[\s\S]*?<\/div>/)[0].includes('data-feedback-open'),'ヘルプの隣に意見ボタンを置かない');
+
 for(const token of ['feedback-endpoint','data-feedback-open','feedbackText','feedback:start']){
  assert(!standalone.includes(token),'単体版に意見送信の痕跡が残っている: '+token);
 }
