@@ -1106,6 +1106,14 @@
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openDetail(b.dataset.more)});
   // 使用素材・ライセンス。中身はHTMLに書いてあるので、他の詳細のように複製せず、そのまま出す
   // （単体版では全文ライセンスが数MBになり、innerHTMLで複製すると開くたびに重い）。
+  // 曲を聴いたあと、別の場面を選び直すには手で上まで戻るしかなかった。
+  // 画面の頭（場面の一覧）へ運ぶだけ。再生は止めない（聴きながら選び直せるように）。
+  {const b=$('backToScene');if(b)b.onclick=()=>{
+    const top=$('top')||document.body;
+    if(top.scrollIntoView)top.scrollIntoView({behavior:'smooth',block:'start'});
+    const sel=document.querySelector('#moods .choice[aria-pressed="true"]')||document.querySelector('#moods .choice');
+    if(sel&&sel.focus)sel.focus({preventScroll:true});
+  }}
   // 調整欄は details なので見出しを押せば閉じるが、それが分かりにくいという指摘があった。
   // 一番下の閉じるボタンから閉じたときは、見出しが画面の外へ行かないよう戻す。
   {const b=$('adjustClose'),d=$('adjustments');if(b&&d)b.onclick=()=>{d.open=false;

@@ -698,6 +698,15 @@ SOFTWARE.
       margin-top: 3px
     }
 
+    /* 再生したあと場面を選び直すのに、手で上までスクロールするしかなかった。 */
+    .backscene {
+      color: var(--dim)
+    }
+
+    .backscene:hover:not(:disabled) {
+      color: var(--ink)
+    }
+
     .listen .transport {
       margin-bottom: 10px
     }
@@ -2036,6 +2045,7 @@ SOFTWARE.
       <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag"
           id="playGuide" aria-hidden="true">聴いてみる</span>
         <button id="play" class="play" disabled>再生</button>
+        <button type="button" id="backToScene" class="backscene">← 場面から選び直す</button>
         <button id="stop" disabled>停止</button>
       </div>
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
@@ -5223,6 +5233,14 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   document.querySelectorAll('[data-more]').forEach(b=>b.onclick=e=>{e.preventDefault();e.stopPropagation();openDetail(b.dataset.more)});
   // 使用素材・ライセンス。中身はHTMLに書いてあるので、他の詳細のように複製せず、そのまま出す
   // （単体版では全文ライセンスが数MBになり、innerHTMLで複製すると開くたびに重い）。
+  // 曲を聴いたあと、別の場面を選び直すには手で上まで戻るしかなかった。
+  // 画面の頭（場面の一覧）へ運ぶだけ。再生は止めない（聴きながら選び直せるように）。
+  {const b=$('backToScene');if(b)b.onclick=()=>{
+    const top=$('top')||document.body;
+    if(top.scrollIntoView)top.scrollIntoView({behavior:'smooth',block:'start'});
+    const sel=document.querySelector('#moods .choice[aria-pressed="true"]')||document.querySelector('#moods .choice');
+    if(sel&&sel.focus)sel.focus({preventScroll:true});
+  }}
   // 調整欄は details なので見出しを押せば閉じるが、それが分かりにくいという指摘があった。
   // 一番下の閉じるボタンから閉じたときは、見出しが画面の外へ行かないよう戻す。
   {const b=$('adjustClose'),d=$('adjustments');if(b&&d)b.onclick=()=>{d.open=false;
