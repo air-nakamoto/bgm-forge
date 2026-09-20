@@ -34,11 +34,15 @@ SCRIPTS = [
 ]
 TGZ = "vendor/lamejs/lamejs-1.2.1.tgz"
 PRE = '<pre style="white-space:pre-wrap;overflow-wrap:anywhere">'
-# v2 側のクレジット2行。ここを変えたら下の2つの正規表現も合わせること。
-NOTE_SOURCE = re.compile(r'<p class="note">音源: VSCO 2 Community Edition.*?</p>\n', re.S)
-NOTE_LAME = re.compile(r'<p class="note">MP3エンコーダー: lamejs.*?</p>\n', re.S)
-# 単体版では下の折りたたみに入るので、分割版向けの1行は落とす。
-NOTE_GROOVE = re.compile(r'<p class="note">打楽器の強弱とタイミングは Groove.*?</p>\n', re.S)
+# 使用素材は id 付きの塊（<div class="credit" id="c-…">）で置いてある。文言ではなく id で探すので、
+# 説明やリンクの書き換えでは壊れない。塊の中に div を入れないこと（入れると終わりを取り違える）。
+def credit_block(cid):
+    return re.compile(r'<div\s+class="credit"\s+id="%s"\s*>.*?</div>\s*' % cid, re.S)
+
+
+NOTE_SOURCE = credit_block("c-vsco")   # 単体版では同梱クレジット一式に差し替える
+NOTE_LAME = credit_block("c-lame")     # 下の折りたたみに全文が入るので落とす
+NOTE_GROOVE = credit_block("c-groove") # 同上
 # 「意見を送る」は単体版に入れない。オフラインで配る版から外へ出る通信をなくすため。
 # 印は HTML コメント（<!-- feedback:start --> …）と CSS コメント（/* feedback:start */ …）の2種類。
 FEEDBACK = re.compile(r"(?:<!--|/\*) feedback:start (?:-->|\*/).*?(?:<!--|/\*) feedback:end (?:-->|\*/)\n?", re.S)
@@ -63,13 +67,20 @@ def bundled_credits():
     def sheet(title, body):
         return "<details><summary>%s</summary>%s%s</pre></details>" % (title, PRE, html.escape(body))
 
+    def credit(cid, title, desc, links):
+        ls = "".join('<a href="%s"%s>%s</a>' % (h, d, t) for t, h, d in links)
+        return ('<div class="credit" id="%s"><h4>%s</h4><p>%s</p>'
+                '<p class="credit-links">%s</p></div>' % (cid, title, desc, ls))
+
     return (
-        '<p class="note">音源: VSCO 2 Community Edition / Versilian Studios · CC0。'
-        '32サンプルをモノラル32 kHzへ変換して同梱。'
-        '<a href="#bundledCredits">クレジットとライセンス</a></p>\n'
-        '<p class="note">単体起動版：このHTMLだけで作曲・再生・WAV／MP3／MIDI保存ができます。'
-        'MP3は192kbps・ステレオです。</p>'
-        '<details id="bundledCredits"><summary>クレジットとライセンス</summary>'
+        credit("c-vsco", "音源 — VSCO 2 Community Edition",
+               "Versilian Studios ・ CC0 1.0。32サンプルをモノラル32 kHzへ変換して同梱しています。",
+               [("クレジットとライセンス（全文）", "#bundledCredits", ""),
+                ("原典（GitHub）", "https://github.com/sgossner/VSCO-2-CE", "")])
+        + credit("c-alone", "単体起動版について",
+                 "このHTMLだけで作曲・再生・WAV／MP3／MIDI保存ができます。MP3は192kbps・ステレオです。",
+                 [])
+        + '<details id="bundledCredits"><summary>クレジットとライセンス</summary>'
         '<p><b>このツールで作った曲</b>　作った人のものです。自由に使えます（CC0 1.0 相当）。'
         'クレジット表記・使用報告は不要で、商用利用・改変・再配布ができます。'
         '同梱音源がCC0なので、素材由来の条件が曲に付いてくることはありません。</p>'
