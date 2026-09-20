@@ -369,15 +369,22 @@
     if(s.moodId==='kagura'&&bar%4===2)add(4,84,b,1.6,54,-.15);
     // シタールの「ジャラーン」。撥弦を一本ずつ数十ミリ秒ずらして駆け上げると、弦を
     // 撫でた響きになる。同梱シタールは1音（実音 MIDI 52.4）しかないので、音域を
-    // 50〜61に限って早回しを抑える。内声は62〜73なので、同じ高さで重なることもない
+    // 45〜61に限って早回しを抑える。内声は62以上なので、同じ高さで重なることもない
     // （同じパート・同じ音高の重なりはテストが禁じている）。
+    //
+    // 2026-09-20: 最初は音階を順に駆け上げたが、5音が6半音のなかに収まって
+    // 「変な重なりかたでうるさい」と言われた。計測すると、同時に鳴る音どうしの
+    // 間隔の92%が2半音以下（半音だけで50%）＝ただの音の塊だった。弦は音階順ではなく
+    // 和音の音に張られているので、和音構成音（d, d+2, d+4 とその上のオクターブ）
+    // だけを拾い、1オクターブ以上に散らす。非和音の音を混ぜると和音パートともぶつかる。
     if(s.moodId==='ethnic'&&bar%4===0){
       const strum=[];
-      for(let i=-7;i<14&&strum.length<5;i++){
-        const q=base+pitch(s.scale,d+i);
-        if(q>=50&&q<=61)strum.push(q);
+      for(const k of [0,2,4,7,9,11,14]){
+        if(strum.length>=4)break;
+        const q=base-12+pitch(s.scale,d+k);
+        if(q>=45&&q<=61)strum.push(q);
       }
-      strum.forEach((q,k)=>add(3,q,b+k*.07,2.6,36+energy*14-k*2,
+      strum.forEach((q,k)=>add(3,q,b+k*.07,2.6,32+energy*12-k*2,
         (k/Math.max(1,strum.length-1)-.5)*.7));
     }
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.

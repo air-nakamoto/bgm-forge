@@ -193,18 +193,24 @@ function measuredRoot(entry){
   for(const deg of prog)assert([0,1,3].includes(deg),
    '民族の進行に調が動く度数が入っている '+deg+' '+JSON.stringify(prog));
  }
- // シタールの「ジャラーン」。同梱シタールは1音（実音52.4）なので、音域を50〜61に
+ // シタールの「ジャラーン」。同梱シタールは1音（実音52.4）なので、音域を45〜61に
  // 限って早回しを抑えている。内声（62以上）と重ならないことも併せて見る。
- {
+ for(const seed of [1,3,7,11,23]){
   const s=score.compose({mood:m,scale:MODES[m.mode],bpm:de[0],sound:de[1],
-   length:30,ending:'loop',lead:false,phrasing:de[3]||'auto'},3);
+   length:30,ending:'loop',lead:false,phrasing:de[3]||'auto'},seed);
   const ev=score.events(s);
-  const strum=ev.filter(n=>n.part===3&&n.pitch>=50&&n.pitch<=61).sort((a,b)=>a.beat-b.beat);
-  assert(strum.length>=4,'民族にシタールのジャラーンが無い');
+  const strum=ev.filter(n=>n.part===3&&n.pitch>=45&&n.pitch<=61).sort((a,b)=>a.beat-b.beat);
+  assert(strum.length>=4,'民族にシタールのジャラーンが無い seed='+seed);
   // 撥弦は一本ずつずれる。0.04〜0.12拍のあいだに次が来ること。
   const gap=strum[1].beat-strum[0].beat;
   assert(gap>0.04&&gap<0.12,'ジャラーンの間隔がおかしい '+gap);
   assert(strum[1].pitch>strum[0].pitch,'ジャラーンが駆け上がっていない');
+  // 同時に鳴る音が2半音以内で並ぶと、弦の響きではなく音の塊になってうるさい。
+  // 2026-09-20 に音階順で駆け上げたときは、間隔の92%が2半音以下だった（半音だけで50%）。
+  const first=strum.filter(n=>n.beat<1).map(n=>n.pitch).sort((a,b)=>a-b);
+  assert(first.length>=4,'ジャラーンの音数が足りない seed='+seed);
+  for(let i=1;i<first.length;i++)assert(first[i]-first[i-1]>=3,
+   'ジャラーンが'+(first[i]-first[i-1])+'半音で重なっている（和音構成音だけを拾うこと） seed='+seed);
   const inner=ev.filter(n=>n.part===3&&n.pitch>61);
   assert(inner.length>0&&Math.min(...inner.map(n=>n.pitch))>61,'内声とジャラーンの音域が重なっている');
  }
