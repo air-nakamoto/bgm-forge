@@ -388,7 +388,7 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 <!-- 「意見を送る」の送り先。Cloudflare Worker のURL（worker/feedback.js）。
      秘密ではないのでここに書いてよい。Discord の Webhook は Worker の secret にある。
      空にすると送信欄もボタンも出ない。単体起動版ではこの塊ごと削られる。 -->
-<meta name="feedback-endpoint" content="">
+<meta name="feedback-endpoint" content="https://bgm-forge-feedback.suihei.workers.dev">
 <!-- feedback:end -->
 <body>
 <main id="top">
@@ -632,7 +632,7 @@ main>.note+.note{margin-top:2px;padding-top:0;border-top:0}
 <script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
 <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
 <script src="bgm-score.js?v=20260920-water-6b578ff2"></script>
-<script src="bgm-forge.js?v=20260920-decision-desc-55557978"></script>
+<script src="bgm-forge.js?v=20260920-contact-55557978"></script>
 <!-- feedback:start -->
 <!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
      曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。
