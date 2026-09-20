@@ -1986,7 +1986,9 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       const times=bass==='motor'?[0,.5,1,1.5,2,2.5,3,3.5]:bass==='ritual'?[0,1.5,3]:bass==='march'?[0,1,2,3]:[0,2];
       times.forEach((at,k)=>add(2,bass==='fifth'&&k%2?fifth:root,b+at,bass==='motor'?.34:bass==='ritual'?.7:bass==='march'?.75:1.7,bv-(k%2?7:0)));
     }
-    if(!breath){
+    // ethnic はストラム（ジャラーン）が内声を兼ねる。毎小節アルペジオを鳴らすと
+    // 「コードがたくさん続く」に聞こえるため、ethnic では inner を鳴らさない。
+    if(!breath&&s.moodId!=='ethnic'){
       const times=c.inner[v],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[v];
       times.forEach((at,k)=>{
         // The answer leaves room; it does not append a new tune.
@@ -2031,6 +2033,10 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 延べ11.67秒鳴っていた（4音×約3秒）。撥弦のつもりが、4音の和音を2秒押さえっぱなしに
     // していた。シタールの release は1.2秒あるので、音符そのものは短くして余韻に任せる。
     // 併せて3音に減らし、間隔を詰めて不均等にした（等間隔の4連打は機械に聞こえる）。
+    // 2026-09-20 三度目：「ぱらぱら感がない」「アルペジオが続く」。
+    // 発音間隔 0→35ms→27ms が短すぎてコードの同時打に聞こえていた（実際のシタールは60〜150ms）。
+    // 0→80ms→160msに広げ、ぱらぱら感を出す。また inner を毎小節鳴らしていたのが
+    // 「アルペジオが続く」の正体だった（上の !=='ethnic' で止めている）。
     if(s.moodId==='ethnic'&&bar%4===0){
       const strum=[];
       for(const k of [0,2,4,7,9,11,14]){
@@ -2038,7 +2044,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
         const q=base-12+pitch(s.scale,d+k);
         if(q>=45&&q<=61)strum.push(q);
       }
-      const at=[0,.035,.062],vel=[42,34,28],pan=[-.35,0,.35];
+      const at=[0,.08,.16],vel=[42,34,28],pan=[-.35,0,.35];
       strum.forEach((q,k)=>add(3,q,b+at[k],.4,vel[k]*(.7+energy*.5),pan[k]));
     }
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
