@@ -109,6 +109,23 @@ for(const mood of MOODS){
   }
  }
 }
+// 跳躍は度数ではなく半音で抑える。5音音階では4度が9半音になるため、度数のまま制限すると
+// 和風だけ跳躍が跳ね上がる（16.3% → 7.9% に直した回の再発防止）。
+for(const id of ['japanese','ethnic','puzzle']){
+ const mood=MOODS.find(m=>m.id===id);
+ let wide=0,total=0,worst=0;
+ for(let seed=1;seed<=40;seed++){
+  const s=score.compose({mood,scale:MODES[mood.mode],bpm:DEFAULTS[id][0],sound:DEFAULTS[id][1],
+    length:60,ending:'loop',lead:true,phrasing:DEFAULTS[id][3]||'sparse'},seed);
+  const mel=score.events(s).filter(n=>n.part===0).sort((a,b)=>a.beat-b.beat);
+  for(let i=1;i<mel.length;i++){
+   const iv=Math.abs(mel[i].pitch-mel[i-1].pitch);
+   total++; if(iv>=7)wide++; if(iv>worst)worst=iv;
+  }
+ }
+ assert(worst<=7,`${id} の旋律に8半音以上の跳躍がある（最大 ${worst}）`);
+ assert(wide/total<=0.12,`${id} の跳躍が多すぎる（7半音以上が ${(wide/total*100).toFixed(1)}%）`);
+}
 // ループして伸び続ける音源だけ、音符の中でも引く。撥弦は勝手に小さくなるので対象外。
 {
  const src=fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8');

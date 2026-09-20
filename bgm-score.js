@@ -142,6 +142,10 @@
     const bars=s.themeBars,p=period(s),result=[],r=rng(s.seed^0x4D454C),density=s.density||.65;
     // Voice-leading state carried across bars: last note, last direction, whether a leap awaits its answer, run length.
     let previous=4,lastDir=0,owe=false,run=0;
+    // 跳躍の大きさは度数ではなく半音で見る。度数は音階の音数で意味が変わり、
+    // 5音音階では4度が9半音になる（7音音階では7半音）。度数のまま制限すると、
+    // 和風だけ7半音以上の跳躍が16.3%まで増えていた（7音音階の場面は2.7〜4.3%）。
+    const semis=(a,b)=>Math.abs(pitch(s.scale,a)-pitch(s.scale,b));
     for(let bar=0;bar<bars;bar++){
       const chord=chordAt(s,bar),phraseBar=bar%4,response=bars>=8&&bar%8>=4,turnaround=s.ending==='loop'&&bar===bars-1,cadence=!turnaround&&bar%p===p-1&&chord===0;
       const interlude=bars>=16&&bar>=8&&bar<12,development=bars>=16&&bar>=12;
@@ -165,7 +169,7 @@
       const count=shape==='full'?4:shape==='cadence'?2:shape==='breath'?3:density>.6?2:1;
       const barEnd=bar*4+4;let beat=bar*4+(late?2:0);
       for(let i=0;i<count;i++){
-        let target=s.motif[cell+i]+(response?-1:0)+(development?2:0);
+        let target=s.motif[cell+i]+(response?-1:0)+(development?(s.scale.length>=7?2:1):0);
         target=Math.max(0,Math.min(10,target));
         const strong=i===0||Number.isInteger(beat/2),tones=chordDegrees(chord).filter(x=>x>=0&&x<=11);
         // A step toward `want`; on a strong beat it must be a chord tone, chosen on the side we are turning to.
@@ -186,7 +190,7 @@
           d=stepTo(Math.max(0,Math.min(11,previous-lastDir)));
         }else{
           d=strong?nearest(tones,target):target;
-          if(Math.abs(d-previous)>4){
+          if(semis(d,previous)>7){
             const dir=Math.sign(d-previous)||1;
             if(strong){const side=tones.filter(x=>dir>0?x>previous:x<previous);d=nearest(side.length?side:tones,previous)}
             else d=Math.max(0,Math.min(11,previous+dir));
