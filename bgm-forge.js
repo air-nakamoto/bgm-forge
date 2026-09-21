@@ -190,7 +190,7 @@
   const $ = id => document.getElementById(id);
   const DEFAULTS={bright:[96,'wood'],town:[76,'pluck'],casino:[116,'samples'],victory:[116,'wood'],ethnic:[76,'folk'],japanese:[76,'koto',true,'minimal'],decision:[60,'synth',true,'sparse'],kagura:[76,'shinobue'],wonder:[60,'glass'],night:[76,'musicbox'],calm:[96,'steel'],solemn:[60,'samples'],sorrow:[60,'synth'],dark:[60,'drone'],ritual:[60,'choir',true,'minimal'],machine:[96,'chip'],chase:[132,'pluck'],tense:[132,'samples'],horror:[46,'drone'],memory:[60,'tape'],doubt:[60,'tape'],requiem:[46,'organ'],puzzle:[76,'wood'],water:[76,'softpiano']};
   function selectMood(mood){state.mood=mood;const d=DEFAULTS[mood.id];state.bpm=d[0];state.sound=d[1];state.length=30;state.ending='loop';state.lead=d[2]===true;state.phrasing=d[3]||'auto'}
-  const state={sound:'synth',mood:MOODS.find(m=>m.id==='bright'),bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
+  const state={sound:'synth',mood:MOODS.find(m=>m.id==='bright'),bpm:76,length:30,ending:'loop',phrasing:'auto',lead:false,take:null,comparison:null,takes:[],busy:false,cancel:false,volume:.5,playTake:null,playGain:null,playCtx:null,playSource:null,playRevision:0,playStartedAt:0,meterRaf:0,scrub:null,previewScrub:false,sampleKind:null,sampleTimer:0,audio:null,tourReady:false,tourRemake:false,tourPlayed:false,tourSaved:false,tourTimer:0,tourPending:false,logOpen:false,remixSeed:0};
 
   function rng(seed){let a=seed|0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
   function midiFreq(m){return 440*Math.pow(2,(m-69)/12)}
@@ -648,6 +648,7 @@
     }
   }
   function previewTick(){
+    if(state.previewScrub)return;   // つまんでいるあいだは、指が置いた場所を優先する
     const el=state.sampleKind?previewEl(state.sampleKind):null;if(!el)return;
     const c=state.playCtx,t=state.playTake;
     if(!c||!t||!t.sample){clearPreviews();return}
@@ -723,14 +724,33 @@
         void trySample(kind);
       };
       if(!bar)return;
-      // Clicking the bar restarts the sample from that point, so a long one can be skimmed.
-      const seek=event=>{
-        const box=bar.getBoundingClientRect();if(!box.width)return;
-        const at=Math.max(0,Math.min(1,(event.clientX-box.left)/box.width));
-        const take=state.sampleKind===kind?state.playTake:null;
-        void trySample(kind,at*(take&&take.sample?take.length/SR:BGMScore.sampleSeconds(Number($('editTempo').value)||76)));
+      // バーは押した場所から鳴らし直す。つかんだまま動かせば、離した場所から始まる。
+      const spanOf=()=>{const take=state.sampleKind===kind?state.playTake:null;
+        return take&&take.sample?take.length/SR:BGMScore.sampleSeconds(Number($('editTempo').value)||76)};
+      const atOf=event=>{
+        if(!event||typeof event.clientX!=='number')return null;
+        const box=bar.getBoundingClientRect();if(!box.width)return null;
+        return Math.max(0,Math.min(1,(event.clientX-box.left)/box.width));
       };
-      bar.onclick=seek;
+      let held=null;
+      const hold=at=>{held=at;state.previewScrub=true;const span=spanOf();setSeek(el,at*span,span)};
+      const move=e=>{const at=atOf(e);if(at===null)return;e.preventDefault();hold(at)};
+      const drop=e=>{
+        document.removeEventListener('pointermove',move);
+        document.removeEventListener('pointerup',drop);
+        document.removeEventListener('pointercancel',drop);
+        const at=atOf(e),target=at===null?held:at;
+        held=null;state.previewScrub=false;
+        if(typeof target==='number')void trySample(kind,target*spanOf());else previewTick();
+      };
+      bar.onpointerdown=e=>{
+        if(e&&typeof e.button==='number'&&e.button!==0)return;
+        const at=atOf(e);if(at===null)return;
+        e.preventDefault();hold(at);
+        document.addEventListener('pointermove',move,{passive:false});
+        document.addEventListener('pointerup',drop);
+        document.addEventListener('pointercancel',drop);
+      };
       bar.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();void trySample(kind)}};
     });
   }
@@ -883,10 +903,81 @@
     g.save();g.shadowColor='rgba(255,206,140,.95)';g.shadowBlur=14;
     g.strokeStyle='rgba(255,222,168,.95)';g.lineWidth=1.4;
     g.beginPath();g.moveTo(x,1);g.lineTo(x,h-1);g.stroke();g.restore();
+    // 上下の持ち手。つかめる場所だと分かるように出し、つまんでいるあいだは太くする。
+    const grip=state.scrub===null?2:3.5;
+    g.save();g.fillStyle='rgba(255,226,176,.98)';g.shadowColor='rgba(255,206,140,.95)';g.shadowBlur=10;
+    g.fillRect(x-grip,0,grip*2,6);g.fillRect(x-grip,h-6,grip*2,6);g.restore();
+    if(typeof c.setAttribute==='function'){
+      const pct=String(Math.round(Math.max(0,Math.min(1,progress))*100));
+      if(c.getAttribute('aria-valuenow')!==pct){c.setAttribute('aria-valuenow',pct);c.setAttribute('aria-valuetext',pct+'%')}
+    }
+  }
+  // 再生位置のつまみ。波形のどこかを押すとそこから鳴らし直し、つかんだまま動かせば
+  // 離した場所から始まる。長い曲でも、聴きたいところへ一息で飛べる。
+  // 2小節の試聴は波形が出ないので対象外（そちらは試聴側のバーで動かす）。
+  function meterTake(){const t=state.playTake||state.take;return t&&!t.sample?t:null}
+  function meterProgress(){
+    const c=state.playCtx,t=meterTake();if(!c||!t)return 0;
+    const duration=t.length/SR,now=typeof c.currentTime==='number'?c.currentTime:NaN;
+    if(!(duration>0)||!Number.isFinite(now))return 0;
+    const elapsed=now-state.playStartedAt;
+    return ((elapsed%duration)+duration)%duration/duration;
+  }
+  function meterAt(event){
+    const c=$('meter');
+    if(!c||typeof c.getBoundingClientRect!=='function'||!event||typeof event.clientX!=='number')return null;
+    const box=c.getBoundingClientRect();if(!box.width)return null;
+    return Math.max(0,Math.min(1,(event.clientX-box.left)/box.width));
+  }
+  function seekMeter(at){
+    const t=meterTake();if(!t||state.busy)return;
+    const duration=t.length/SR;
+    void play(t,false,Math.max(0,Math.min(duration-.01,at*duration)));
+  }
+  function bindMeterSeek(){
+    const c=$('meter');if(!c||typeof c.addEventListener!=='function')return;
+    const hold=at=>{state.scrub=at;renderMeter(at)};
+    const move=e=>{const at=meterAt(e);if(at===null)return;e.preventDefault();hold(at)};
+    const drop=e=>{
+      document.removeEventListener('pointermove',move);
+      document.removeEventListener('pointerup',drop);
+      document.removeEventListener('pointercancel',drop);
+      const at=meterAt(e),target=at===null?state.scrub:at;
+      state.scrub=null;
+      if(typeof target==='number')seekMeter(target);else renderMeter(meterProgress());
+    };
+    c.addEventListener('pointerdown',e=>{
+      if(e&&typeof e.button==='number'&&e.button!==0)return;
+      if(!meterTake()||state.busy)return;
+      const at=meterAt(e);if(at===null)return;
+      e.preventDefault();unlockAudio();
+      if(typeof c.focus==='function')c.focus();
+      hold(at);
+      document.addEventListener('pointermove',move,{passive:false});
+      document.addEventListener('pointerup',drop);
+      document.addEventListener('pointercancel',drop);
+    });
+    // マウスを使わない人のために。左右で5%ずつ、Shiftを足すと1%ずつ、Home/Endで端まで。
+    c.addEventListener('keydown',e=>{
+      if(!meterTake()||state.busy)return;
+      const step=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+      let at=null;
+      if(step)at=meterProgress()+step*(e.shiftKey?.01:.05);
+      else if(e.key==='Home')at=0;
+      else if(e.key==='End')at=.98;
+      else if(e.key==='Enter'||e.key===' '||e.key==='Spacebar'){e.preventDefault();return void togglePlayback()}
+      if(at===null)return;
+      e.preventDefault();seekMeter(Math.max(0,Math.min(1,at)));
+    });
   }
   function meterTick(){
     state.meterRaf=0;previewTick();
     const c=state.playCtx,t=state.playTake||state.take;
+    if(typeof state.scrub==='number'){
+      renderMeter(state.scrub);
+      if(typeof requestAnimationFrame==='function')state.meterRaf=requestAnimationFrame(meterTick);
+      return;
+    }
     if(!c||!t){renderMeter(-1);return}
     const duration=t.length/SR,now=typeof c.currentTime==='number'?c.currentTime:NaN;
     const elapsed=now-state.playStartedAt;
@@ -1063,7 +1154,7 @@
     const events=BGMScore.events(a),melody=events.filter(n=>n.part===0).map(n=>n.pitch),inner=events.filter(n=>n.part===3).map(n=>n.pitch);
     if(inner.length&&Math.min.apply(null,melody)<=Math.max.apply(null,inner))throw Error('Register overlap failed');
   }
-  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,partTrim,foldToBank,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,togglePlayback,state,play,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
+  if(window.BGM_TEST){Object.assign(window.BGM_TEST,{compose,render,partTrim,foldToBank,midiFile,wav,encodeMp3,playGuideLabel,retainTakes,syncTakeTransport,togglePlayback,state,play,seekMeter,meterProgress,bindMeterSeek,compareEdit,trySample,stopPlayback,setVolume,selfTest,DEFAULTS,MOODS,SOUNDS,LENGTHS,TEMPOS,MODES});return}
   choiceGroup('moods',MOODS,x=>x.name,x=>x.id,m=>{
     // Browsing scenes is not a step you finish — 作る simply becomes available beside it.
     state.tourReady=true;if(state.take)state.tourRemake=true;
@@ -1089,7 +1180,7 @@
     // while the take itself is playing, which is exactly when you are most likely to be comparing.
     if(['editPattern','editSound','editTempo','editPhrasing','editLead','editDrums','editLevel','editAccompaniment'].includes(id))void trySample();
   };
-  bindPreviews();previewLengths();
+  bindPreviews();bindMeterSeek();previewLengths();
   const adjustments=$('adjustments');
   if(adjustments)adjustments.ontoggle=()=>{
     guide();

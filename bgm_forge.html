@@ -712,7 +712,15 @@
       height: 86px;
       background: #000205;
       border: 1px solid var(--line);
-      border-radius: 2px
+      border-radius: 2px;
+      /* 波形そのものが再生位置のつまみ。指で動かすあいだ画面が流れないようにする。 */
+      cursor: ew-resize;
+      touch-action: none
+    }
+
+    .meter:focus-visible {
+      outline: 2px solid var(--cyan);
+      outline-offset: 2px
     }
 
     .fingerprint {
@@ -1940,12 +1948,13 @@
       flex: 1 1 auto;
       min-width: 48px;
       height: 8px;
+      touch-action: none;
       border: 1px solid var(--line-lit);
       border-radius: 999px;
       background: #0d171e;
       position: relative;
       overflow: hidden;
-      cursor: pointer
+      cursor: ew-resize
     }
 
     .seek>i {
@@ -2329,7 +2338,7 @@
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
           id="volumeValue" for="volume">50%</output></label>
       <p class="note">試聴音量は保存するファイルに影響しません。会話をしながら、声が聞き取りやすい音量で確認してください。</p>
-      <canvas id="meter" class="meter" width="900" height="86"></canvas>
+      <canvas id="meter" class="meter" width="900" height="86" role="slider" tabindex="0" aria-label="再生位置（押した場所から鳴らし直します。つかんだまま動かせます）" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%"></canvas>
       <div class="transport saves" id="stepSave"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag"
           aria-hidden="true">作成した曲を、ここからダウンロード（保存ボタンを押す）</span>
         <button data-save="wav" disabled>WAVを保存</button>
@@ -2859,7 +2868,7 @@
   <script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
   <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
   <script src="bgm-score.js?v=20260921-arrangements-d12c649f"></script>
-  <script src="bgm-forge.js?v=20260921-play-toggle-9af3226d"></script>
+  <script src="bgm-forge.js?v=20260921-seek-drag-d44713a9"></script>
   <!-- feedback:start -->
   <!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
      曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。
