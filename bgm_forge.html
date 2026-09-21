@@ -2324,7 +2324,6 @@
       <div class="transport" id="stepPlay"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag"
           id="playGuide" aria-hidden="true">聴いてみる</span>
         <button id="play" class="play" disabled>▶ 再生</button>
-        <button id="stop" disabled>■ 停止</button>
         <button type="button" id="backToScene" class="backscene"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13.5 12.5H7.5Q5.5 12.5 5.5 10.5V4"/><path d="M2.6 6.9L5.5 3.6L8.4 6.9"/></svg>場面から選び直す</button>
       </div>
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
@@ -2743,7 +2742,7 @@
       </dl>
     </div>
     <div id="d-listen" data-title="再生・保存・調整の使い方">
-      <p>作られる曲は、はじめからループ用です。「再生」で先頭から鳴り、最後まで進むと先頭に戻って繰り返します。ループ用をオフにした曲は、最後まで進むと止まります。波形の上を走る線が再生位置です。</p>
+      <p>作られる曲は、はじめからループ用です。「再生」で先頭から鳴り、ボタンが「停止」に変わります。「停止」を押すと止まり、ボタンが「再生」に戻ります。最後まで進むと先頭に戻って繰り返します。ループ用をオフにした曲は、最後まで進むと止まります。波形の上を走る線が再生位置です。</p>
       <p>試聴音量は聴くときの音量だけを変えます。保存するファイルには影響しません。</p>
       <h4>保存</h4>
       <p>最後まで聴かなくても保存できます。ページを閉じると作った曲は消えます。</p>
@@ -2860,7 +2859,7 @@
   <script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
   <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
   <script src="bgm-score.js?v=20260921-arrangements-d12c649f"></script>
-  <script src="bgm-forge.js?v=20260920-playicons-6c3c2b3d"></script>
+  <script src="bgm-forge.js?v=20260921-play-toggle-9af3226d"></script>
   <!-- feedback:start -->
   <!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
      曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。
