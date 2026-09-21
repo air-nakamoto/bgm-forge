@@ -407,7 +407,11 @@
     source.buffer=sample.buffer;source.playbackRate.value=kind==='drums'?1:Math.pow(2,(pitch-sample.meta.root)/12);
     if((kind==='strings'||kind==='flute'||kind==='choir'||kind==='shinobue')&&sample.meta.loopEnd>sample.meta.loopStart){source.loop=true;source.loopStart=sample.meta.loopStart;source.loopEnd=sample.meta.loopEnd}
     const gain=[.24,.095,.18,.10,.22][n.part]*trim*Math.pow(n.velocity/80,1.3);
-    const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):kind==='shinobue'?Math.min(.08,duration*.2):soft?Math.min(.018,duration*.2):.003;
+    // 柔らかいピアノは音の出だしを35msかけて立ち上げる。録音の頭にある打弦の音（ハンマーの当たる音）は
+    // 最初の10〜20msに集まっていて、18msで立ち上げると、その山をそのまま通してしまう。
+    // 「水辺のピアノが乱暴に弾いたように聞こえる」という指摘（2026-09-21）はここ。
+    // 短い音まで鈍らないよう、音符の長さの35%を上限にする。室内楽のピアノ（soft以外）は従来どおり。
+    const attack=kind==='strings'?Math.min(.16,duration*.2):kind==='flute'?Math.min(.07,duration*.2):kind==='shinobue'?Math.min(.08,duration*.2):soft?Math.min(.035,duration*.35):.003;
     // 伸ばす音（ループする合唱）は、音符の中でもゆっくり引く。伴奏には FADE を入れたのに
     // 旋律を平らなままにすると、旋律だけがずっと同じ音量で鳴り続けて前に出すぎる。
     // 減衰する撥弦（箏・シタール・ピアノ）は勝手に小さくなるので何もしない。
