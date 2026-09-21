@@ -410,7 +410,23 @@
       const v=velocity+gauss()*14-(sub?8:0);
       return [Math.max(0,Math.min(total-1e-3,beat+ms*s.bpm/60000)),Math.max(1,v)];
     };
-    const add=(part,pitch,beat,duration,velocity,pan=0)=>{if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
+    // 内声（part 3）は、同じ強さ・同じ位置で同じ録音を鳴らし続けていた。同梱のピアノは
+    // 1音につき1テイク（RR1）しかないので、まったく同じ波形が繰り返され、
+    // 「内声の鍵盤の叩き方が乱暴に聞こえる」と言われた（2026-09-21）。指で弾く以上、
+    // 強さも発音の位置も少しずつ違う。打楽器のゆらぎ（上記）を鍵盤向けに弱めて入れる。
+    // 打楽器とは別の乱数を使う。同じ乱数から引くと、内声を足した分だけ打楽器の
+    // ゆらぎがずれて、今までの打楽器の鳴り方が変わってしまう。
+    const touchRnd=rng((s.arrangementSeed||1)*13+7);
+    const tgauss=()=>{let x=0;for(let i=0;i<4;i++)x+=touchRnd();return (x-2)*1.732};
+    const touch=(beat,velocity)=>{
+      if(s.humanize===false)return [beat,velocity];
+      // ずれは書いた小節の中に収める。小節をまたぐと「何小節目の音か」が変わってしまい、
+      // 民族の内声（奇数小節だけ）のような約束が壊れる。実際、まず壊して回帰テストに拾われた。
+      const bar=Math.floor(beat/4)*4,last=Math.min(bar+4-1e-3,total-1e-3);
+      const at=Math.min(Math.max(beat+tgauss()*9*s.bpm/60000,bar),last);
+      return [Math.max(0,at),Math.max(1,velocity*(1+tgauss()*.22))];
+    };
+    const add=(part,pitch,beat,duration,velocity,pan=0)=>{if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}else if(part===3){const t=touch(beat,velocity);beat=t[0];velocity=t[1]}duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
     const chordFor=bar=>(!loop&&bar>=lastBar)?0:chordAt(s,bar);
     // Weighted choice so each bar picks a figure instead of repeating one forever.
     const pickW=table=>{let t=0;for(const row of table)t+=row[0];let x=random()*t;for(const row of table){x-=row[0];if(x<=0)return row[1]}return table[table.length-1][1]};
