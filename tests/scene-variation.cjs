@@ -420,6 +420,29 @@ for(let seed=1;seed<=24;seed++){
  assert(inner.every(e=>e.duration<=.4),'clear accompaniment must stay short and bouncy');
  for(let bar=3;bar<s.themeBars;bar+=4)assert.equal(score.chordAt(s,bar),0,'resolution phrase must arrive on tonic');
 }
+// 新規作曲でも、場面の伴奏3型と和音の間隔を独立に組み合わせる。
+// 疑惑の autoPattern は型を使わないため、ここは音の種類でなく設定の網羅を検証する。
+for(const mood of MOODS){
+ const intervals=mood.id==='victory'?[1]:mood.id==='solemn'?[1,2,4]:
+  ['ethnic','decision','kagura','wonder','doubt','requiem','dark','ritual','machine','horror'].includes(mood.id)?[2,4]:[1,2];
+ const combinations=new Set();
+ const d=DEFAULTS[mood.id];
+ for(let seed=1;seed<=300;seed++){
+  const settings={mood,scale:MODES[mood.mode],bpm:d[0],sound:d[1],length:30,ending:'loop',lead:d[2]===true,phrasing:d[3]||'auto'};
+  const s=score.compose(settings,seed);
+  assert(intervals.includes(s.harmonyEvery),mood.id+' must retain scene harmony intervals');
+  combinations.add(s.arrangementVariant+':'+s.harmonyEvery);
+  for(const key of ['bpm','sound','ending','lead','phrasing'])assert.equal(s[key],settings[key],mood.id+' must retain '+key);
+  assert.equal(s.mode,mood.mode);assert.deepEqual(Array.from(s.scale),Array.from(MODES[mood.mode]));
+  assert.equal(s.drums,mood.drums);
+  assert.equal(s.themeBars,score.themeBarsFor(d[0],30));
+  assert.equal(s.length,score.loopLength(d[0],30));
+  const remix=score.remix(s,'accompaniment',101);
+  assert.equal(remix.harmonyEvery,s.harmonyEvery,'remix must retain harmony timing');
+ }
+ assert.equal(combinations.size,3*intervals.length,mood.id+' must cover every arrangement/harmony combination');
+}
+console.log('PASS: 7200 compositions; independent scene arrangement/harmony combinations and unchanged generation settings');
 let tested=0;
 for(const mood of MOODS){
  const arrangements=new Map();

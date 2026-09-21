@@ -3693,7 +3693,9 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       baseDensity:m.density||.55,density:densityFor(m.density,settings.phrasing),phrasing:settings.phrasing||'auto',lead:settings.lead!==false,
       accompaniment:settings.accompaniment||'auto',autoPattern:m.autoPattern||null,moodId:m.id,moodName:m.name,style:m.style||'full',sound:settings.sound||'samples',level:1,energy:typeof m.energy==='number'?m.energy:.55,scene:'theme',sceneName:'テーマ'};
     const profile=SCENES[m.id],variant=Math.floor(rng(seed^0x5343454E)()*3);
-    s.arrangementVariant=variant;s.harmonyEvery=profile?profile.harmony[variant]:1;
+    // 伴奏の型と和音の間隔を独立に選び、作り直しで生まれる組み合わせも新規作曲に使う。
+    // 場面ごとの候補と重みは保ち、ほかの抽選に使う乱数列は動かさない。
+    s.arrangementVariant=variant;s.harmonyEvery=profile?pick(rng(seed^0x4841524D),profile.harmony):1;
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
   }
 
