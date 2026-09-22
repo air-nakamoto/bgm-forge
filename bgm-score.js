@@ -42,14 +42,16 @@
     // 水辺。揺れる伴奏（2拍ごとの和音）と、点で落ちる内声。打楽器は水滴に見立てた ticks。
     water:  {inner:[[0,2,3],[.5,1.5,3.5],[0,1.5,2,3]],bass:['two','hold','fifth'],pad:[0,2],padBars:2,hold:2.4,harmony:[2,1,2],high:74,gate:.55,drum:'ticks'},
     calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
-    solemn: {inner:[[],[],[]],bass:['hold','pedal','fifth'],pad:[0],padBars:1,hold:3.85,harmony:[2,4,1],high:69,gate:1,drum:'none'},
+    // 荘厳と鎮魂は内声が空なので、内声のずらしが効かない。代わりに和音を鳴らす位置を
+    // 2通り持たせて幅を作る（padAlt）。内声のある場面には置かない＝12組を超えさせない。
+    solemn: {inner:[[],[],[]],bass:['hold','pedal','fifth'],pad:[0],padAlt:[0,2],padBars:1,hold:3.85,harmony:[2,4,1],high:69,gate:1,drum:'none'},
     mystic: {inner:[[.75,3.25],[1.5,2.75],[.25,2.5]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:6.8,harmony:[4,2,4],high:76,gate:.7,drum:'none'},
     sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
     memory: {inner:[[0,1.5,3],[.5,2,3.5],[0,.75,2.5]],bass:['fifth','two','walk'],pad:[2],padBars:2,hold:1.7,harmony:[1,2,2],high:69,gate:.6,drum:'none'},
     // 疑惑は autoPattern:'wave' を使うので、この行から効くのは harmony（和音の移り変わり）と
     // high（内声の音域）だけ。inner・bass・pad・gate・drum は伴奏を手動で場面型にしない限り使われない。
     doubt:  {inner:[[.75,2.25,3.25],[.5,1.75,2.75],[.25,1.5,2.5,3.75]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:3.6,pad:[0],padBars:2,hold:5.2,harmony:[2,4,2],high:74,gate:.7,drum:'ticks'},
-    requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
+    requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padAlt:[2],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
     dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
     ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],bassHold:2.4,pad:[0],padBars:2,hold:3,harmony:[4,2,4],high:65,gate:.45,drum:'none'},
@@ -61,7 +63,7 @@
   // 「場面におまかせ」の行き先。場面が autoPattern を持つときは、場面専用の伴奏より
   // その決まった型を優先する。持たない場合は今まで通り場面専用、それも無ければ legacy。
   const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:s.autoPattern?s.autoPattern:SCENES[s.moodId]?'scene':'legacy';
-  const arrangementKey=s=>[s.moodId,s.arrangementVariant,s.harmonyEvery,s.accompaniment||'auto'].join(':');
+  const arrangementKey=s=>[s.moodId,s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0,s.accompaniment||'auto'].join(':');
   // Registers: the inner voice stays under the melody, the pad stays inside the sampled string range.
   const INNER_GAP=4,INNER_SPAN=11,PAD_LOW=55,PAD_HIGH=79;
   const STEPS=[-4,-3,-2,-2,-1,-1,1,1,2,2,3,4];
@@ -70,7 +72,7 @@
   const pitch=(scale,d)=>scale[(d%scale.length+scale.length)%scale.length]+12*Math.floor(d/scale.length);
   const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a);
   function chordDegrees(d){return [d-7,d-5,d-3,d,d+2,d+4,d+7,d+9,d+11]}
-  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery].join('|');return s}
+  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0].join('|');return s}
 
   // A 16-bar theme cannot be heard inside 25 beats, so the form follows the requested duration.
   function themeBarsFor(bpm,length){const beats=length*bpm/60;return beats>=64?16:beats>=32?8:beats>=16?4:2}
@@ -112,6 +114,10 @@
     // 伴奏の型と和音の間隔を独立に選び、作り直しで生まれる組み合わせも新規作曲に使う。
     // 場面ごとの候補と重みは保ち、ほかの抽選に使う乱数列は動かさない。
     s.arrangementVariant=variant;s.harmonyEvery=profile?pick(rng(seed^0x4841524D),profile.harmony):1;
+    // 内声を、低音と同じ型に縛らず1つずらせるようにする。型3×和音の間隔2×ずらし2で
+    // 場面あたり12組。ずらしは0か1だけで、全部の型を自由に組み合わせるわけではない。
+    s.innerShift=Math.floor(rng(seed^0x494E4E52)()*2);
+    s.padShift=profile&&profile.padAlt?Math.floor(rng(seed^0x50414421)()*2):0;
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
   }
 
@@ -228,7 +234,7 @@
   }
   function remix(source,kind,seed){
     const s=JSON.parse(JSON.stringify(source));s.seed=seed;s.edit=kind;
-    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
+    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;s.innerShift=1-(s.innerShift||0);if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
     if(kind==='drums')s.drums=s.drums==='none'?s.defaultDrums:'none';
     if(kind==='quiet')s.level=Math.max(.2,s.level*.65);
     if(kind==='ending')s.ending=s.ending==='cadence'?'loop':'cadence';
@@ -319,16 +325,16 @@
   // Phrase-level gestures stay recognizable; rests and orchestration change on
   // the answer, rather than independently re-rolling every bar.
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,add}){
-    const c=SCENES[s.moodId],v=s.arrangementVariant||0,local=bar%(s.themeBars||16);
+    const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0))%3,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
-    const breath=sparse&&local%4===(v===1?1:3);
+    const breath=sparse&&local%4===(w===1?1:3);
     const n=raw.length,vel=43+energy*17;
     if(bar%c.padBars===0){
       // Open fifths and wider spacing distinguish drones from tonal accompaniment.
       const pad=['dark','ritual'].includes(s.moodId)?[raw[0],raw[n-1]]:
         s.moodId==='horror'?[raw[0],Math.min(PAD_HIGH,raw[0]+1),raw[n-1]]:raw;
-      for(const at of c.pad)pad.forEach((q,j)=>add(1,q,b+at,c.hold,vel-4+j*2,(j/(pad.length-1||1)-.5)*.9));
+      for(const at of (s.padShift&&c.padAlt?c.padAlt:c.pad))pad.forEach((q,j)=>add(1,q,b+at,c.hold,vel-4+j*2,(j/(pad.length-1||1)-.5)*.9));
     }
     const root=base-12+pitch(s.scale,d),fifth=base-12+pitch(s.scale,d+4);
     const bass=c.bass[v],bv=53+energy*18;
@@ -348,11 +354,11 @@
     // 計測はシタール6.0→17.0音/曲、全体の12%→27%。
     // 民族のシタールはこの内声が全部。撥弦の飾り（じゃらん）は入れて外した経緯が §6.0 にある。
     if(!breath&&(s.moodId!=='ethnic'||bar%2===1)){
-      const times=c.inner[v],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[v];
+      const times=c.inner[w],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[w];
       times.forEach((at,k)=>{
         // The answer leaves room; it does not append a new tune.
         if(answer&&times.length>2&&k===times.length-1)return;
-        const index=(order[k%4]+(phrase%2&&v===2?1:0))%inner.length;
+        const index=(order[k%4]+(phrase%2&&w===2?1:0))%inner.length;
         const q=inner[index];
         add(3,q,b+at,Math.min(c.gate,4-at),32+energy*17+(k===0?5:-2)+(phrase%2?-3:0),k%2?.3:-.3);
         if(c.comp)add(3,inner[(index+1)%inner.length],b+at,Math.min(c.gate,4-at),28+energy*15,k%2?.15:-.15);
