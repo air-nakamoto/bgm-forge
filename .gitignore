@@ -14,3 +14,6 @@ __pycache__/
 node_modules/
 .dev.vars
 .cloudflare-public/
+Claude outputs/
+除外BGMダウンロード/
+除外BGMダウンロード/
