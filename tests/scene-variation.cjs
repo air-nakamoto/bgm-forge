@@ -468,7 +468,14 @@ for(const mood of MOODS){
   for(let seed=1;seed<=12;seed++){
    const loop=compose(mood,seed),end=loop.length*loop.bpm/60;
    const events=score.events(loop);
-   assert(events.some(n=>n.part===1&&n.beat>=end-2&&n.beat+n.duration>=end-1e-6),'wonder must carry harmony into the loop boundary');
+   assert(events.some(n=>n.part===1&&n.beat<end-2&&n.beat+n.duration>=end-1e-6),'wonder must sustain its last chord through the loop boundary');
+   assert(!events.some(n=>n.part===1&&n.beat>=end-2),'wonder must not stack an extra opening chord in the final half-bar');
+   // 同じルールを長尺・旋律ありでも守る。曲末だけ別の和音を重ねない。
+   for(const length of [60,120])for(const lead of [false,true]){
+    const longer=compose(mood,seed,{length,lead}),stop=longer.length*longer.bpm/60,notes=score.events(longer);
+    assert(notes.some(n=>n.part===1&&n.beat<stop-2&&n.beat+n.duration>=stop-1e-6),'long wonder loop must sustain its last chord');
+    assert(!notes.some(n=>n.part===1&&n.beat>=stop-2),'long wonder loop must not anticipate an extra chord');
+   }
    const preview=score.sample(loop,{sound:loop.sound,bpm:loop.bpm,lead:false});
    assert(!score.events(preview).some(n=>n.part===1&&n.beat>=6),'preview must not insert a false turnaround');
   }

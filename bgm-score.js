@@ -367,14 +367,9 @@
         if(c.comp)add(3,inner[(index+1)%inner.length],b+at,Math.min(c.gate,4-at),28+energy*15,k%2?.15:-.15);
       });
     }
-    if(s.moodId==='wonder'&&turn){
-      // A fading scene still needs a handoff into the next downbeat. Anticipate
-      // the opening harmony quietly instead of leaving a near-silent last bar.
-      const next=chordFor(bar+1);
-      const arrival=voiceChord([next,next+2,next+4].map(x=>base+pitch(s.scale,x)),raw,null);
-      arrival.forEach((q,j)=>add(1,q,b+2,2,vel-10,(j-1)*.35));
-      add(2,base-12+pitch(s.scale,next),b+2,1.9, bv-12);
-    }
+    // 幻想も最後の小節は通常の和音を保つ。hold=4.2 で曲末まで届く。
+    // 以前は最後の2拍で先頭の三和音を足していたが、前の和音の異なる音が
+    // 残り、ここだけ和音が重なっていた。ループのつながりは試聴で確認する。
     if(s.drums==='none')return;
     // 神楽鈴。4小節の頭で一振りだけ。MIDI 84 は General MIDI の Belltree なので、
     // 書き出したMIDIでも鈴として読める。合成音（bgm-forge.js の suzuTone）なので同梱音源は不要。
