@@ -157,7 +157,8 @@ for(const mood of MOODS){
  const segment=(s,a,b)=>score.events(s).filter(n=>n.part===3&&n.beat>=a&&n.beat<b).map(n=>[n.pitch,+n.beat.toFixed(3)]);
  const at=(length,a,b)=>segment(compose(mood,2026,{length,lead:false}),a,b);
  assert.equal(compose(mood,2026,{length:60,lead:false}).themeBars,16,mood.id+' long form must use a full theme');
- const sixtyA=at(60,0,32),sixtyB=at(60,32,64);if(!mood.autoPattern&&(sixtyA.length||sixtyB.length))assert(sixtyA.length===0||sixtyB.length===0,mood.id+' 60s must include an inner-voice rest');
+ const sixty=compose(mood,2026,{length:60,lead:false}),sixtyEvents=score.events(sixty).filter(n=>n.part===3),cut=sixty.bpm*.75;
+ if(!mood.autoPattern&&sixtyEvents.length)assert(sixtyEvents.every(n=>n.beat<cut),mood.id+' 60s inner voice must rest from 45 seconds');
  if(!mood.autoPattern){
   const ninetyA=at(90,0,32),ninetyB=at(90,32,64);if(ninetyA.length)assert.notDeepEqual(ninetyB,ninetyA,mood.id+' 90s must use a different inner voice');
   const oneTwentyA=at(120,0,32),oneTwentyB=at(120,32,64),oneTwentyC=at(120,64,96),oneTwentyD=at(120,96,128);

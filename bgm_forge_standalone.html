@@ -3928,7 +3928,8 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   // the answer, rather than independently re-rolling every bar.
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     const requested=s.requestedLength||s.length;
-    const innerMode=requested>=120?(formCycle===1?'rest':formCycle===2?'alternate':'normal'):
+    const innerMode=requested===60?(b+4>s.bpm*0.75?'rest':'normal'):
+      requested>=120?(formCycle===1?'rest':formCycle===2?'alternate':'normal'):
       requested>=90?(formCycle===1?'alternate':'normal'):
       requested>=60?(formCycle===1?'rest':'normal'):'normal';
     const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0)+(innerMode==='alternate'?1:0))%3,local=bar%(s.themeBars||16);
