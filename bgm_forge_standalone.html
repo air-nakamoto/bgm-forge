@@ -3867,6 +3867,9 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const s=JSON.parse(JSON.stringify(source));
     s.accompaniment=settings.accompaniment||source.accompaniment||'auto';
     s.sound=settings.sound;s.bpm=settings.bpm;s.requestedLength=settings.length;
+    // 編集で尺だけ変えた場合も、元テイクのテーマ小節数を引き継がない。
+    // 30秒テイク(8小節)を60秒へ延長したときは16小節へ作り直す。
+    s.themeBars=themeBarsFor(s.bpm,s.requestedLength);
     s.ending=settings.ending;s.lead=settings.lead;s.level=settings.level;
     s.drums=settings.drums?(source.drums==='none'?source.defaultDrums:source.drums):'none';
     if(settings.phrasing!==source.phrasing){
