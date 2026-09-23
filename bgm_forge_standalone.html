@@ -3938,16 +3938,20 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 90秒は「A A → 休止 → A B」。休止直後の1フレーズは
     // 休止前の型へ戻し、その次のフレーズから別型へ進む。
     const recoverEnd=restEnd+16;
-    return {start:Math.max(0,start),end:restEnd,recoverEnd,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
+    const closeStart=Math.max(0,end-16);
+    return {start:Math.max(0,start),end:restEnd,recoverEnd,closeStart,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
   }
   function longFormMode(s,beat){
     const plan=longFormPlan(s);
     if(!plan)return 'normal';
-    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat<plan.returnAt?'alternate':'normal';
+    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat>=plan.closeStart&&plan.closeStart>plan.recoverEnd?'closing':beat<plan.returnAt?'alternate':'normal';
   }
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     const innerMode=longFormMode(s,b);
-    const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0)+(innerMode==='alternate'?1:0))%3,local=bar%(s.themeBars||16);
+    const c=SCENES[s.moodId],v=s.arrangementVariant||0;
+    // ループ直前の最後の小節はAの型へ戻し、B→Aの継ぎ目を作る。
+    const finalClosing=innerMode==='closing'&&b+4>=s.length*s.bpm/60-1e-7;
+    const w=(v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1:0))%3,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
     const breath=sparse&&local%4===(w===1?1:3);
