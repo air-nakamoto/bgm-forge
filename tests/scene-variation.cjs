@@ -157,7 +157,10 @@ for(const mood of MOODS){
  const longFirst=score.events(long).filter(n=>n.part===3&&n.beat<32).length;
  const longSecond=score.events(long).filter(n=>n.part===3&&n.beat>=32&&n.beat<64).length;
  assert.equal(long.themeBars,16,mood.id+' long form must use a full theme');
- assert(longSecond<longFirst||longFirst===0,mood.id+' long form must create an inner-voice subtraction');
+ const firstShape=score.events(long).filter(n=>n.part===3&&n.beat<32).map(n=>[n.pitch,+n.beat.toFixed(3)]);
+ const secondShape=score.events(long).filter(n=>n.part===3&&n.beat>=32&&n.beat<64).map(n=>[n.pitch,+n.beat.toFixed(3)]);
+ assert(longSecond>0||longFirst===0,mood.id+' long form alternate inner voice must remain present');
+ if(firstShape.length)assert.notDeepEqual(secondShape,firstShape,mood.id+' long form must use a different inner voice');
  assert.equal(shortParts,score.events(base).filter(n=>n.part===3).length,mood.id+' short form must remain deterministic');
 }
 console.log('PASS: long-form inner-voice subtraction at 60 seconds; short form unchanged');

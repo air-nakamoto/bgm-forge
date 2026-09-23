@@ -331,8 +331,8 @@
 
   // Phrase-level gestures stay recognizable; rests and orchestration change on
   // the answer, rather than independently re-rolling every bar.
-  function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,add}){
-    const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0))%3,local=bar%(s.themeBars||16);
+  function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
+    const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0)+(formCycle===1?1:0))%3,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
     const breath=sparse&&local%4===(w===1?1:3);
@@ -434,12 +434,11 @@
       const at=Math.min(Math.max(beat+tgauss()*9*s.bpm/60000,bar),last);
       return [Math.max(0,at),Math.max(1,velocity*(1+tgauss()*.22))];
     };
-    // 1分以上では8小節ごとに内声を引き算する。主題・和音・旋律は保ち、会話の下で
-    // 密度だけが変わる構成にする。30秒以下と16小節未満の曲は従来どおり。
+    // 1分以上では8小節ごとに内声の型を変える。主題・和音・旋律は保ち、会話の下で
+    // 内声の密度と動きだけが変わる構成にする。30秒以下と16小節未満の曲は従来どおり。
     const longForm=(s.requestedLength||s.length)>=60&&bars>=16;
     const formCycle=beat=>longForm?Math.floor(beat/(bars*2)):0;
     const add=(part,pitch,beat,duration,velocity,pan=0)=>{
-      if(longForm&&part===3&&formCycle(beat)%2===1)return;
       if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}else if(part===3){const t=touch(beat,velocity);beat=t[0];velocity=t[1]}
       duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
     const chordFor=bar=>(!loop&&bar>=lastBar)?0:chordAt(s,bar);
@@ -478,7 +477,7 @@
       const inner=degrees.map(x=>{let q=base+pitch(s.scale,x);while(q<innerLow)q+=12;while(q>innerHigh)q-=12;return q}).sort((a,b)=>a-b);
 
       if(pattern==='scene'){
-        sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,add});
+        sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle:formCycle(b),add});
         previousPad=raw;if(!firstPad)firstPad=raw;
         continue;
       }
