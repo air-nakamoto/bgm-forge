@@ -3934,12 +3934,16 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     if(requested<60||s.previewBars)return null;
     const end=Math.round(s.length*s.bpm/60/4)*4;
     const start=requested<90?end-16:Math.round((requested>=120?30:45)*s.bpm/60/4)*4;
-    return {start:Math.max(0,start),end:Math.max(0,start)+16,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
+    const restEnd=Math.max(0,start)+16;
+    // 90秒は「A A → 休止 → A B」。休止直後の1フレーズは
+    // 休止前の型へ戻し、その次のフレーズから別型へ進む。
+    const recoverEnd=restEnd+16;
+    return {start:Math.max(0,start),end:restEnd,recoverEnd,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
   }
   function longFormMode(s,beat){
     const plan=longFormPlan(s);
     if(!plan)return 'normal';
-    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.returnAt?'alternate':'normal';
+    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat<plan.returnAt?'alternate':'normal';
   }
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     const innerMode=longFormMode(s,b);
