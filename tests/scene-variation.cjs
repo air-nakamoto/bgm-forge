@@ -82,8 +82,8 @@ for(const [name,html] of [['分割版',v2html],['単体版',standalone]]){
 }
 
 // 単体版は1ファイルで配るので、隣に LICENSE が無い。相対リンクのままだと開けない。
-assert(!standalone.includes('<a href="LICENSE">'),'単体版のMITリンクがGitHubへ向いていない');
-assert(v2html.includes('<a href="LICENSE">'),'分割版は同じフォルダのLICENSEを指すこと');
+assert(!/<a href="LICENSE"(?:\s|>)/.test(standalone),'単体版のMITリンクがGitHubへ向いていない');
+assert(/<a href="LICENSE"(?:\s|>)/.test(v2html),'分割版は同じフォルダのLICENSEを指すこと');
 
 const score=require(path.join(root,'bgm-score.js'));
 const context={window:{BGM_TEST:{}},BGMScore:score};

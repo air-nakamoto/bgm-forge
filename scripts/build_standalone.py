@@ -133,8 +133,8 @@ def main():
 
     # 単体版は1ファイルで配るので、隣に LICENSE が無い。MITの本文は先頭のコメントに同梱してあるが、
     # リンク先はGitHubの原本へ向ける（GitHubのリンクはこの行の隣にもう1つある）。
-    doc, n = re.subn(r'<a href="LICENSE">',
-                     '<a href="https://github.com/air-nakamoto/bgm-forge/blob/main/LICENSE">', doc)
+    doc, n = re.subn(r'<a href="LICENSE"',
+                     '<a href="https://github.com/air-nakamoto/bgm-forge/blob/main/LICENSE"', doc)
     assert n == 1, 'MIT Licenseへのリンクが %d 個（想定 1）' % n
 
     doc, n = FEEDBACK.subn("", doc)
