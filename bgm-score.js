@@ -83,7 +83,8 @@
 
   function loopLength(bpm,length,bars=themeBarsFor(bpm,length)){
     const span=bars*4;
-    return Math.max(1,Math.floor((length*bpm/60+1e-8)/span))*span*60/bpm;
+    const units=(length>=120?Math.ceil:Math.floor)((length*bpm/60+1e-8)/span);
+    return Math.max(1,units)*span*60/bpm;
   }
 
   // The walk reflects at both ends; a clamp would absorb at degree 0 and flatten the motif.
