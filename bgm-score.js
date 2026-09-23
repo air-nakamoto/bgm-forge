@@ -345,8 +345,11 @@
     const restEnd=Math.max(0,start)+16;
     // 90秒は「A A → 休止 → A B」。休止直後の1フレーズは
     // 休止前の型へ戻し、その次のフレーズから別型へ進む。
-    const recoverEnd=restEnd+16;
-    const closeStart=Math.max(0,end-16);
+    // 46 BPM・90秒のように全体が18小節程度しかない場合は、4小節ずつの
+    // 復帰/B/接続を置けない。休止は保ち、復帰とBを2小節、最後を接続1小節に圧縮する。
+    const compact=requested===90&&end-restEnd<20;
+    const recoverEnd=restEnd+(compact?8:16);
+    const closeStart=Math.max(0,end-(compact?4:16));
     return {start:Math.max(0,start),end:restEnd,recoverEnd,closeStart,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
   }
   function longFormMode(s,beat){
