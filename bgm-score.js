@@ -364,7 +364,9 @@
     // 奇数小節だけにすると、アルペジオの小節が2つ続くことが無く、必ず1小節空く。
     // 計測はシタール6.0→17.0音/曲、全体の12%→27%。
     // 民族のシタールはこの内声が全部。撥弦の飾り（じゃらん）は入れて外した経緯が §6.0 にある。
-    if(innerMode!=='rest'&&!breath&&(s.moodId!=='ethnic'||bar%2===1)){
+    // 民族は通常、奇数小節だけを撥く。長尺の別型区間では偶数小節にも
+    // 同じ内声の語彙を置き、休止から戻ったことが聴き取れる密度にする。
+    if(innerMode!=='rest'&&!breath&&(s.moodId!=='ethnic'||bar%2===1||innerMode==='alternate')){
       const times=c.inner[w],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[w];
       times.forEach((at,k)=>{
         // The answer leaves room; it does not append a new tune.
