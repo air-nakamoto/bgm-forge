@@ -150,25 +150,27 @@ for(const mood of MOODS)for(const seed of [101,9999,...Array.from({length:32},(_
  }
 }
 console.log(`PASS: ${shortMelodyCases} short minimal melody cases; melody present and all notes within MIDI bounds`);
-// 長尺は、60秒=通常→休止、90秒=通常→別型、120秒=通常→休止→別型→通常。
-for(const mood of MOODS){
- const base=compose(mood,2026,{length:30,lead:false});
- const shortParts=score.events(base).filter(n=>n.part===3).length;
- const segment=(s,a,b)=>score.events(s).filter(n=>n.part===3&&n.beat>=a&&n.beat<b).map(n=>[n.pitch,+n.beat.toFixed(3)]);
- const at=(length,a,b)=>segment(compose(mood,2026,{length,lead:false}),a,b);
- assert.equal(compose(mood,2026,{length:60,lead:false}).themeBars,16,mood.id+' long form must use a full theme');
- const sixty=compose(mood,2026,{length:60,lead:false}),sixtyEvents=score.events(sixty).filter(n=>n.part===3),cut=sixty.bpm*.75;
- if(!mood.autoPattern)assert(sixtyEvents.length>=0,mood.id+' 60s long-form check');
- if(!mood.autoPattern){
-  const ninetyA=at(90,0,32),ninetyB=at(90,32,64);if(ninetyA.length)assert.notDeepEqual(ninetyB,ninetyA,mood.id+' 90s must use a different inner voice');
-  const t120=compose(mood,2026,{length:120,lead:false}),all120=score.events(t120).filter(n=>n.part===3),sec=(a,b)=>all120.filter(n=>n.beat>=a*t120.bpm/60&&n.beat<b*t120.bpm/60).map(n=>[n.pitch,+n.beat.toFixed(3)]);
-  const oneTwentyA=sec(0,30),oneTwentyB=sec(30,45),oneTwentyC=sec(45,90),oneTwentyD=sec(90,120);
-  if(oneTwentyA.length&&oneTwentyC.length)assert.notDeepEqual(oneTwentyC,oneTwentyA,mood.id+' 120s must include a different inner voice');
-  if(oneTwentyA.length&&oneTwentyD.length)assert(oneTwentyD.length>0,mood.id+' 120s must return to an inner voice');
+// Long form: duration and actual note intervals, including the edit path.
+let longCases=0;
+for(const mood of MOODS)for(const bpm of [46,60,76,96,116,132])for(const length of [60,90,120])for(const seed of [1,2026]){
+ const fresh=compose(mood,seed,{bpm,length,lead:false});
+ const source=compose(mood,seed,{bpm,length:30,lead:false});
+ const edited=score.adjust(source,{...source,bpm,length,drums:true});
+ for(const s of [fresh,edited])for(const accompaniment of ['auto','wave','up','chords']){
+  s.accompaniment=accompaniment;
+  assert(s.length>=length-1e-7&&s.length<length+240/bpm+1e-7,'duration within one bar');
+  const totalBars=Math.round(s.length*bpm/240);
+  const restBar=length===60?totalBars-4:Math.round((length===120?30:45)*bpm/240);
+  const start=restBar*4,end=start+16;
+  assert(end<=s.length*bpm/60+1e-7,'four-bar rest fits');
+  const notes=score.events(s),inner=notes.filter(n=>n.part===3);
+  assert(!inner.some(n=>n.beat<end&&n.beat+n.duration>start+1e-7),'no inner note overlaps rest');
+  if(inner.some(n=>n.beat<start)&&length>60)assert(inner.some(n=>n.beat>=end),'inner voice returns');
+  assert.deepEqual(notes,score.events(s),'deterministic');
+  valid(s);longCases++;
  }
- assert.equal(shortParts,score.events(base).filter(n=>n.part===3).length,mood.id+' short form must remain deterministic');
 }
-console.log('PASS: long-form inner-voice rest/alternate/return patterns; short form unchanged');
+console.log(`PASS: ${longCases} long-form duration/rest checks, new and edited, all accompaniment paths`);
 // 同梱音源の root は「実音」でなければならない。箏は13分の即興から自動抽出しているため、
 // 2026-09-20 まで5音中4音の root が +1.0〜+18.7半音ずれていた（自己相関が倍音や隣の弦を
 // 基音と誤認していた）。表示を信じて早回しするので、和風は実際に音を外して鳴っていた。

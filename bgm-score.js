@@ -82,6 +82,7 @@
   function themeBarsFor(bpm,length){const beats=length*bpm/60;return length>=60||beats>=48?16:beats>=32?8:beats>=16?4:2}
 
   function loopLength(bpm,length,bars=themeBarsFor(bpm,length)){
+    if(length>=60)return Math.ceil((length*bpm/60-1e-8)/4)*4*60/bpm;
     const span=bars*4;
     const units=(length>=120?Math.ceil:Math.floor)((length*bpm/60+1e-8)/span);
     return Math.max(1,units)*span*60/bpm;
@@ -335,13 +336,21 @@
 
   // Phrase-level gestures stay recognizable; rests and orchestration change on
   // the answer, rather than independently re-rolling every bar.
-  function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
+  // All accompaniment paths share a four-bar rest. Preview clips retain their notes.
+  function longFormPlan(s){
     const requested=s.requestedLength||s.length;
-    const elapsed=b*60/s.bpm;
-    const innerMode=requested===60?(elapsed<45?'normal':'rest'):
-      requested>=120?(elapsed<30?'normal':elapsed<45?'rest':elapsed<90?'alternate':'normal'):
-      requested>=90?(elapsed<45?'normal':elapsed<60?'rest':'alternate'):
-      requested>=60?(formCycle===1?'rest':'normal'):'normal';
+    if(requested<60||s.previewBars)return null;
+    const end=Math.round(s.length*s.bpm/60/4)*4;
+    const start=requested<90?end-16:Math.round((requested>=120?30:45)*s.bpm/60/4)*4;
+    return {start:Math.max(0,start),end:Math.max(0,start)+16,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
+  }
+  function longFormMode(s,beat){
+    const plan=longFormPlan(s);
+    if(!plan)return 'normal';
+    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.returnAt?'alternate':'normal';
+  }
+  function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
+    const innerMode=longFormMode(s,b);
     const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0)+(innerMode==='alternate'?1:0))%3,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
@@ -454,6 +463,13 @@
     const formCycle=beat=>longForm?Math.floor(beat/(Math.min(8,bars)*4)):0;
     const add=(part,pitch,beat,duration,velocity,pan=0)=>{
       if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}else if(part===3){const t=touch(beat,velocity);beat=t[0];velocity=t[1]}
+      if(part===3){
+        const plan=longFormPlan(s);
+        if(plan){
+          if(beat>=plan.start&&beat<plan.end)return;
+          if(beat<plan.start)duration=Math.min(duration,plan.start-beat);
+        }
+      }
       duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
     const chordFor=bar=>(!loop&&bar>=lastBar)?0:chordAt(s,bar);
     // Weighted choice so each bar picks a figure instead of repeating one forever.
@@ -585,12 +601,19 @@
     const span=bars*4;
     if(s.lead!==false){
       const closing=s.melody[s.melody.length-1];
+      let previousMelody=null;
       for(let cycle=0;cycle*span<total;cycle++){
         const lift=[0,-4,6,2][cycle%4],closes=loop&&(cycle+1)*span>=total;
         for(const n of s.melody){
           const beat=n.beat+cycle*span;if(!loop&&beat>=lastBar*4)continue;
           // 儀式の声は息継ぎを残す。最後の音を曲末まで伸ばすと、後半が持続音になる。
-          add(n.part,n.pitch,beat,closes&&n===closing&&s.moodId!=='ritual'?Math.max(n.duration,total-beat):n.duration,Math.max(1,n.velocity+lift),n.pan);
+          let melodyPitch=n.pitch;
+          if(cycle>0&&previousMelody!==null){
+            while(melodyPitch-previousMelody>7)melodyPitch-=12;
+            while(previousMelody-melodyPitch>7)melodyPitch+=12;
+          }
+          previousMelody=melodyPitch;
+          add(n.part,melodyPitch,beat,closes&&n===closing&&s.moodId!=='ritual'?Math.max(n.duration,total-beat):n.duration,Math.max(1,n.velocity+lift),n.pan);
         }
       }
     }
