@@ -443,7 +443,9 @@
     // 1分以上では8小節ごとに内声の型を変える。主題・和音・旋律は保ち、会話の下で
     // 内声の密度と動きだけが変わる構成にする。30秒以下と16小節未満の曲は従来どおり。
     const longForm=(s.requestedLength||s.length)>=60&&bars>=16;
-    const formCycle=beat=>longForm?Math.floor(beat/(bars*2)):0;
+    // 1区間は8小節（4拍×8）。barsは主題全体の小節数なので、
+    // bars*2にすると16小節主題では32小節ごとの切り替えになってしまう。
+    const formCycle=beat=>longForm?Math.floor(beat/(Math.min(8,bars)*4)):0;
     const add=(part,pitch,beat,duration,velocity,pan=0)=>{
       if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}else if(part===3){const t=touch(beat,velocity);beat=t[0];velocity=t[1]}
       duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
