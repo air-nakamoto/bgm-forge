@@ -181,6 +181,9 @@
       // 「ごく少ない」は4小節の入口だけ休ませる。中間まで止めると、和風の五音音階や
       // 和琴の手掛かりが途切れすぎるため、少なめより少し少ない程度に留める。
       if(s.phrasing==='minimal'&&!cadence&&!turnaround&&phraseBar===0)shape='rest';
+      // 2小節の「ごく少ない」で両方が休符になる抽選を避ける。
+      // 旋律が空だと最低音も未定になり、内声の音域が壊れるため、最後に1音残す。
+      if(shape==='rest'&&bar===bars-1&&!result.length)shape='long';
       if(shape==='rest'){owe=false;run=0;continue}
       const rhythm=RHYTHMS[(s.rhythmIndex+(development&&bar%4===1?1:0))%4],cell=phraseBar%2?4:0;
       const count=shape==='full'?4:shape==='cadence'?2:shape==='breath'?3:density>.6?2:1;
@@ -231,7 +234,7 @@
       }
     }
     // The tune keeps its natural register; the inner voice is placed under it instead.
-    s.melodyLow=result.reduce((a,n)=>Math.min(a,n.pitch),999);
+    s.melodyLow=result.reduce((a,n)=>Math.min(a,n.pitch),result.length?result[0].pitch:72);
     s.melodyShift=0;
     return result;
   }

@@ -137,6 +137,19 @@ function valid(s){
  return events;
 }
 selfTest();
+// 46 BPM・20秒は2小節になる。「ごく少ない」で両方が休符だと melodyLow が999に
+// なり、旋律オン時の内声をMIDI 995まで上げていた。短い主題でも旋律の手掛かりを残す。
+let shortMelodyCases=0;
+for(const mood of MOODS)for(const seed of [101,9999,...Array.from({length:32},(_,i)=>i+1)]){
+ for(const ending of ['loop','cadence']){
+  const short=compose(mood,seed,{bpm:46,length:20,ending,lead:true,phrasing:'minimal'});
+  assert.equal(short.themeBars,2,'regression must exercise a two-bar theme');
+  assert(short.melody.length>0,mood.id+' short minimal theme must contain a melody note');
+  assert.equal(short.melodyLow,Math.min(...short.melody.map(n=>n.pitch)),'inner register must use an actual melody pitch');
+  valid(short);shortMelodyCases++;
+ }
+}
+console.log(`PASS: ${shortMelodyCases} short minimal melody cases; melody present and all notes within MIDI bounds`);
 // 同梱音源の root は「実音」でなければならない。箏は13分の即興から自動抽出しているため、
 // 2026-09-20 まで5音中4音の root が +1.0〜+18.7半音ずれていた（自己相関が倍音や隣の弦を
 // 基音と誤認していた）。表示を信じて早回しするので、和風は実際に音を外して鳴っていた。
