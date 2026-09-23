@@ -150,20 +150,24 @@ for(const mood of MOODS)for(const seed of [101,9999,...Array.from({length:32},(_
  }
 }
 console.log(`PASS: ${shortMelodyCases} short minimal melody cases; melody present and all notes within MIDI bounds`);
-// 1分以上は8小節ごとに内声を引き、主題と和音を保ったまま密度を変える。
+// 長尺は、60秒=通常→休止、90秒=通常→別型、120秒=通常→休止→別型→通常。
 for(const mood of MOODS){
- const base=compose(mood,2026,{length:30,lead:false}),long=compose(mood,2026,{length:60,lead:false});
+ const base=compose(mood,2026,{length:30,lead:false});
  const shortParts=score.events(base).filter(n=>n.part===3).length;
- const longFirst=score.events(long).filter(n=>n.part===3&&n.beat<32).length;
- const longSecond=score.events(long).filter(n=>n.part===3&&n.beat>=32&&n.beat<64).length;
- assert.equal(long.themeBars,16,mood.id+' long form must use a full theme');
- const firstShape=score.events(long).filter(n=>n.part===3&&n.beat<32).map(n=>[n.pitch,+n.beat.toFixed(3)]);
- const secondShape=score.events(long).filter(n=>n.part===3&&n.beat>=32&&n.beat<64).map(n=>[n.pitch,+n.beat.toFixed(3)]);
- assert(longSecond>0||longFirst===0,mood.id+' long form alternate inner voice must remain present');
- if(firstShape.length)assert.notDeepEqual(secondShape,firstShape,mood.id+' long form must use a different inner voice');
+ const segment=(s,a,b)=>score.events(s).filter(n=>n.part===3&&n.beat>=a&&n.beat<b).map(n=>[n.pitch,+n.beat.toFixed(3)]);
+ const at=(length,a,b)=>segment(compose(mood,2026,{length,lead:false}),a,b);
+ assert.equal(compose(mood,2026,{length:60,lead:false}).themeBars,16,mood.id+' long form must use a full theme');
+ const sixtyA=at(60,0,32),sixtyB=at(60,32,64);if(!mood.autoPattern&&(sixtyA.length||sixtyB.length))assert(sixtyA.length===0||sixtyB.length===0,mood.id+' 60s must include an inner-voice rest');
+ if(!mood.autoPattern){
+  const ninetyA=at(90,0,32),ninetyB=at(90,32,64);if(ninetyA.length)assert.notDeepEqual(ninetyB,ninetyA,mood.id+' 90s must use a different inner voice');
+  const oneTwentyA=at(120,0,32),oneTwentyB=at(120,32,64),oneTwentyC=at(120,64,96),oneTwentyD=at(120,96,128);
+  assert(oneTwentyB.length===0,mood.id+' 120s must include an inner-voice rest');
+  if(oneTwentyA.length&&oneTwentyC.length)assert.notDeepEqual(oneTwentyC,oneTwentyA,mood.id+' 120s must include a different inner voice');
+  if(oneTwentyA.length&&oneTwentyD.length)assert(oneTwentyD.length>0,mood.id+' 120s must return to an inner voice');
+ }
  assert.equal(shortParts,score.events(base).filter(n=>n.part===3).length,mood.id+' short form must remain deterministic');
 }
-console.log('PASS: long-form inner-voice subtraction at 60 seconds; short form unchanged');
+console.log('PASS: long-form inner-voice rest/alternate/return patterns; short form unchanged');
 // 同梱音源の root は「実音」でなければならない。箏は13分の即興から自動抽出しているため、
 // 2026-09-20 まで5音中4音の root が +1.0〜+18.7半音ずれていた（自己相関が倍音や隣の弦を
 // 基音と誤認していた）。表示を信じて早回しするので、和風は実際に音を外して鳴っていた。

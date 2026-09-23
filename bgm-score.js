@@ -332,7 +332,11 @@
   // Phrase-level gestures stay recognizable; rests and orchestration change on
   // the answer, rather than independently re-rolling every bar.
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
-    const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0)+(formCycle===1?1:0))%3,local=bar%(s.themeBars||16);
+    const requested=s.requestedLength||s.length;
+    const innerMode=requested>=120?(formCycle===1?'rest':formCycle===2?'alternate':'normal'):
+      requested>=90?(formCycle===1?'alternate':'normal'):
+      requested>=60?(formCycle===1?'rest':'normal'):'normal';
+    const c=SCENES[s.moodId],v=s.arrangementVariant||0,w=(v+(s.innerShift||0)+(innerMode==='alternate'?1:0))%3,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
     const breath=sparse&&local%4===(w===1?1:3);
@@ -360,7 +364,7 @@
     // 奇数小節だけにすると、アルペジオの小節が2つ続くことが無く、必ず1小節空く。
     // 計測はシタール6.0→17.0音/曲、全体の12%→27%。
     // 民族のシタールはこの内声が全部。撥弦の飾り（じゃらん）は入れて外した経緯が §6.0 にある。
-    if(!breath&&(s.moodId!=='ethnic'||bar%2===1)){
+    if(innerMode!=='rest'&&!breath&&(s.moodId!=='ethnic'||bar%2===1)){
       const times=c.inner[w],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[w];
       times.forEach((at,k)=>{
         // The answer leaves room; it does not append a new tune.
