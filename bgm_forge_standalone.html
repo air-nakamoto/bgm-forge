@@ -4650,7 +4650,35 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     p.pan.value=n.pan||0;f.type='lowpass';f.frequency.value=kind==='strings'?4500:kind==='flute'?6200:kind==='shinobue'?6500:kind==='drums'?9000:soft?1800+n.velocity*10:2500+n.velocity*60;f.Q.value=.4;
     source.connect(f);f.connect(g);g.connect(p);p.connect(bus);source.start(at);source.stop(end);
   }
+  // 採用済みB: 夜空のオルゴールだけ、補正前ミックスの増幅量を保って旋律を下げる。
   async function render(score,onProgress,isCancelled){
+    if(score.moodId!=='night'||score.sound!=='musicbox'||score.lead===false)
+      return renderAudio(score,onProgress,isCancelled);
+    const check=()=>{if(isCancelled&&isCancelled())throw Object.assign(Error('中止しました'),{cancelled:true})};
+    check();
+    const lead=await renderAudio(score,onProgress?p=>onProgress(p/2):null,isCancelled,true);
+    check();
+    const backing=await renderAudio(score,onProgress?p=>onProgress(50+p/2):null,isCancelled,false);
+    check();
+    const n=lead.length,L=lead.L,R=lead.R;
+    let le=0,be=0,sum=0;
+    for(let i=0;i<n;i++){
+      le+=L[i]*L[i]+R[i]*R[i];be+=backing.L[i]**2+backing.R[i]**2;
+      sum+=(L[i]+backing.L[i])**2+(R[i]+backing.R[i])**2;
+    }
+    const trim=le>1e-18?Math.min(1,Math.sqrt(be/le)):1;
+    const gain=sum>1e-18?.075*(score.level||1)/Math.sqrt(sum/(2*n)):1;
+    let peak=0;
+    for(let i=0;i<n;i++){
+      L[i]=Math.tanh((L[i]*trim+backing.L[i])*gain);
+      R[i]=Math.tanh((R[i]*trim+backing.R[i])*gain);
+      peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]));
+    }
+    if(peak>.95){const limit=.95/peak;for(let i=0;i<n;i++){L[i]*=limit;R[i]*=limit}peak=.95}
+    const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));
+    return {L,R,length:n,peak,step,score,at:Date.now()};
+  }
+  async function renderAudio(score,onProgress,isCancelled,leadOnly){
     const tail=3,total=score.length+tail,ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
     const chip=score.sound==='chip',soft=score.sound==='softpiano',flute=score.sound==='flute',bank0=score.sound==='samples'||soft||flute;
     // フルートは旋律だけを吹く。内声は旋律の下に置かれるため、実際のフルートの最低音
@@ -4668,6 +4696,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const noiseRandom=rng(score.seed^0x4E4F4953),noiseBuffer=ctx.createBuffer(1,Math.floor(SR*1.5),SR),nd=noiseBuffer.getChannelData(0);
     for(let i=0;i<nd.length;i++)nd[i]=noiseRandom()*2-1;
     for(const n of events){
+      if(leadOnly!==undefined&&((n.part===0)!==leadOnly))continue;
       // Quiet the backing parts for moods whose harmony crowds the melody.
       const trim=partTrim(score,n.part);
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
@@ -4726,6 +4755,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // A loop wraps its tail to the head; a cadence has nowhere to put one, so it is closed
     // with a short fade instead of being cut mid-ring.
     else{const f=Math.min(Math.floor(SR*.3),n);for(let i=0;i<f;i++){const w=.5+.5*Math.cos(Math.PI*i/f),k=n-f+i;L[k]*=w;R[k]*=w}}
+    if(leadOnly!==undefined)return {L,R,length:n};
     let sum=0,peak=0;for(let i=0;i<n;i++){sum+=L[i]*L[i]+R[i]*R[i]}let rms=Math.sqrt(sum/(2*n)),gain=rms>1e-9?(score.moodId==='requiem'?.045:.075)*(score.level||1)/rms:1;
     for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain);R[i]=Math.tanh(R[i]*gain);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
     if(peak>.95){gain=.95/peak;for(let i=0;i<n;i++){L[i]*=gain;R[i]*=gain}peak=.95}

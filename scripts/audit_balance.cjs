@@ -7,6 +7,7 @@ const page=await browser.newPage();await page.evaluate(()=>window.BGM_TEST={});
 for(const f of ['samples/vsco2/bank.js','samples/sitar/bank.js','samples/koto/bank.js','samples/choir/bank.js','samples/shinobue/bank.js','bgm-score.js'])await page.addScriptTag({path:path.join(root,f)});
 let src=fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8');
 const marker='    let sum=0,peak=0;for(let i=0;i<n;i++)';if(!src.includes(marker))throw Error('raw hook missing');
+src=src.replace('{compose,render,partTrim','{compose,render:renderAudio,partTrim');
 src=src.replace(marker,'    return {L,R,length:n,score};\n'+marker);await page.addScriptTag({content:src});
 const rows=[];
 for(const mood of ['night','ritual','japanese'])for(const sound of ['musicbox','choir','koto'])for(const seed of [2026,101]){
