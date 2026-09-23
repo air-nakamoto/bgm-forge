@@ -3670,7 +3670,8 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0].join('|');return s}
 
   // A 16-bar theme cannot be heard inside 25 beats, so the form follows the requested duration.
-  function themeBarsFor(bpm,length){const beats=length*bpm/60;return beats>=64?16:beats>=32?8:beats>=16?4:2}
+  // 1分指定は8小節（約30秒）に丸めず、16小節の長いテーマにする。
+  function themeBarsFor(bpm,length){const beats=length*bpm/60;return length>=60||beats>=48?16:beats>=32?8:beats>=16?4:2}
 
   function loopLength(bpm,length,bars=themeBarsFor(bpm,length)){
     const span=bars*4;
@@ -4025,7 +4026,14 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       const at=Math.min(Math.max(beat+tgauss()*9*s.bpm/60000,bar),last);
       return [Math.max(0,at),Math.max(1,velocity*(1+tgauss()*.22))];
     };
-    const add=(part,pitch,beat,duration,velocity,pan=0)=>{if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}else if(part===3){const t=touch(beat,velocity);beat=t[0];velocity=t[1]}duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
+    // 1分以上では8小節ごとに内声を引き算する。主題・和音・旋律は保ち、会話の下で
+    // 密度だけが変わる構成にする。30秒以下と16小節未満の曲は従来どおり。
+    const longForm=(s.requestedLength||s.length)>=60&&bars>=16;
+    const formCycle=beat=>longForm?Math.floor(beat/(bars*2)):0;
+    const add=(part,pitch,beat,duration,velocity,pan=0)=>{
+      if(longForm&&part===3&&formCycle(beat)%2===1)return;
+      if(part===4){const h=humanize(beat,velocity);beat=h[0];velocity=h[1]}else if(part===3){const t=touch(beat,velocity);beat=t[0];velocity=t[1]}
+      duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
     const chordFor=bar=>(!loop&&bar>=lastBar)?0:chordAt(s,bar);
     // Weighted choice so each bar picks a figure instead of repeating one forever.
     const pickW=table=>{let t=0;for(const row of table)t+=row[0];let x=random()*t;for(const row of table){x-=row[0];if(x<=0)return row[1]}return table[table.length-1][1]};

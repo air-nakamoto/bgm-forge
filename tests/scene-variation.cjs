@@ -150,6 +150,17 @@ for(const mood of MOODS)for(const seed of [101,9999,...Array.from({length:32},(_
  }
 }
 console.log(`PASS: ${shortMelodyCases} short minimal melody cases; melody present and all notes within MIDI bounds`);
+// 1分以上は8小節ごとに内声を引き、主題と和音を保ったまま密度を変える。
+for(const mood of MOODS){
+ const base=compose(mood,2026,{length:30,lead:false}),long=compose(mood,2026,{length:60,lead:false});
+ const shortParts=score.events(base).filter(n=>n.part===3).length;
+ const longFirst=score.events(long).filter(n=>n.part===3&&n.beat<32).length;
+ const longSecond=score.events(long).filter(n=>n.part===3&&n.beat>=32&&n.beat<64).length;
+ assert.equal(long.themeBars,16,mood.id+' long form must use a full theme');
+ assert(longSecond<longFirst||longFirst===0,mood.id+' long form must create an inner-voice subtraction');
+ assert.equal(shortParts,score.events(base).filter(n=>n.part===3).length,mood.id+' short form must remain deterministic');
+}
+console.log('PASS: long-form inner-voice subtraction at 60 seconds; short form unchanged');
 // 同梱音源の root は「実音」でなければならない。箏は13分の即興から自動抽出しているため、
 // 2026-09-20 まで5音中4音の root が +1.0〜+18.7半音ずれていた（自己相関が倍音や隣の弦を
 // 基音と誤認していた）。表示を信じて早回しするので、和風は実際に音を外して鳴っていた。
