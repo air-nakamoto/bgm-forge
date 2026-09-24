@@ -159,9 +159,14 @@ for(const mood of MOODS)for(const bpm of [46,60,76,96,116,132])for(const length 
  for(const s of [fresh,edited])for(const accompaniment of ['auto','wave','up','chords']){
   s.accompaniment=accompaniment;
   assert(s.length>=length-1e-7&&s.length<length+240/bpm+1e-7,'duration within one bar');
-  const totalBars=Math.round(s.length*bpm/240);
+ const totalBars=Math.round(s.length*bpm/240);
   const restBar=length===60?totalBars-4:Math.round((length===120?30:45)*bpm/240);
   const start=restBar*4,end=start+16;
+  if(length>60){
+   const plan=score.longFormPlan(s);
+   assert(plan.recoverEnd<=plan.close1Start&&plan.close1Start<plan.close2Start,'closing transition precedes B section');
+   assert(plan.close2Start<Math.min(plan.returnAt,Math.round(s.length*bpm/60/4)*4),'B section has a closing boundary');
+  }
   assert(end<=s.length*bpm/60+1e-7,'four-bar rest fits');
   const notes=score.events(s),inner=notes.filter(n=>n.part===3);
   assert(!inner.some(n=>n.beat<end&&n.beat+n.duration>start+1e-7),'no inner note overlaps rest');

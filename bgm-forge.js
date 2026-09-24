@@ -429,6 +429,16 @@
   }
   // 採用済みB: 夜空のオルゴールだけ、補正前ミックスの増幅量を保って旋律を下げる。
   async function render(score,onProgress,isCancelled){
+    // 試聴採用：幻想×ガラス・鐘はパッドだけ−15 dB。補正前の増幅量を保つ。
+    if(score.moodId==='wonder'&&score.sound==='glass'){
+      const raw=await renderAudio(score,onProgress?p=>onProgress(p/2):null,isCancelled,undefined,{raw:true});
+      let sum=0,peak=0;
+      for(let i=0;i<raw.length;i++)sum+=raw.L[i]**2+raw.R[i]**2;
+      const gain=sum>1e-18?.075*(score.level||1)/Math.sqrt(sum/(2*raw.length)):1;
+      for(let i=0;i<raw.length;i++)peak=Math.max(peak,Math.abs(Math.tanh(raw.L[i]*gain)),Math.abs(Math.tanh(raw.R[i]*gain)));
+      if(isCancelled&&isCancelled())throw Object.assign(Error('中止しました'),{cancelled:true});
+      return renderAudio(score,onProgress?p=>onProgress(50+p/2):null,isCancelled,undefined,{padTrim:Math.pow(10,-15/20),gain,limit:Math.min(1,.95/peak)});
+    }
     if(score.moodId!=='night'||score.sound!=='musicbox'||score.lead===false)
       return renderAudio(score,onProgress,isCancelled);
     const check=()=>{if(isCancelled&&isCancelled())throw Object.assign(Error('中止しました'),{cancelled:true})};
@@ -455,7 +465,7 @@
     const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));
     return {L,R,length:n,peak,step,score,at:Date.now()};
   }
-  async function renderAudio(score,onProgress,isCancelled,leadOnly){
+  async function renderAudio(score,onProgress,isCancelled,leadOnly,options={}){
     const tail=3,total=score.length+tail,ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
     const chip=score.sound==='chip',soft=score.sound==='softpiano',flute=score.sound==='flute',bank0=score.sound==='samples'||soft||flute;
     // フルートは旋律だけを吹く。内声は旋律の下に置かれるため、実際のフルートの最低音
@@ -475,7 +485,7 @@
     for(const n of events){
       if(leadOnly!==undefined&&((n.part===0)!==leadOnly))continue;
       // Quiet the backing parts for moods whose harmony crowds the melody.
-      const trim=partTrim(score,n.part);
+      const trim=partTrim(score,n.part)*(n.part===1?(options.padTrim??1):1);
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
       // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
@@ -532,9 +542,10 @@
     // A loop wraps its tail to the head; a cadence has nowhere to put one, so it is closed
     // with a short fade instead of being cut mid-ring.
     else{const f=Math.min(Math.floor(SR*.3),n);for(let i=0;i<f;i++){const w=.5+.5*Math.cos(Math.PI*i/f),k=n-f+i;L[k]*=w;R[k]*=w}}
-    if(leadOnly!==undefined)return {L,R,length:n};
+    if(leadOnly!==undefined||options.raw)return {L,R,length:n};
     let sum=0,peak=0;for(let i=0;i<n;i++){sum+=L[i]*L[i]+R[i]*R[i]}let rms=Math.sqrt(sum/(2*n)),gain=rms>1e-9?(score.moodId==='requiem'?.045:.075)*(score.level||1)/rms:1;
-    for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain);R[i]=Math.tanh(R[i]*gain);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
+    gain=options.gain??gain;
+    for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain)*(options.limit??1);R[i]=Math.tanh(R[i]*gain)*(options.limit??1);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
     if(peak>.95){gain=.95/peak;for(let i=0;i<n;i++){L[i]*=gain;R[i]*=gain}peak=.95}
     const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));return{L,R,length:n,peak,step,score,at:Date.now()};
   }

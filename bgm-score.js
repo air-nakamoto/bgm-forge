@@ -343,19 +343,20 @@
     const end=Math.round(s.length*s.bpm/60/4)*4;
     const start=requested<90?end-16:Math.round((requested>=120?30:45)*s.bpm/60/4)*4;
     const restEnd=Math.max(0,start)+16;
-    // 90秒は「A A → 休止 → A B」。休止直後の1フレーズは
-    // 休止前の型へ戻し、その次のフレーズから別型へ進む。
-    // 46 BPM・90秒のように全体が18小節程度しかない場合は、4小節ずつの
-    // 復帰/B/接続を置けない。休止は保ち、復帰とBを2小節、最後を接続1小節に圧縮する。
-    const compact=requested===90&&end-restEnd<20;
-    const recoverEnd=restEnd+(compact?8:16);
-    const closeStart=Math.max(0,end-(compact?4:16));
-    return {start:Math.max(0,start),end:restEnd,recoverEnd,closeStart,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
+    // 90秒は「通常 → 休止 → 通常復帰 → 終端接続 → B型 → 終端接続」。
+    // 120秒は同じ流れのあと、90秒地点から通常型へ戻る。
+    // 46 BPM・90秒のように全体が短い場合も、B型の前後に最低1小節を残す。
+    const compact=requested===90&&end-restEnd<=20;
+    const recoverEnd=restEnd+(requested===90?8:16);
+    const returnAt=requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity;
+    const close1Start=Math.min(end-8,recoverEnd+4);
+    const close2Start=Math.max(close1Start+4,returnAt<Infinity?returnAt-4:end-16);
+    return {start:Math.max(0,start),end:restEnd,recoverEnd,close1Start,close2Start,returnAt};
   }
   function longFormMode(s,beat){
     const plan=longFormPlan(s);
     if(!plan)return 'normal';
-    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat>=plan.closeStart&&plan.closeStart>plan.recoverEnd?'closing':beat<plan.returnAt?'alternate':'normal';
+    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat<plan.close1Start?'closing':beat<plan.close2Start?'alternate':beat<plan.returnAt?'closing':'normal';
   }
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     const innerMode=longFormMode(s,b);
@@ -634,6 +635,6 @@
     const last=new Map();for(const n of notes){const key=n.part+':'+n.pitch,q=last.get(key);if(q&&q.beat+q.duration>n.beat)q.duration=n.beat-q.beat;last.set(key,n)}
     return notes.filter(n=>n.duration>0);
   }
-  const api={ACCOMPANIMENTS,accompanimentFor,arrangementKey,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH}};
+  const api={ACCOMPANIMENTS,accompanimentFor,arrangementKey,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,longFormPlan,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH}};
   if(typeof module!=='undefined')module.exports=api;else root.BGMScore=api;
 })(typeof window!=='undefined'?window:this);

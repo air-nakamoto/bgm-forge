@@ -3935,19 +3935,20 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const end=Math.round(s.length*s.bpm/60/4)*4;
     const start=requested<90?end-16:Math.round((requested>=120?30:45)*s.bpm/60/4)*4;
     const restEnd=Math.max(0,start)+16;
-    // 90秒は「A A → 休止 → A B」。休止直後の1フレーズは
-    // 休止前の型へ戻し、その次のフレーズから別型へ進む。
-    // 46 BPM・90秒のように全体が18小節程度しかない場合は、4小節ずつの
-    // 復帰/B/接続を置けない。休止は保ち、復帰とBを2小節、最後を接続1小節に圧縮する。
-    const compact=requested===90&&end-restEnd<20;
-    const recoverEnd=restEnd+(compact?8:16);
-    const closeStart=Math.max(0,end-(compact?4:16));
-    return {start:Math.max(0,start),end:restEnd,recoverEnd,closeStart,returnAt:requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity};
+    // 90秒は「通常 → 休止 → 通常復帰 → 終端接続 → B型 → 終端接続」。
+    // 120秒は同じ流れのあと、90秒地点から通常型へ戻る。
+    // 46 BPM・90秒のように全体が短い場合も、B型の前後に最低1小節を残す。
+    const compact=requested===90&&end-restEnd<=20;
+    const recoverEnd=restEnd+(requested===90?8:16);
+    const returnAt=requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity;
+    const close1Start=Math.min(end-8,recoverEnd+4);
+    const close2Start=Math.max(close1Start+4,returnAt<Infinity?returnAt-4:end-16);
+    return {start:Math.max(0,start),end:restEnd,recoverEnd,close1Start,close2Start,returnAt};
   }
   function longFormMode(s,beat){
     const plan=longFormPlan(s);
     if(!plan)return 'normal';
-    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat>=plan.closeStart&&plan.closeStart>plan.recoverEnd?'closing':beat<plan.returnAt?'alternate':'normal';
+    return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat<plan.close1Start?'closing':beat<plan.close2Start?'alternate':beat<plan.returnAt?'closing':'normal';
   }
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     const innerMode=longFormMode(s,b);
@@ -4226,7 +4227,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const last=new Map();for(const n of notes){const key=n.part+':'+n.pitch,q=last.get(key);if(q&&q.beat+q.duration>n.beat)q.duration=n.beat-q.beat;last.set(key,n)}
     return notes.filter(n=>n.duration>0);
   }
-  const api={ACCOMPANIMENTS,accompanimentFor,arrangementKey,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH}};
+  const api={ACCOMPANIMENTS,accompanimentFor,arrangementKey,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,longFormPlan,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH}};
   if(typeof module!=='undefined')module.exports=api;else root.BGMScore=api;
 })(typeof window!=='undefined'?window:this);
 
@@ -4663,6 +4664,16 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   }
   // 採用済みB: 夜空のオルゴールだけ、補正前ミックスの増幅量を保って旋律を下げる。
   async function render(score,onProgress,isCancelled){
+    // 試聴採用：幻想×ガラス・鐘はパッドだけ−15 dB。補正前の増幅量を保つ。
+    if(score.moodId==='wonder'&&score.sound==='glass'){
+      const raw=await renderAudio(score,onProgress?p=>onProgress(p/2):null,isCancelled,undefined,{raw:true});
+      let sum=0,peak=0;
+      for(let i=0;i<raw.length;i++)sum+=raw.L[i]**2+raw.R[i]**2;
+      const gain=sum>1e-18?.075*(score.level||1)/Math.sqrt(sum/(2*raw.length)):1;
+      for(let i=0;i<raw.length;i++)peak=Math.max(peak,Math.abs(Math.tanh(raw.L[i]*gain)),Math.abs(Math.tanh(raw.R[i]*gain)));
+      if(isCancelled&&isCancelled())throw Object.assign(Error('中止しました'),{cancelled:true});
+      return renderAudio(score,onProgress?p=>onProgress(50+p/2):null,isCancelled,undefined,{padTrim:Math.pow(10,-15/20),gain,limit:Math.min(1,.95/peak)});
+    }
     if(score.moodId!=='night'||score.sound!=='musicbox'||score.lead===false)
       return renderAudio(score,onProgress,isCancelled);
     const check=()=>{if(isCancelled&&isCancelled())throw Object.assign(Error('中止しました'),{cancelled:true})};
@@ -4689,7 +4700,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));
     return {L,R,length:n,peak,step,score,at:Date.now()};
   }
-  async function renderAudio(score,onProgress,isCancelled,leadOnly){
+  async function renderAudio(score,onProgress,isCancelled,leadOnly,options={}){
     const tail=3,total=score.length+tail,ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
     const chip=score.sound==='chip',soft=score.sound==='softpiano',flute=score.sound==='flute',bank0=score.sound==='samples'||soft||flute;
     // フルートは旋律だけを吹く。内声は旋律の下に置かれるため、実際のフルートの最低音
@@ -4709,7 +4720,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     for(const n of events){
       if(leadOnly!==undefined&&((n.part===0)!==leadOnly))continue;
       // Quiet the backing parts for moods whose harmony crowds the melody.
-      const trim=partTrim(score,n.part);
+      const trim=partTrim(score,n.part)*(n.part===1?(options.padTrim??1):1);
       let bus=n.part===1?buses.pad:(n.part===2||n.part===4)?buses.body:buses.mid;
       // Sustained wonder/requiem harmony breathes out instead of sitting at a fixed
       // level. Apply before the reverb send, for sampled and synthesized voices.
@@ -4766,9 +4777,10 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // A loop wraps its tail to the head; a cadence has nowhere to put one, so it is closed
     // with a short fade instead of being cut mid-ring.
     else{const f=Math.min(Math.floor(SR*.3),n);for(let i=0;i<f;i++){const w=.5+.5*Math.cos(Math.PI*i/f),k=n-f+i;L[k]*=w;R[k]*=w}}
-    if(leadOnly!==undefined)return {L,R,length:n};
+    if(leadOnly!==undefined||options.raw)return {L,R,length:n};
     let sum=0,peak=0;for(let i=0;i<n;i++){sum+=L[i]*L[i]+R[i]*R[i]}let rms=Math.sqrt(sum/(2*n)),gain=rms>1e-9?(score.moodId==='requiem'?.045:.075)*(score.level||1)/rms:1;
-    for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain);R[i]=Math.tanh(R[i]*gain);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
+    gain=options.gain??gain;
+    for(let i=0;i<n;i++){L[i]=Math.tanh(L[i]*gain)*(options.limit??1);R[i]=Math.tanh(R[i]*gain)*(options.limit??1);peak=Math.max(peak,Math.abs(L[i]),Math.abs(R[i]))}
     if(peak>.95){gain=.95/peak;for(let i=0;i<n;i++){L[i]*=gain;R[i]*=gain}peak=.95}
     const step=Math.max(Math.abs(L[0]-L[n-1]),Math.abs(R[0]-R[n-1]));return{L,R,length:n,peak,step,score,at:Date.now()};
   }
