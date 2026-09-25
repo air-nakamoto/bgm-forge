@@ -107,7 +107,7 @@
     {id:'drone',name:'アンビエント',note:'輪郭のない持続音'},
     {id:'chip',name:'チップチューン',note:'8bit風の矩形波'},
     {id:'folk',name:'シタール',note:'実録音の弦と共鳴する余韻'},
-    {id:'koto',name:'箏',note:'実録音の琴と長い余韻'},
+    {id:'koto',name:'箏',note:'実録音の箏と長い余韻'},
     {id:'shinobue',name:'神楽笛',note:'実録音の笛と息の音'}
     ,{id:'choir',name:'合唱',note:'実録音の人の声。母音を伸ばす'}
   ];
