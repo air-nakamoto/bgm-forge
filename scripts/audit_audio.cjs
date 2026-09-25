@@ -25,23 +25,42 @@ for(const mood of MOODS)for(const seed of [1,42,101,2026,9999])for(const tempo o
 fs.writeFileSync(path.join(out,'score.json'),JSON.stringify(scoreReport,null,2));console.log('SCORE',JSON.stringify(scoreReport));
 if(process.env.BGM_SCORE_ONLY==='1')process.exit(scoreReport.errors.length?1:0);
 const cases=[];
+const representative=process.env.BGM_AUDIT_PROFILE==='representative';
+if(representative){
+ for(const id of ['wonder','doubt','ethnic','chase','puzzle'])for(const length of [60,90,120])for(const seed of [1,42,2026])cases.push({group:'representative',id,length,seed});
+}else{
 for(const mood of MOODS){for(const seed of [2026,101])for(const lead of [false,true])cases.push({group:'lead-toggle',id:mood.id,seed,lead});cases.push({group:'long',id:mood.id,seed:42,length:120});cases.push({group:'cadence',id:mood.id,seed:2026,ending:'cadence'});}
 for(const id of ['wonder','tense'])for(const sound of SOUNDS)cases.push({group:'sound-edit',id,seed:2026,sound:sound.id,lead:true});
-const selected=process.env.BGM_AUDIT_FILTER?cases.filter(c=>JSON.stringify(c).includes(process.env.BGM_AUDIT_FILTER)):cases;
+}
+const explicitCases=process.env.BGM_AUDIT_CASES?JSON.parse(fs.readFileSync(process.env.BGM_AUDIT_CASES,'utf8')):null;
+if(explicitCases&&(!Array.isArray(explicitCases)||explicitCases.some(c=>!MOODS.some(m=>m.id===c.id)||!Number.isFinite(c.seed)||![60,90,120].includes(c.length))))throw Error('Invalid explicit audit cases');
+const selected=explicitCases||(process.env.BGM_AUDIT_FILTER?cases.filter(c=>JSON.stringify(c).includes(process.env.BGM_AUDIT_FILTER)):cases);
 const meta={createdAt:new Date().toISOString(),cases:selected.length,seeds:[2026,101,42],sourceHashes:Object.fromEntries(['bgm-score.js','bgm-forge.js'].map(f=>[f,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,f))).digest('hex')])),casesDescription:'24 scenes × (2 seeds × melody on/off + 120s defaults + cadence defaults), plus 17 sounds × 2 scenes with melody. Other settings use scene defaults.'};
 fs.writeFileSync(path.join(out,'meta.json'),JSON.stringify(meta,null,2));
+meta.profile=representative?'representative':'legacy';meta.selectedCases=selected;
+if(representative)meta.casesDescription='5 scenes × 60/90/120 seconds × seeds 1/42/2026; scene defaults, loop, fresh composition';
+if(explicitCases)meta.casesDescription='Explicit cases recorded in selectedCases; unspecified options use scene defaults.';
+fs.writeFileSync(path.join(out,'meta.json'),JSON.stringify(meta,null,2));
+if(!selected.length)throw Error('Empty audio selection');
 (async()=>{const {chromium}=require('playwright');const browser=await chromium.launch(process.env.BGM_CHROME?{headless:true,executablePath:process.env.BGM_CHROME}:{headless:true,channel:'chrome'});const rows=[];let page;
 try{for(let i=0;i<selected.length;i++){
- if(i%24===0){if(page)await page.close();page=await browser.newPage();await page.evaluate(()=>window.BGM_TEST={});for(const f of ['samples/vsco2/bank.js','samples/sitar/bank.js','samples/koto/bank.js','samples/choir/bank.js','samples/shinobue/bank.js','bgm-score.js','bgm-forge.js'])await page.addScriptTag({path:path.join(root,f)});}
+ if(i%3===0){if(page)await page.close();page=await browser.newPage();await page.evaluate(()=>window.BGM_TEST={});for(const f of ['samples/vsco2/bank.js','samples/sitar/bank.js','samples/koto/bank.js','samples/choir/bank.js','samples/shinobue/bank.js','bgm-score.js','bgm-forge.js'])await page.addScriptTag({path:path.join(root,f)});}
+ const timeout=setTimeout(()=>{console.error('Audio case timeout');browser.close().catch(()=>{});},180000);
  const c=selected[i];let r;
  try{r=await page.evaluate(async(c)=>{const T=BGM_TEST,mood=T.MOODS.find(m=>m.id===c.id),d=T.DEFAULTS[c.id],s=BGMScore.compose({mood,scale:T.MODES[mood.mode],bpm:d[0],sound:c.sound||d[1],length:c.length||30,ending:c.ending||'loop',lead:c.lead===undefined?d[2]===true:c.lead,phrasing:d[3]||'auto'},c.seed);
- const t=await T.render(s),n=t.length,sr=44100;let sum=0,peak=0,dcL=0,dcR=0,nearLimit=0,nonfinite=0,derivMax=0,derivSum=0,cross=0,l2=0,r2=0;const energy=[],derivatives=[];
+ const started=performance.now(),t=await T.render(s),n=t.length,sr=44100;window.auditTake=t;let sum=0,peak=0,dcL=0,dcR=0,nearLimit=0,nonfinite=0,derivMax=0,derivSum=0,cross=0,l2=0,r2=0;const energy=[],derivatives=[];
  for(let i=0;i<n;i++){const l=t.L[i],r=t.R[i];if(!Number.isFinite(l)||!Number.isFinite(r))nonfinite++;sum+=l*l+r*r;dcL+=l;dcR+=r;cross+=l*r;l2+=l*l;r2+=r*r;peak=Math.max(peak,Math.abs(l),Math.abs(r));nearLimit+=(Math.abs(l)>=.94)+(Math.abs(r)>=.94);if(i){const dl=Math.abs(l-t.L[i-1]),dr=Math.abs(r-t.R[i-1]);derivMax=Math.max(derivMax,dl,dr);derivSum+=dl*dl+dr*dr;if(i%16===0)derivatives.push(Math.max(dl,dr));}}
  const rms=Math.sqrt(sum/(2*n)),win=882;for(let i=0;i+win<=n;i+=win){let e=0;for(let j=i;j<i+win;j++)e+=t.L[j]**2+t.R[j]**2;energy.push(Math.sqrt(e/(2*win)));}
  let silent=0,low=0,maxSilent=0,maxLow=0,silentCount=0;for(const e of energy){silent=e<1e-5?silent+1:0;low=e<rms*.01?low+1:0;maxSilent=Math.max(maxSilent,silent);maxLow=Math.max(maxLow,low);silentCount+=e<1e-5;}
  const sorted=energy.slice().sort((a,b)=>a-b);derivatives.sort((a,b)=>a-b);const p=(xs,q)=>xs[Math.min(xs.length-1,Math.floor(xs.length*q))];
  return{...c,sound:s.sound,lead:s.lead,ending:s.ending,seconds:n/sr,requestedLength:s.requestedLength,notes:BGMScore.events(s).length,nonfinite,peak,rms,dc:Math.max(Math.abs(dcL/n),Math.abs(dcR/n)),nearLimitPct:nearLimit/(2*n)*100,maxSilentSeconds:maxSilent*.02,relativeLowSeconds:maxLow*.02,silentPct:silentCount/energy.length*100,windowP05:p(sorted,.05),windowP95:p(sorted,.95),derivMax,derivRms:Math.sqrt(derivSum/(2*(n-1))),derivP999:p(derivatives,.999),seamStep:t.step,stereoCorrelation:cross/Math.sqrt(l2*r2)};},c)}catch(e){r={...c,error:String(e)}}
+ clearTimeout(timeout);
+ if(!r.error&&representative&&c.seed===2026){
+  const encoded=await page.evaluate(async()=>{const t=window.auditTake;const bytes=new Uint8Array(await BGM_TEST.wav(t).arrayBuffer());let s='';for(let i=0;i<bytes.length;i+=8192)s+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(s)});
+  r.wav=`${c.id}-${c.length}-${c.seed}.wav`;fs.writeFileSync(path.join(out,r.wav),Buffer.from(encoded,'base64'));
+ }
  rows.push(r);fs.writeFileSync(path.join(out,'audio.json'),JSON.stringify(rows,null,2));console.log(`${i+1}/${selected.length} ${JSON.stringify(r)}`);
  }}finally{await browser.close()}
  const failures=rows.filter(r=>r.error||r.nonfinite||r.peak>1||!(r.rms>1e-7));console.log('DONE',JSON.stringify({rendered:rows.length,failures}));if(failures.length||scoreReport.errors.length)process.exitCode=1;
+ fs.writeFileSync(path.join(out,'completion.json'),JSON.stringify({completedAt:new Date().toISOString(),expected:selected.length,rendered:rows.length,failures:failures.length,exitCode:process.exitCode||0},null,2));
 })().catch(e=>{console.error(e);process.exitCode=1});
