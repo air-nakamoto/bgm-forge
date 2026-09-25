@@ -730,6 +730,16 @@ SOFTWARE.
       margin-bottom: 10px
     }
 
+    .playback-clock {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
     .meter {
       display: block;
       width: 100%;
@@ -2078,7 +2088,8 @@ SOFTWARE.
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
           id="volumeValue" for="volume">50%</output></label>
       <p class="note">試聴音量は保存するファイルに影響しません。会話をしながら、声が聞き取りやすい音量で確認してください。</p>
-      <canvas id="meter" class="meter" width="900" height="86" role="slider" tabindex="0" aria-label="再生位置（押した場所から鳴らし直します。つかんだまま動かせます）" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%"></canvas>
+      <canvas id="meter" class="meter" width="900" height="86" role="slider" tabindex="0" aria-label="再生位置（押した場所へ移動します。再生中はそこから鳴り、一時停止中は位置だけが動きます。つかんだまま動かせます）" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%"></canvas>
+      <div class="playback-clock"><span>再生位置 / 曲の長さ</span><span id="playbackTime" aria-label="再生位置と実際の曲の長さ" title="生成した音声の実尺（秒単位で切り上げ）">0:00 / --:--</span></div>
       <div class="transport saves" id="stepSave"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag"
           aria-hidden="true">作成した曲を、ここからダウンロード（保存ボタンを押す）</span>
         <button data-save="wav" disabled>WAVを保存</button>
@@ -3137,17 +3148,20 @@ That&#x27;s all there is to it!
             stroke-width="1" stroke-dasharray="3 3" /><text x="120" y="90" fill="rgba(228,173,101,.85)" font-size="8">■
             終止（V→I）　点線＝先頭へ戻る</text>
         </svg>
-        <figcaption>テーマの長さは、選んだテンポと秒数から4〜16小節で自動的に決まります。16小節なら後半8小節は別の和音進行（B部）を通るので、同じ8小節の繰り返しにはなりません。</figcaption>
+        <figcaption>テーマの長さは、選んだテンポと秒数から2〜16小節で自動的に決まります（1分以上は16小節）。16小節なら後半8小節は別の和音進行（B部）を通るので、同じ8小節の繰り返しにはなりません。</figcaption>
       </figure>
       <dl>
         <dt>テンポ</dt>
         <dd>とても遅い46／ゆっくり60／ふつう76／速め96／疾走116／めまぐるしい132 BPM。</dd>
         <dt>長さ</dt>
-        <dd>20秒〜2分。ループ素材なら30秒〜1分で十分です。2分は生成に時間がかかります（生成中に「中止」で止められます）。</dd>
+        <dd>新しく作る曲は約30秒。「この曲を調整」の「長さの目安」で20秒〜2分に変えられます。ループ用は小節やテーマの区切りに合わせるため、実際の長さは指定と前後します（波形の下に実尺を表示）。ループ素材なら30秒〜1分で十分です。2分は生成に時間がかかります（生成中に「中止」で止められます）。</dd>
+        <dt>1分以上の構成</dt>
+        <dd>単調にならないよう、伴奏の内声が最大4小節（約16秒以内）休みます。1分は終わり際に、1分半・2分は約45秒から。1分半は休みのあと、元の形→つなぎ→別の伴奏の形→先頭へのつなぎ、と進んでループします。2分は1分半と同じ流れのあと、元の形に戻ってから先頭へループします。疑惑の場面や伴奏の型を選んだ曲では、別の形への切り替えはなく休みだけが入ります。</dd>
       </dl>
     </div>
     <div id="d-listen" data-title="再生・保存・調整の使い方">
-      <p>作られる曲は、はじめからループ用です。「再生」で先頭から鳴り、ボタンが「停止」に変わります。「停止」を押すと止まり、ボタンが「再生」に戻ります。最後まで進むと先頭に戻って繰り返します。ループ用をオフにした曲は、最後まで進むと止まります。波形の上を走る線が再生位置です。</p>
+      <p>作られる曲は、はじめからループ用です。「再生」で先頭から鳴り、ボタンが「一時停止」に変わります。「一時停止」を押すとその位置で止まり、「再開」で続きから鳴ります。最後まで進むと先頭に戻って繰り返します。ループ用をオフにした曲は、最後まで進むと止まり、次の「再生」は先頭からです。</p>
+      <p>波形の上を走る線が再生位置です。波形を押すかつかんで動かすと、その位置へ移動します（一時停止中は位置だけが動き、「再開」でそこから鳴ります）。波形の下に、再生位置と実際の曲の長さを表示します。別の曲を選ぶ・作ると、一時停止の位置は消えます。</p>
       <p>試聴音量は聴くときの音量だけを変えます。保存するファイルには影響しません。</p>
       <h4>保存</h4>
       <p>最後まで聴かなくても保存できます。ページを閉じると作った曲は消えます。</p>
@@ -3192,7 +3206,7 @@ That&#x27;s all there is to it!
     </div>
 
     <div id="d-save" data-title="テイクと保存">
-      <p>一覧の<b>行のどこをクリックしても</b>その曲に切り替わり、すぐ再生されます。行の真下に SIGNAL LOG が開き、上下の矢印キーでも選べます。</p>
+      <p>一覧の<b>行のどこをクリックしても</b>その曲に切り替わり、すぐ再生されます。選択中の曲の行や左の▶／⏸ボタンを押すと、一時停止・再開します。行の真下に SIGNAL LOG が開き、上下の矢印キーでも選べます。</p>
       <p>保存ボタンは「聴いて確かめる」の下にまとめてあります。<br>
         テイクは最大12曲（長い曲では自動的に減ります）。ページを再読み込みすると消えるので、必要な曲は保存してください。</p>
 
@@ -3226,7 +3240,7 @@ That&#x27;s all there is to it!
             <div><b>曲を作る</b><span>「新しい曲を作る」を押します。<br>ボタンの右の欄が、これから作る曲の確認です。</span></div>
           </li>
           <li class="step"><span class="no">03</span>
-            <div><b>聴く</b><span>できたら「再生」。気に入らなければ「新しい曲を作る」をもう一度押すと再作成されます。</span></div>
+            <div><b>聴く</b><span>できたら「再生」。「一時停止」で止めた位置から再開できます。気に入らなければ「新しい曲を作る」をもう一度押すと再作成されます。</span></div>
           </li>
           <li class="step"><span class="no">04</span>
             <div>
@@ -3928,21 +3942,21 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
 
   // Phrase-level gestures stay recognizable; rests and orchestration change on
   // the answer, rather than independently re-rolling every bar.
-  // All accompaniment paths share a four-bar rest. Preview clips retain their notes.
+  // All accompaniment paths share a bar-aligned rest, up to four bars / 16 seconds.
   function longFormPlan(s){
     const requested=s.requestedLength||s.length;
     if(requested<60||s.previewBars)return null;
     const end=Math.round(s.length*s.bpm/60/4)*4;
-    const start=requested<90?end-16:Math.round((requested>=120?30:45)*s.bpm/60/4)*4;
-    const restEnd=Math.max(0,start)+16;
-    // 90秒は「通常 → 休止 → 通常復帰 → 終端接続 → B型 → 終端接続」。
-    // 120秒は同じ流れのあと、90秒地点から通常型へ戻る。
-    // 46 BPM・90秒のように全体が短い場合も、B型の前後に最低1小節を残す。
-    const compact=requested===90&&end-restEnd<=20;
-    const recoverEnd=restEnd+(requested===90?8:16);
-    const returnAt=requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity;
-    const close1Start=Math.min(end-8,recoverEnd+4);
-    const close2Start=Math.max(close1Start+4,returnAt<Infinity?returnAt-4:end-16);
+    // 試聴済みの60 BPM以上の4小節は保ち、遅いテンポで休止だけが長くならないようにする。
+    const restBars=Math.max(1,Math.min(4,Math.floor(16*s.bpm/240+1e-8)));
+    const start=requested<90?end-restBars*4:Math.round(45*s.bpm/240)*4;
+    const restEnd=Math.max(0,start)+restBars*4;
+    // 120秒は90秒版の構成を完了してからAを追加する。Bと接続の長さは保つ。
+    const formEnd=requested>=120?Math.round(loopLength(s.bpm,90)*s.bpm/60):end;
+    const recoverEnd=restEnd+8;
+    const returnAt=requested>=120?formEnd:Infinity;
+    const close1Start=Math.min(formEnd-8,recoverEnd+4);
+    const close2Start=Math.max(close1Start+4,formEnd-16);
     return {start:Math.max(0,start),end:restEnd,recoverEnd,close1Start,close2Start,returnAt};
   }
   function longFormMode(s,beat){
@@ -3953,8 +3967,9 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     const innerMode=longFormMode(s,b);
     const c=SCENES[s.moodId],v=s.arrangementVariant||0;
-    // ループ直前の最後の小節はAの型へ戻し、B→Aの継ぎ目を作る。
-    const finalClosing=innerMode==='closing'&&b+4>=s.length*s.bpm/60-1e-7;
+    // 接続最後の小節はAへ向ける。120秒では曲末ではなく追加Aの直前。
+    const closingEnd=Math.min(s.length*s.bpm/60,longFormPlan(s)?.returnAt??Infinity);
+    const finalClosing=innerMode==='closing'&&b+4>=closingEnd-1e-7;
     const w=(v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1:0))%3,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
@@ -4793,17 +4808,33 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   const AudioCtor=window.AudioContext||window.webkitAudioContext;
   function audioContext(){if(!state.audio)state.audio=new AudioCtor();return state.audio}
   function unlockAudio(){const c=audioContext();if(c.state!=='running'&&c.resume)void c.resume()}
-  function togglePlayback(){return state.playSource?stopPlayback():play()}
+  async function pausePlayback(){
+    if(!state.playSource)return;
+    if(state.playTake?.sample)return stopPlayback();
+    const take=state.playTake,selected=state.take,duration=take.length/SR;
+    const elapsed=Math.max(0,state.playCtx.currentTime-state.playStartedAt),once=!state.playSource.loop;
+    const offset=once?Math.min(elapsed,duration-.01):elapsed%duration;
+    const revision=state.playRevision+1;
+    await stopPlayback();
+    if(revision!==state.playRevision||state.take!==selected)return;
+    state.paused={take,offset,once};syncTakeTransport();nowPlayingLabel();renderMeter(offset/duration);
+  }
+  function togglePlayback(){
+    if(state.playSource)return pausePlayback();
+    const paused=state.paused;
+    return paused?play(paused.take,paused.once,paused.offset):play();
+  }
   function syncTakeTransport(){
-    const main=$('play');if(main){main.textContent=state.playSource?'⏸ 停止':'▶ 再生';main.disabled=state.busy||!state.take}
+    const main=$('play');if(main){main.textContent=state.playSource?'⏸ 一時停止':state.paused?'▶ 再開':'▶ 再生';main.disabled=state.busy||!state.take}
     document.querySelectorAll('[data-take-play]').forEach(p=>{
       const take=state.takes[Number(p.dataset.takePlay)];
       const playing=state.playSource&&state.playTake===take;
-      p.disabled=state.busy||!take;p.textContent=playing?'⏸':'▶';if(p.setAttribute)p.setAttribute('aria-label',playing?'テイクを停止':'テイクを再生');
+      p.disabled=state.busy||!take;p.textContent=playing?'⏸':'▶';if(p.setAttribute)p.setAttribute('aria-label',playing?'テイクを一時停止':state.paused?.take===take?'テイクを再開':'テイクを再生');
     });
   }
   function retainTakes(takes){let samples=0;return takes.slice(0,12).filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6})}
   async function stopPlayback(){
+    state.paused=null;
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
     state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();syncTakeTransport();
@@ -4820,6 +4851,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     s.onended=()=>{if(state.playSource===s&&!s.loop)void stopPlayback()};
     state.playCtx=c;state.playSource=s;state.playTake=t;comparisonUI();nowPlayingLabel();
     const from=Math.max(0,Math.min(offset,t.length/SR-.01));
+    state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     try{s.start(0,from)}catch{s.start()}
     // Creating the context after an await can leave it suspended on strict autoplay policies.
     // A context created after an await starts suspended under strict autoplay policy, and resume()
@@ -4827,7 +4859,6 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     if(c.state!=='running'){try{await Promise.race([c.resume(),new Promise(r=>setTimeout(r,400))])}catch{}}
     // Something newer took over while we waited: drop this source instead of layering it on top.
     if(revision!==state.playRevision||state.playSource!==s){try{s.stop()}catch{}try{s.disconnect()}catch{}return}
-    state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
     syncTakeTransport();startMeter();guide();
@@ -5120,7 +5151,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     if(!sum||sum.innerHTML===undefined)return;
     const rows=[
       ['雰囲気',[m.name,MODE_JA[m.mode]||m.mode,'打楽器'+(DRUM_JA[m.drums]||m.drums)].join(' · ')],
-      ['設定',[(tempo?tempo.name+' ':'')+state.bpm+' BPM',(state.ending==='cadence'?lengthLabel(state.length):lengthLabel(BGMScore.loopLength(state.bpm,state.length,bars))+'（'+lengthLabel(state.length)+'以内・テーマ単位）'),bars+'小節',
+      ['設定',[(tempo?tempo.name+' ':'')+state.bpm+' BPM',(state.ending==='cadence'?lengthLabel(state.length):lengthLabel(BGMScore.loopLength(state.bpm,state.length,bars))+'（目安'+lengthLabel(state.length)+'・テーマ単位で調整）'),bars+'小節',
         state.ending==='cadence'?'終止あり':'ループ用',sound?sound.name:state.sound,
         state.lead?(state.phrasing==='auto'?'メロディあり':'メロディ'+phrasing):'伴奏だけ'].join(' · ')]
     ];
@@ -5151,7 +5182,19 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     t.peaks=p;return p;
   }
   // progress < 0 idles; 0..1 lights the played portion and draws the playhead.
+  let playbackTimeTimer=0;
+  function renderPlaybackTime(progress){
+    const el=$('playbackTime');if(!el)return;
+    const t=state.playTake&&!state.playTake.sample?state.playTake:state.paused?.take||state.take;
+    const duration=t?t.length/SR:0;
+    const clock=seconds=>{const n=Math.max(0,Math.floor(seconds));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
+    const position=Number.isFinite(progress)&&progress>=0?Math.min(1,progress)*duration:0;
+    const value=duration>0?clock(position)+' / '+clock(Math.ceil(duration-1e-6)):'0:00 / --:--';
+    if(el.textContent!==value)el.textContent=value;
+  }
   function renderMeter(progress){
+    if(progress<0&&state.paused)progress=meterProgress();
+    renderPlaybackTime(progress);
     const c=$('meter');if(!c||typeof c.getContext!=='function')return;
     const dpr=Math.min(2,(typeof devicePixelRatio==='number'?devicePixelRatio:1)||1);
     const w=Math.max(1,Math.round(c.clientWidth||900)),h=Math.max(1,Math.round(c.clientHeight||96));
@@ -5194,11 +5237,13 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     }
   }
   // 再生位置のつまみ。波形のどこかを押すとそこから鳴らし直し、つかんだまま動かせば
-  // 離した場所から始まる。長い曲でも、聴きたいところへ一息で飛べる。
+  // 離した場所から始まる。一時停止中は再開位置だけを動かす。長い曲でも、聴きたいところへ一息で飛べる。
   // 2小節の試聴は波形が出ないので対象外（そちらは試聴側のバーで動かす）。
-  function meterTake(){const t=state.playTake||state.take;return t&&!t.sample?t:null}
+  function meterTake(){const t=state.playTake||state.paused?.take||state.take;return t&&!t.sample?t:null}
   function meterProgress(){
-    const c=state.playCtx,t=meterTake();if(!c||!t)return 0;
+    const c=state.playCtx,t=meterTake();if(!t)return 0;
+    if(state.paused?.take===t)return state.paused.offset/(t.length/SR);
+    if(!c)return 0;
     const duration=t.length/SR,now=typeof c.currentTime==='number'?c.currentTime:NaN;
     if(!(duration>0)||!Number.isFinite(now))return 0;
     const elapsed=now-state.playStartedAt;
@@ -5213,6 +5258,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   function seekMeter(at){
     const t=meterTake();if(!t||state.busy)return;
     const duration=t.length/SR;
+    if(state.paused?.take===t){state.paused.offset=Math.max(0,Math.min(duration-.01,at*duration));renderMeter(meterProgress());return}
     void play(t,false,Math.max(0,Math.min(duration-.01,at*duration)));
   }
   function bindMeterSeek(){
@@ -5266,8 +5312,14 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     renderMeter(t.sample?-1:Number.isFinite(elapsed)&&duration>0?((elapsed%duration)+duration)%duration/duration:-1);
     if(typeof requestAnimationFrame==='function')state.meterRaf=requestAnimationFrame(meterTick);
   }
-  function startMeter(){if(typeof requestAnimationFrame!=='function'||!smooth()){renderMeter(0);return}if(!state.meterRaf)state.meterRaf=requestAnimationFrame(meterTick)}
-  function stopMeter(){if(state.meterRaf&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(state.meterRaf);state.meterRaf=0}
+  function startMeter(){
+    renderPlaybackTime(state.playTake?.sample?-1:meterProgress());
+    // Keep the clock working when waveform animation is disabled or RAF is throttled.
+    if(!playbackTimeTimer&&typeof setInterval==='function')playbackTimeTimer=setInterval(()=>renderPlaybackTime(typeof state.scrub==='number'?state.scrub:state.playTake?.sample?-1:meterProgress()),250);
+    if(typeof requestAnimationFrame!=='function'||!smooth()){renderMeter(state.playTake?.sample?-1:meterProgress());return}
+    if(!state.meterRaf)state.meterRaf=requestAnimationFrame(meterTick);
+  }
+  function stopMeter(){if(state.meterRaf&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(state.meterRaf);state.meterRaf=0;if(playbackTimeTimer){clearInterval(playbackTimeTimer);playbackTimeTimer=0}}
   // テイクの見出し。一覧と「聴いて確かめる」の両方で同じ文字列を使う。
   function takeTitle(x){
     if(!x||!x.score)return '';
@@ -5279,7 +5331,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   // 選んでいる曲（保存と調整の対象）を出す。
   function nowPlayingLabel(){
     const el=$('nowPlaying');if(!el)return;
-    const playing=state.playSource?state.playTake:null,x=playing||state.take;
+    const playing=state.playSource?state.playTake:state.paused?.take,x=playing||state.take;
     const before=state.comparison&&x===state.comparison.before;
     el.textContent=x?takeTitle(x)+(before?'（変更前）':''):'';
     el.hidden=!x;
@@ -5303,8 +5355,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       state.logOpen=true;
       if(x===state.take){
         const r=$('fingerprint');if(r)r.hidden=false;
-        if(state.playTake===state.take&&state.playSource)void stopPlayback();
-        else void play();
+        void togglePlayback();
         return;
       }
       await stopPlayback();state.take=x;state.comparison=null;draw();setBusy(false);
@@ -5320,7 +5371,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       d.innerHTML='<button type="button" class="take-play" data-take-play="'+i+'" aria-label="テイク'+(i+1)+'を再生">▶</button><div><strong>'+takeTitle(x)+'</strong>'+
         '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
         '<span class="take-meta">SEED '+x.score.seed+'</span></p></div><span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
-      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(state.playSource&&state.playTake===x)void stopPlayback();else if(x===state.take)void play();else void pick(x)};
+      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(state.playSource&&state.playTake===x)void pausePlayback();else if(x===state.take)void togglePlayback();else void pick(x)};
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{
         if(e.target!==d)return;

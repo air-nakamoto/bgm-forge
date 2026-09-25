@@ -706,6 +706,16 @@
       margin-bottom: 10px
     }
 
+    .playback-clock {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+
     .meter {
       display: block;
       width: 100%;
@@ -2338,7 +2348,8 @@
       <label class="volume" for="volume">試聴音量 <input id="volume" type="range" min="0" max="100" value="50"> <output
           id="volumeValue" for="volume">50%</output></label>
       <p class="note">試聴音量は保存するファイルに影響しません。会話をしながら、声が聞き取りやすい音量で確認してください。</p>
-      <canvas id="meter" class="meter" width="900" height="86" role="slider" tabindex="0" aria-label="再生位置（押した場所から鳴らし直します。つかんだまま動かせます）" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%"></canvas>
+      <canvas id="meter" class="meter" width="900" height="86" role="slider" tabindex="0" aria-label="再生位置（押した場所へ移動します。再生中はそこから鳴り、一時停止中は位置だけが動きます。つかんだまま動かせます）" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0%"></canvas>
+      <div class="playback-clock"><span>再生位置 / 曲の長さ</span><span id="playbackTime" aria-label="再生位置と実際の曲の長さ" title="生成した音声の実尺（秒単位で切り上げ）">0:00 / --:--</span></div>
       <div class="transport saves" id="stepSave"><span class="nowbeam" aria-hidden="true"></span><span class="nowtag"
           aria-hidden="true">作成した曲を、ここからダウンロード（保存ボタンを押す）</span>
         <button data-save="wav" disabled>WAVを保存</button>
@@ -2741,17 +2752,20 @@
             stroke-width="1" stroke-dasharray="3 3" /><text x="120" y="90" fill="rgba(228,173,101,.85)" font-size="8">■
             終止（V→I）　点線＝先頭へ戻る</text>
         </svg>
-        <figcaption>テーマの長さは、選んだテンポと秒数から4〜16小節で自動的に決まります。16小節なら後半8小節は別の和音進行（B部）を通るので、同じ8小節の繰り返しにはなりません。</figcaption>
+        <figcaption>テーマの長さは、選んだテンポと秒数から2〜16小節で自動的に決まります（1分以上は16小節）。16小節なら後半8小節は別の和音進行（B部）を通るので、同じ8小節の繰り返しにはなりません。</figcaption>
       </figure>
       <dl>
         <dt>テンポ</dt>
         <dd>とても遅い46／ゆっくり60／ふつう76／速め96／疾走116／めまぐるしい132 BPM。</dd>
         <dt>長さ</dt>
-        <dd>20秒〜2分。ループ素材なら30秒〜1分で十分です。2分は生成に時間がかかります（生成中に「中止」で止められます）。</dd>
+        <dd>新しく作る曲は約30秒。「この曲を調整」の「長さの目安」で20秒〜2分に変えられます。ループ用は小節やテーマの区切りに合わせるため、実際の長さは指定と前後します（波形の下に実尺を表示）。ループ素材なら30秒〜1分で十分です。2分は生成に時間がかかります（生成中に「中止」で止められます）。</dd>
+        <dt>1分以上の構成</dt>
+        <dd>単調にならないよう、伴奏の内声が最大4小節（約16秒以内）休みます。1分は終わり際に、1分半・2分は約45秒から。1分半は休みのあと、元の形→つなぎ→別の伴奏の形→先頭へのつなぎ、と進んでループします。2分は1分半と同じ流れのあと、元の形に戻ってから先頭へループします。疑惑の場面や伴奏の型を選んだ曲では、別の形への切り替えはなく休みだけが入ります。</dd>
       </dl>
     </div>
     <div id="d-listen" data-title="再生・保存・調整の使い方">
-      <p>作られる曲は、はじめからループ用です。「再生」で先頭から鳴り、ボタンが「停止」に変わります。「停止」を押すと止まり、ボタンが「再生」に戻ります。最後まで進むと先頭に戻って繰り返します。ループ用をオフにした曲は、最後まで進むと止まります。波形の上を走る線が再生位置です。</p>
+      <p>作られる曲は、はじめからループ用です。「再生」で先頭から鳴り、ボタンが「一時停止」に変わります。「一時停止」を押すとその位置で止まり、「再開」で続きから鳴ります。最後まで進むと先頭に戻って繰り返します。ループ用をオフにした曲は、最後まで進むと止まり、次の「再生」は先頭からです。</p>
+      <p>波形の上を走る線が再生位置です。波形を押すかつかんで動かすと、その位置へ移動します（一時停止中は位置だけが動き、「再開」でそこから鳴ります）。波形の下に、再生位置と実際の曲の長さを表示します。別の曲を選ぶ・作ると、一時停止の位置は消えます。</p>
       <p>試聴音量は聴くときの音量だけを変えます。保存するファイルには影響しません。</p>
       <h4>保存</h4>
       <p>最後まで聴かなくても保存できます。ページを閉じると作った曲は消えます。</p>
@@ -2796,7 +2810,7 @@
     </div>
 
     <div id="d-save" data-title="テイクと保存">
-      <p>一覧の<b>行のどこをクリックしても</b>その曲に切り替わり、すぐ再生されます。行の真下に SIGNAL LOG が開き、上下の矢印キーでも選べます。</p>
+      <p>一覧の<b>行のどこをクリックしても</b>その曲に切り替わり、すぐ再生されます。選択中の曲の行や左の▶／⏸ボタンを押すと、一時停止・再開します。行の真下に SIGNAL LOG が開き、上下の矢印キーでも選べます。</p>
       <p>保存ボタンは「聴いて確かめる」の下にまとめてあります。<br>
         テイクは最大12曲（長い曲では自動的に減ります）。ページを再読み込みすると消えるので、必要な曲は保存してください。</p>
 
@@ -2830,7 +2844,7 @@
             <div><b>曲を作る</b><span>「新しい曲を作る」を押します。<br>ボタンの右の欄が、これから作る曲の確認です。</span></div>
           </li>
           <li class="step"><span class="no">03</span>
-            <div><b>聴く</b><span>できたら「再生」。気に入らなければ「新しい曲を作る」をもう一度押すと再作成されます。</span></div>
+            <div><b>聴く</b><span>できたら「再生」。「一時停止」で止めた位置から再開できます。気に入らなければ「新しい曲を作る」をもう一度押すと再作成されます。</span></div>
           </li>
           <li class="step"><span class="no">04</span>
             <div>
@@ -2867,8 +2881,8 @@
   <script src="samples/koto/bank.js?v=20260920b-koto-e8a5a6b1"></script>
   <script src="samples/choir/bank.js?v=20260920-choir-dde9c28f"></script>
   <script src="samples/shinobue/bank.js?v=20260920-shinobue-7b990c75"></script>
-  <script src="bgm-score.js?v=20260923-loop-join-476ebbc6"></script>
-  <script src="bgm-forge.js?v=20260924-wonder-pad-d67cc2bf"></script>
+  <script src="bgm-score.js?v=20260926-return-a-8ad7f08f"></script>
+  <script src="bgm-forge.js?v=20260926-pause-a7feb8ad"></script>
   <!-- feedback:start -->
   <!-- 「意見を送る」の配線。送信先（<meta name="feedback-endpoint">）が空なら何も出さずに終わる。
      曲作りは外部通信なしのまま。通信するのはこのフォームを押したときだけ。

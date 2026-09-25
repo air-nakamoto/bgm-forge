@@ -558,17 +558,33 @@
   const AudioCtor=window.AudioContext||window.webkitAudioContext;
   function audioContext(){if(!state.audio)state.audio=new AudioCtor();return state.audio}
   function unlockAudio(){const c=audioContext();if(c.state!=='running'&&c.resume)void c.resume()}
-  function togglePlayback(){return state.playSource?stopPlayback():play()}
+  async function pausePlayback(){
+    if(!state.playSource)return;
+    if(state.playTake?.sample)return stopPlayback();
+    const take=state.playTake,selected=state.take,duration=take.length/SR;
+    const elapsed=Math.max(0,state.playCtx.currentTime-state.playStartedAt),once=!state.playSource.loop;
+    const offset=once?Math.min(elapsed,duration-.01):elapsed%duration;
+    const revision=state.playRevision+1;
+    await stopPlayback();
+    if(revision!==state.playRevision||state.take!==selected)return;
+    state.paused={take,offset,once};syncTakeTransport();nowPlayingLabel();renderMeter(offset/duration);
+  }
+  function togglePlayback(){
+    if(state.playSource)return pausePlayback();
+    const paused=state.paused;
+    return paused?play(paused.take,paused.once,paused.offset):play();
+  }
   function syncTakeTransport(){
-    const main=$('play');if(main){main.textContent=state.playSource?'⏸ 停止':'▶ 再生';main.disabled=state.busy||!state.take}
+    const main=$('play');if(main){main.textContent=state.playSource?'⏸ 一時停止':state.paused?'▶ 再開':'▶ 再生';main.disabled=state.busy||!state.take}
     document.querySelectorAll('[data-take-play]').forEach(p=>{
       const take=state.takes[Number(p.dataset.takePlay)];
       const playing=state.playSource&&state.playTake===take;
-      p.disabled=state.busy||!take;p.textContent=playing?'⏸':'▶';if(p.setAttribute)p.setAttribute('aria-label',playing?'テイクを停止':'テイクを再生');
+      p.disabled=state.busy||!take;p.textContent=playing?'⏸':'▶';if(p.setAttribute)p.setAttribute('aria-label',playing?'テイクを一時停止':state.paused?.take===take?'テイクを再開':'テイクを再生');
     });
   }
   function retainTakes(takes){let samples=0;return takes.slice(0,12).filter((t,i)=>{samples+=t.length;return i===0||samples<=24e6})}
   async function stopPlayback(){
+    state.paused=null;
     const revision=++state.playRevision;stopMeter();
     if(state.playSource){try{state.playSource.stop()}catch{}try{state.playSource.disconnect()}catch{}state.playSource=null}
     state.playGain=null;state.playTake=null;state.playCtx=null;comparisonUI();syncTakeTransport();
@@ -585,6 +601,7 @@
     s.onended=()=>{if(state.playSource===s&&!s.loop)void stopPlayback()};
     state.playCtx=c;state.playSource=s;state.playTake=t;comparisonUI();nowPlayingLabel();
     const from=Math.max(0,Math.min(offset,t.length/SR-.01));
+    state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     try{s.start(0,from)}catch{s.start()}
     // Creating the context after an await can leave it suspended on strict autoplay policies.
     // A context created after an await starts suspended under strict autoplay policy, and resume()
@@ -592,7 +609,6 @@
     if(c.state!=='running'){try{await Promise.race([c.resume(),new Promise(r=>setTimeout(r,400))])}catch{}}
     // Something newer took over while we waited: drop this source instead of layering it on top.
     if(revision!==state.playRevision||state.playSource!==s){try{s.stop()}catch{}try{s.disconnect()}catch{}return}
-    state.playStartedAt=(typeof c.currentTime==='number'?c.currentTime:0)-from;
     if(!t.sample)clearPreviews();
     if(t===state.take)state.tourPlayed=true;
     syncTakeTransport();startMeter();guide();
@@ -885,7 +901,7 @@
     if(!sum||sum.innerHTML===undefined)return;
     const rows=[
       ['雰囲気',[m.name,MODE_JA[m.mode]||m.mode,'打楽器'+(DRUM_JA[m.drums]||m.drums)].join(' · ')],
-      ['設定',[(tempo?tempo.name+' ':'')+state.bpm+' BPM',(state.ending==='cadence'?lengthLabel(state.length):lengthLabel(BGMScore.loopLength(state.bpm,state.length,bars))+'（'+lengthLabel(state.length)+'以内・テーマ単位）'),bars+'小節',
+      ['設定',[(tempo?tempo.name+' ':'')+state.bpm+' BPM',(state.ending==='cadence'?lengthLabel(state.length):lengthLabel(BGMScore.loopLength(state.bpm,state.length,bars))+'（目安'+lengthLabel(state.length)+'・テーマ単位で調整）'),bars+'小節',
         state.ending==='cadence'?'終止あり':'ループ用',sound?sound.name:state.sound,
         state.lead?(state.phrasing==='auto'?'メロディあり':'メロディ'+phrasing):'伴奏だけ'].join(' · ')]
     ];
@@ -916,7 +932,19 @@
     t.peaks=p;return p;
   }
   // progress < 0 idles; 0..1 lights the played portion and draws the playhead.
+  let playbackTimeTimer=0;
+  function renderPlaybackTime(progress){
+    const el=$('playbackTime');if(!el)return;
+    const t=state.playTake&&!state.playTake.sample?state.playTake:state.paused?.take||state.take;
+    const duration=t?t.length/SR:0;
+    const clock=seconds=>{const n=Math.max(0,Math.floor(seconds));return Math.floor(n/60)+':'+String(n%60).padStart(2,'0')};
+    const position=Number.isFinite(progress)&&progress>=0?Math.min(1,progress)*duration:0;
+    const value=duration>0?clock(position)+' / '+clock(Math.ceil(duration-1e-6)):'0:00 / --:--';
+    if(el.textContent!==value)el.textContent=value;
+  }
   function renderMeter(progress){
+    if(progress<0&&state.paused)progress=meterProgress();
+    renderPlaybackTime(progress);
     const c=$('meter');if(!c||typeof c.getContext!=='function')return;
     const dpr=Math.min(2,(typeof devicePixelRatio==='number'?devicePixelRatio:1)||1);
     const w=Math.max(1,Math.round(c.clientWidth||900)),h=Math.max(1,Math.round(c.clientHeight||96));
@@ -959,11 +987,13 @@
     }
   }
   // 再生位置のつまみ。波形のどこかを押すとそこから鳴らし直し、つかんだまま動かせば
-  // 離した場所から始まる。長い曲でも、聴きたいところへ一息で飛べる。
+  // 離した場所から始まる。一時停止中は再開位置だけを動かす。長い曲でも、聴きたいところへ一息で飛べる。
   // 2小節の試聴は波形が出ないので対象外（そちらは試聴側のバーで動かす）。
-  function meterTake(){const t=state.playTake||state.take;return t&&!t.sample?t:null}
+  function meterTake(){const t=state.playTake||state.paused?.take||state.take;return t&&!t.sample?t:null}
   function meterProgress(){
-    const c=state.playCtx,t=meterTake();if(!c||!t)return 0;
+    const c=state.playCtx,t=meterTake();if(!t)return 0;
+    if(state.paused?.take===t)return state.paused.offset/(t.length/SR);
+    if(!c)return 0;
     const duration=t.length/SR,now=typeof c.currentTime==='number'?c.currentTime:NaN;
     if(!(duration>0)||!Number.isFinite(now))return 0;
     const elapsed=now-state.playStartedAt;
@@ -978,6 +1008,7 @@
   function seekMeter(at){
     const t=meterTake();if(!t||state.busy)return;
     const duration=t.length/SR;
+    if(state.paused?.take===t){state.paused.offset=Math.max(0,Math.min(duration-.01,at*duration));renderMeter(meterProgress());return}
     void play(t,false,Math.max(0,Math.min(duration-.01,at*duration)));
   }
   function bindMeterSeek(){
@@ -1031,8 +1062,14 @@
     renderMeter(t.sample?-1:Number.isFinite(elapsed)&&duration>0?((elapsed%duration)+duration)%duration/duration:-1);
     if(typeof requestAnimationFrame==='function')state.meterRaf=requestAnimationFrame(meterTick);
   }
-  function startMeter(){if(typeof requestAnimationFrame!=='function'||!smooth()){renderMeter(0);return}if(!state.meterRaf)state.meterRaf=requestAnimationFrame(meterTick)}
-  function stopMeter(){if(state.meterRaf&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(state.meterRaf);state.meterRaf=0}
+  function startMeter(){
+    renderPlaybackTime(state.playTake?.sample?-1:meterProgress());
+    // Keep the clock working when waveform animation is disabled or RAF is throttled.
+    if(!playbackTimeTimer&&typeof setInterval==='function')playbackTimeTimer=setInterval(()=>renderPlaybackTime(typeof state.scrub==='number'?state.scrub:state.playTake?.sample?-1:meterProgress()),250);
+    if(typeof requestAnimationFrame!=='function'||!smooth()){renderMeter(state.playTake?.sample?-1:meterProgress());return}
+    if(!state.meterRaf)state.meterRaf=requestAnimationFrame(meterTick);
+  }
+  function stopMeter(){if(state.meterRaf&&typeof cancelAnimationFrame==='function')cancelAnimationFrame(state.meterRaf);state.meterRaf=0;if(playbackTimeTimer){clearInterval(playbackTimeTimer);playbackTimeTimer=0}}
   // テイクの見出し。一覧と「聴いて確かめる」の両方で同じ文字列を使う。
   function takeTitle(x){
     if(!x||!x.score)return '';
@@ -1044,7 +1081,7 @@
   // 選んでいる曲（保存と調整の対象）を出す。
   function nowPlayingLabel(){
     const el=$('nowPlaying');if(!el)return;
-    const playing=state.playSource?state.playTake:null,x=playing||state.take;
+    const playing=state.playSource?state.playTake:state.paused?.take,x=playing||state.take;
     const before=state.comparison&&x===state.comparison.before;
     el.textContent=x?takeTitle(x)+(before?'（変更前）':''):'';
     el.hidden=!x;
@@ -1068,8 +1105,7 @@
       state.logOpen=true;
       if(x===state.take){
         const r=$('fingerprint');if(r)r.hidden=false;
-        if(state.playTake===state.take&&state.playSource)void stopPlayback();
-        else void play();
+        void togglePlayback();
         return;
       }
       await stopPlayback();state.take=x;state.comparison=null;draw();setBusy(false);
@@ -1085,7 +1121,7 @@
       d.innerHTML='<button type="button" class="take-play" data-take-play="'+i+'" aria-label="テイク'+(i+1)+'を再生">▶</button><div><strong>'+takeTitle(x)+'</strong>'+
         '<p>'+x.score.bpm+' BPM · '+NOTES[x.score.root]+' '+x.score.mode+' · '+x.score.arp+' · '+x.score.motif.join('-')+
         '<span class="take-meta">SEED '+x.score.seed+'</span></p></div><span class="take-state">'+(x===t?'選択中':'選ぶ')+'</span>';
-      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(state.playSource&&state.playTake===x)void stopPlayback();else if(x===state.take)void play();else void pick(x)};
+      d.querySelector('[data-take-play]').onclick=e=>{e.stopPropagation();if(state.playSource&&state.playTake===x)void pausePlayback();else if(x===state.take)void togglePlayback();else void pick(x)};
       d.onclick=()=>void pick(x);
       d.onkeydown=e=>{
         if(e.target!==d)return;

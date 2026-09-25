@@ -336,21 +336,21 @@
 
   // Phrase-level gestures stay recognizable; rests and orchestration change on
   // the answer, rather than independently re-rolling every bar.
-  // All accompaniment paths share a four-bar rest. Preview clips retain their notes.
+  // All accompaniment paths share a bar-aligned rest, up to four bars / 16 seconds.
   function longFormPlan(s){
     const requested=s.requestedLength||s.length;
     if(requested<60||s.previewBars)return null;
     const end=Math.round(s.length*s.bpm/60/4)*4;
-    const start=requested<90?end-16:Math.round((requested>=120?30:45)*s.bpm/60/4)*4;
-    const restEnd=Math.max(0,start)+16;
-    // 90秒は「通常 → 休止 → 通常復帰 → 終端接続 → B型 → 終端接続」。
-    // 120秒は同じ流れのあと、90秒地点から通常型へ戻る。
-    // 46 BPM・90秒のように全体が短い場合も、B型の前後に最低1小節を残す。
-    const compact=requested===90&&end-restEnd<=20;
-    const recoverEnd=restEnd+(requested===90?8:16);
-    const returnAt=requested>=120?Math.round(90*s.bpm/60/4)*4:Infinity;
-    const close1Start=Math.min(end-8,recoverEnd+4);
-    const close2Start=Math.max(close1Start+4,returnAt<Infinity?returnAt-4:end-16);
+    // 試聴済みの60 BPM以上の4小節は保ち、遅いテンポで休止だけが長くならないようにする。
+    const restBars=Math.max(1,Math.min(4,Math.floor(16*s.bpm/240+1e-8)));
+    const start=requested<90?end-restBars*4:Math.round(45*s.bpm/240)*4;
+    const restEnd=Math.max(0,start)+restBars*4;
+    // 120秒は90秒版の構成を完了してからAを追加する。Bと接続の長さは保つ。
+    const formEnd=requested>=120?Math.round(loopLength(s.bpm,90)*s.bpm/60):end;
+    const recoverEnd=restEnd+8;
+    const returnAt=requested>=120?formEnd:Infinity;
+    const close1Start=Math.min(formEnd-8,recoverEnd+4);
+    const close2Start=Math.max(close1Start+4,formEnd-16);
     return {start:Math.max(0,start),end:restEnd,recoverEnd,close1Start,close2Start,returnAt};
   }
   function longFormMode(s,beat){
@@ -361,8 +361,9 @@
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     const innerMode=longFormMode(s,b);
     const c=SCENES[s.moodId],v=s.arrangementVariant||0;
-    // ループ直前の最後の小節はAの型へ戻し、B→Aの継ぎ目を作る。
-    const finalClosing=innerMode==='closing'&&b+4>=s.length*s.bpm/60-1e-7;
+    // 接続最後の小節はAへ向ける。120秒では曲末ではなく追加Aの直前。
+    const closingEnd=Math.min(s.length*s.bpm/60,longFormPlan(s)?.returnAt??Infinity);
+    const finalClosing=innerMode==='closing'&&b+4>=closingEnd-1e-7;
     const w=(v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1:0))%3,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
