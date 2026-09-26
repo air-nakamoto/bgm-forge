@@ -41,7 +41,8 @@
     night:  {inner:[[.5,1.75,3.25],[0,1.25,2.75],[.75,2,3.5]],bass:['fifth','two','hold'],bassHold:2.1,pad:[2],padBars:1,hold:1.2,harmony:[2,1,2],high:73,gate:.5,drum:'none'},
     // 水辺。揺れる伴奏（2拍ごとの和音）と、点で落ちる内声。打楽器は水滴に見立てた ticks。
     water:  {inner:[[0,2,3],[.5,1.5,3.5],[0,1.5,2,3]],bass:['two','hold','fifth'],pad:[0,2],padBars:2,hold:2.4,harmony:[2,1,2],high:74,gate:.55,drum:'ticks'},
-    calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
+    // のどかはAを9型にし、長尺のBは各Aに対応する2候補から選ぶ。
+    calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5],[.75,2.75],[1,2,3],[0,2],[.5,2.5],[1,3],[0,1.75,3]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
     // 荘厳と鎮魂は内声が空なので、内声のずらしが効かない。代わりに和音を鳴らす位置を
     // 2通り持たせて幅を作る（padAlt）。内声のある場面には置かない＝12組を超えさせない。
     // padAlt は「位置をずらす」だけにして、打鍵の数は増やさない。荘厳で [0,2] にしたら
@@ -75,7 +76,7 @@
   const pitch=(scale,d)=>scale[(d%scale.length+scale.length)%scale.length]+12*Math.floor(d/scale.length);
   const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a);
   function chordDegrees(d){return [d-7,d-5,d-3,d,d+2,d+4,d+7,d+9,d+11]}
-  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0].join('|');return s}
+  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0,s.scenePattern||0,s.sceneBVariant||0].join('|');return s}
 
   // A 16-bar theme cannot be heard inside 25 beats, so the form follows the requested duration.
   // 1分指定は8小節（約30秒）に丸めず、16小節の長いテーマにする。
@@ -126,6 +127,9 @@
     // 内声を、低音と同じ型に縛らず1つずらせるようにする。型3×和音の間隔2×ずらし2で
     // 場面あたり12組。ずらしは0か1だけで、全部の型を自由に組み合わせるわけではない。
     s.innerShift=Math.floor(rng(seed^0x494E4E52)()*2);
+    // のどかだけはAの9型と、B候補2種を独立に選ぶ。ほかの場面は従来の3型を維持。
+    s.scenePattern=m.id==='calm'?Math.floor(rng(seed^0x43414C4D)()*3):0;
+    s.sceneBVariant=m.id==='calm'?Math.floor(rng(seed^0x43414C42)()*2):0;
     s.padShift=profile&&profile.padAlt?Math.floor(rng(seed^0x50414421)()*2):0;
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
   }
@@ -381,7 +385,14 @@
     // 接続最後の小節はAへ向ける。120秒では曲末ではなく追加Aの直前。
     const closingEnd=Math.min(s.length*s.bpm/60,longFormPlan(s)?.returnAt??Infinity);
     const finalClosing=innerMode==='closing'&&b+4>=closingEnd-1e-7;
-    const w=(v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1:0))%3,local=bar%(s.themeBars||16);
+    const calm=s.moodId==='calm';
+    const a=(v*3+((s.scenePattern||0)+(s.innerShift||0))%3)%9;
+    const bCandidates=[[1,4],[2,5],[0,3],[4,7],[5,8],[3,6],[7,1],[8,2],[6,0]];
+    const w=calm
+      ? (innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)
+        ? bCandidates[a][s.sceneBVariant||0] : a)
+      : (v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1:0))%3;
+    const localVariant=calm?Math.floor(w/3):w,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
     const breath=sparse&&local%4===(w===1?1:3);
@@ -412,7 +423,7 @@
     // 民族は通常、奇数小節だけを撥く。長尺の別型区間では偶数小節にも
     // 同じ内声の語彙を置き、休止から戻ったことが聴き取れる密度にする。
     if(innerMode!=='rest'&&!breath&&(s.moodId!=='ethnic'||bar%2===1||innerMode==='alternate')){
-      const times=c.inner[w],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[w];
+      const times=c.inner[w],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[localVariant%3];
       times.forEach((at,k)=>{
         // The answer leaves room; it does not append a new tune.
         if(answer&&times.length>2&&k===times.length-1)return;

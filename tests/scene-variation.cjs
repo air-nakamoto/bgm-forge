@@ -498,6 +498,18 @@ for(const mood of MOODS){
  assert.equal(combinations.size,3*intervals.length*2*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
 }
 console.log('PASS: 7200 compositions; independent scene arrangement/harmony/inner-shift combinations and unchanged generation settings');
+// のどかだけはAを9型に増やし、長尺のB候補を2通り持つ。Aの音符列が9通りに分かれ、
+// B候補も同じAから別の内声型へ切り替わることを固定する。
+{
+ const calm=MOODS.find(m=>m.id==='calm'),base=compose(calm,2026,{length:30}),aShapes=new Set();
+ for(let v=0;v<3;v++)for(let p=0;p<3;p++)aShapes.add(shape(score.events({...base,arrangementVariant:v,scenePattern:p,innerShift:0})));
+ assert.equal(aShapes.size,9,'calm must expose nine A accompaniment patterns');
+ const long0={...compose(calm,2026,{length:120,lead:false}),sceneBVariant:0};
+ const long1={...long0,sceneBVariant:1};
+ const plan=score.longFormPlan(long0),bshape=s=>shape(score.events(s).filter(n=>n.beat>=plan.close2Start&&n.beat<plan.returnAt));
+ assert.notEqual(bshape(long0),bshape(long1),'calm B candidates must differ');
+}
+console.log('PASS: calm has 9 A patterns and 2 B candidates per A');
 let tested=0;
 for(const mood of MOODS){
  const arrangements=new Map();
