@@ -158,10 +158,9 @@ for(const mood of MOODS)for(const bpm of [46,60,76,96,116,132])for(const length 
  const edited=score.adjust(source,{...source,bpm,length,drums:true});
  for(const s of [fresh,edited])for(const accompaniment of ['auto','wave','up','chords']){
   s.accompaniment=accompaniment;
-  // 1分は4小節単位（継ぎ目で2小節周期の伴奏を崩さない）、1分半・2分は1小節単位。どちらも指定未満にしない。
-  const unit=length<90?4:1;
-  assert(s.length>=length-1e-7&&s.length<length+unit*240/bpm+1e-7,'duration within one rounding unit');
-  if(length<90)assert.equal(Math.round(s.length*bpm/240)%4,0,'1-minute loop is a whole number of 4-bar phrases');
+  // 1分以上は4小節単位（継ぎ目で2〜4小節周期の伴奏を崩さない）。指定未満にはしない。
+  assert(s.length>=length-1e-7&&s.length<length+4*240/bpm+1e-7,'duration within one 4-bar unit');
+  assert.equal(Math.round(s.length*bpm/240)%4,0,'long loop is a whole number of 4-bar phrases');
  const totalBars=Math.round(s.length*bpm/240);
   const restBars=bpm===46?3:4;
   const restBar=length===60?totalBars-restBars:Math.round(45*bpm/240);
