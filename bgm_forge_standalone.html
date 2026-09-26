@@ -4027,20 +4027,21 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       // Open fifths and wider spacing distinguish drones from tonal accompaniment.
       const pad=['dark','ritual'].includes(s.moodId)?[raw[0],raw[n-1]]:
         s.moodId==='horror'?[raw[0],Math.min(PAD_HIGH,raw[0]+1),raw[n-1]]:raw;
-      const altPad=(innerMode==='alternate'&&c.padAlt)?c.padAlt:(s.padShift&&c.padAlt?c.padAlt:c.pad);
+      const altPad=s.padShift&&c.padAlt?c.padAlt:c.pad;
       for(const at of altPad)pad.forEach((q,j)=>add(1,q,b+at,c.hold,vel-4+j*2,(j/(pad.length-1||1)-.5)*.9));
     }
     const root=base-12+pitch(s.scale,d),fifth=base-12+pitch(s.scale,d+4);
     // 内声ずらし2で、低音が既存の組と重なる場面だけ bassX の型にする。
     const bass=s.innerShift===2&&c.bassX&&c.bassX[v]?c.bassX[v]:c.bass[v],bv=53+energy*18;
+    const bassBeat=innerMode==='alternate'&&s.moodId==='solemn'?b+1:b;
     if(bass==='pedal'){
-      if(local%(c.bassBars||2)===0)add(2,base-12,b,c.bassHold||7.8,bv-8);
+      if(local%(c.bassBars||2)===0)add(2,base-12,bassBeat,c.bassHold||7.8,bv-8);
     }else if(bass==='openfifth'){
       // 持続低音に主音の5度を重ねた空虚五度。静かな場面の追加型で、打鍵の間隔は pedal と同じにして密度を上げない。
-      if(local%(c.bassBars||2)===0){add(2,base-12,b,c.bassHold||7.8,bv-8);add(2,base-12+pitch(s.scale,4),b,c.bassHold||7.8,bv-14)}
-    }else if(bass==='hold')add(2,root,b,c.bassHold||3.85,bv);
+      if(local%(c.bassBars||2)===0){add(2,base-12,bassBeat,c.bassHold||7.8,bv-8);add(2,base-12+pitch(s.scale,4),bassBeat,c.bassHold||7.8,bv-14)}
+    }else if(bass==='hold')add(2,root,bassBeat,c.bassHold||3.85,bv);
     else if(bass==='walk'){
-      [root,base-12+pitch(s.scale,d+2),fifth,base-12+pitch(s.scale,chordFor(bar+1))].forEach((q,k)=>add(2,q,b+k,.82,bv-(k?7:0)));
+      [root,base-12+pitch(s.scale,d+2),fifth,base-12+pitch(s.scale,chordFor(bar+1))].forEach((q,k)=>add(2,q,bassBeat+k,.82,bv-(k?7:0)));
     }else{
       const times=bass==='motor'?[0,.5,1,1.5,2,2.5,3,3.5]:bass==='ritual'?[0,1.5,3]:bass==='march'?[0,1,2,3]:[0,2];
       times.forEach((at,k)=>add(2,bass==='fifth'&&k%2?fifth:root,b+at,bass==='motor'?.34:bass==='ritual'?.7:bass==='march'?.75:1.7,bv-(k%2?7:0)));

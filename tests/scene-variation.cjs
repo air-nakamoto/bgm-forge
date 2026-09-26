@@ -554,14 +554,14 @@ console.log('PASS: bright has 9 A patterns and 2 B candidates per A');
  }
 }
 console.log('PASS: 19 more scenes add 3 new A patterns and 2 B candidates per A');
-// 荘厳・鎮魂は内声がないため、長尺Bでは既存のpadAltだけ位置を変えて展開する。
+// 内声のない場面でも、長尺Bで既存の発音位置を変えて展開する。荘厳はピアノ側、鎮魂はパッド側。
 for(const id of ['solemn','requiem']){
  const mood=MOODS.find(m=>m.id===id),base=compose(mood,2026,{length:120,lead:false}),plan=score.longFormPlan(base);
- const all=score.events(base).filter(n=>n.part===1),normal=all.filter(n=>n.beat>=plan.close1Start-16&&n.beat<plan.close1Start),shifted=all.filter(n=>n.beat>=plan.close1Start&&n.beat<plan.close2Start);
- assert(normal.length>0&&shifted.length>0,id+' long-form pad B keeps density');
- assert.notDeepEqual(normal.map(n=>[n.pitch,n.beat%16]),shifted.map(n=>[n.pitch,n.beat%16]),id+' long-form pad B changes position');
+ const part=id==='solemn'?2:1,all=score.events(base).filter(n=>n.part===part),normal=all.filter(n=>n.beat>=plan.close1Start-16&&n.beat<plan.close1Start),shifted=all.filter(n=>n.beat>=plan.close1Start&&n.beat<plan.close2Start);
+ assert(normal.length>0&&shifted.length>0,id+' long-form B keeps density');
+ assert.notDeepEqual(normal.map(n=>[n.pitch,n.beat%16]),shifted.map(n=>[n.pitch,n.beat%16]),id+' long-form B changes the intended part');
 }
-console.log('PASS: solemn and requiem long-form B shifts pad position without adding notes');
+console.log('PASS: solemn shifts piano-side bass and requiem shifts pad without adding notes');
 // 水辺の水滴（2026-09-26）：0.5・2.5拍の等間隔、弱い打がほぼ無音にならない。
 {
  const water=MOODS.find(m=>m.id==='water');let quiet=0,total=0;
