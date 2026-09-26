@@ -4151,11 +4151,11 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       }
       if(part===2){
         const plan=longFormPlan(s);
-        if(plan&&(s.moodId==='solemn'||s.moodId==='horror')&&beat>=plan.start&&beat<plan.end)return;
+        if(plan&&s.moodId==='solemn'&&beat>=plan.start&&beat<plan.end)return;
       }
       if(part===1){
         const plan=longFormPlan(s);
-        if(plan&&s.moodId==='requiem'&&beat>=plan.start&&beat<plan.end)return;
+        if(plan&&(s.moodId==='requiem'||s.moodId==='horror')&&beat>=plan.start&&beat<plan.end)return;
       }
       duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
     const chordFor=bar=>(!loop&&bar>=lastBar)?0:chordAt(s,bar);

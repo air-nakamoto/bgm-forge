@@ -576,10 +576,10 @@ console.log('PASS: solemn long-form rest keeps flesh-voice side and mutes piano-
 console.log('PASS: requiem long-form rest mutes flesh-voice side and keeps piano-side bass');
 {
  const mood=MOODS.find(m=>m.id==='horror'),s=compose(mood,2026,{length:120,lead:false}),plan=score.longFormPlan(s);
- assert.equal(score.events(s).some(n=>n.part===2&&n.beat>=plan.start&&n.beat<plan.end),false,'horror rest must mute piano-side bass');
- assert.equal(score.events(s).some(n=>n.part===1&&n.beat>=plan.start&&n.beat<plan.end),true,'horror rest keeps flesh-voice side');
+ assert.equal(score.events(s).some(n=>n.part===1&&n.beat>=plan.start&&n.beat<plan.end),false,'horror rest must mute high-side pad');
+ assert.equal(score.events(s).some(n=>n.part===2&&n.beat>=plan.start&&n.beat<plan.end),true,'horror rest keeps piano-side bass');
 }
-console.log('PASS: horror long-form rest mutes piano-side bass and keeps flesh-voice side');
+console.log('PASS: horror long-form rest mutes high-side pad and keeps piano-side bass');
 // 水辺の水滴（2026-09-26）：0.5・2.5拍の等間隔、弱い打がほぼ無音にならない。
 {
  const water=MOODS.find(m=>m.id==='water');let quiet=0,total=0;
