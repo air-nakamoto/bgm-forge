@@ -13,7 +13,8 @@ for(const mood of MOODS)for(const bpm of [46,60,76,96,116,132])for(const seed of
  // Bは最低4小節（入らないテンポでは接続を1小節まで縮めた上で最大限）。接続は最低1小節。
  assert(b.formEnd-b.close2Start>=4,'closing keeps at least one bar');
  assert(b.close2Start-b.close1Start>=Math.min(16,b.formEnd-4-b.close1Start),'B section gets at least 4 bars when it fits');
- assert(b.melodyRest&&b.melodyRest.end===b.formEnd&&b.melodyRest.end-b.melodyRest.start<=8&&b.melodyRest.start>=b.close2Start,'melody rests only in the last bars of the closing');
+ {const sec=(b.melodyRest.end-b.melodyRest.start)*60/bpm;
+ assert(b.melodyRest.end===b.formEnd&&sec>=6.5&&sec<=10.5&&b.melodyRest.start>b.close1Start,`melody rest before A is about 8 seconds (${sec.toFixed(1)}s at ${bpm} BPM)`);}
  // Accompaniment before the ending transition is retained. Melody has its own
  // final-note sustain rule and is deliberately outside this arrangement check.
  const end=b.returnAt-4;

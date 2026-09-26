@@ -3974,8 +3974,10 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // しかなく展開が聞き取れなかった。余裕のあるテンポは従来どおり接続4小節、足りなければ接続を最短1小節まで縮める。
     const close2Start=Math.min(Math.max(close1Start+16,formEnd-16),formEnd-4);
     // メロディありでは、Bから戻る接続の間だけ旋律を休ませ、Aへの戻りを際立たせる（1分半以上）。
-    // 接続が4小節あるテンポでは曲全体の休みと同じくらい長くなるので、戻る直前の最大2小節に限る。
-    const melodyRest=requested>=90?{start:Math.max(close2Start,formEnd-8),end:formEnd}:null;
+    // 長さはテンポによらず約8秒（2〜4小節）。接続が1小節しかないテンポではBの終わりから休み始める。
+    // 4秒（60 BPMで1小節）では短すぎて休みに聞こえない、とのユーザー評価（2026-09-26）。
+    const melodyRestBars=Math.max(2,Math.min(4,Math.round(8*s.bpm/240)));
+    const melodyRest=requested>=90?{start:Math.max(close1Start+4,formEnd-melodyRestBars*4),end:formEnd}:null;
     return {start:Math.max(0,start),end:restEnd,recoverEnd,close1Start,close2Start,returnAt,formEnd,melodyRest};
   }
   function longFormMode(s,beat){
