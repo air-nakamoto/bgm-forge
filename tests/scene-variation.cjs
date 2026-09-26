@@ -548,5 +548,21 @@ for(const seed of [1,7,42]){
  const signatures=MOODS.map(m=>shape(score.events(compose(m,seed,{bpm:96,sound:'synth',length:40}))));
  assert.equal(new Set(signatures).size,MOODS.length,'scene rhythm collision');
 }
+// 30秒(短いテーマ)から1分以上へ延ばしたとき、旋律がテーマ全体を覆うこと。
+// 以前は旧テーマの旋律が残り、決断60 BPMでは約12秒から64秒まで旋律が鳴らなかった。
+{let extended=0;
+ for(const m of MOODS)for(const bpm of [46,60,76,96,116,132])for(const seed of [1,2026]){
+  const source=compose(m,seed,{bpm,lead:true,phrasing:'auto'});
+  for(const length of [60,90,120]){
+   const s=score.adjust(source,{accompaniment:'auto',sound:source.sound,bpm,length,ending:'loop',lead:true,level:source.level,drums:true,phrasing:'auto'});
+   const last=Math.max(...s.melody.map(n=>n.beat));
+   assert(last>=s.themeBars*4-8,`${m.id} ${bpm}BPM ${length}s: melody covers ${last} of ${s.themeBars*4} beats`);
+   const head=x=>x.filter(n=>n.beat<8).map(n=>n.pitch+'@'+n.beat).join();
+   assert.equal(head(s.melody),head(source.melody),`${m.id} ${bpm}BPM ${length}s: opening of the melody must survive lengthening`);
+   extended++;
+  }
+ }
+ console.log(`PASS: ${extended} lengthened takes keep a full-theme melody and the original opening`);
+}
 assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),/function selectMood\(mood\)[^\n]*state\.lead=d\[2\]===true/);
 console.log(`PASS: ${tested} scene cases; ${MOODS.length} distinct scene rhythms, 3 arrangements each, melody off, determinism, remix, previews, manual patterns and note bounds.`);

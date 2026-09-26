@@ -3895,7 +3895,11 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     s.themeBars=themeBarsFor(s.bpm,s.requestedLength);
     s.ending=settings.ending;s.lead=settings.lead;s.level=settings.level;
     s.drums=settings.drums?(source.drums==='none'?source.defaultDrums:source.drums):'none';
-    if(settings.phrasing!==source.phrasing){
+    // 旋律はテーマの小節数ぶんしか作られていない。30秒(4小節)を1分以上(16小節)へ延ばしたとき
+    // 旧4小節の旋律を残すと、各周の5〜16小節目が無音になる（決断60 BPMで約12秒以降が64秒まで無音）。
+    // 同じ主題の種で作り直すので、冒頭3小節は元の旋律と同じになる。
+    const barsChanged=s.themeBars!==source.themeBars;
+    if(settings.phrasing!==source.phrasing||barsChanged){
       const base=source.baseDensity||source.density||.55;
       s.baseDensity=base;s.phrasing=settings.phrasing;s.density=densityFor(base,s.phrasing);
       s.melody=makeMelody({...s,seed:s.themeId});
