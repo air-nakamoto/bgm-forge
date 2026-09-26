@@ -538,7 +538,7 @@
       }
       if(part===2){
         const plan=longFormPlan(s);
-        if(plan&&s.moodId==='solemn'&&beat>=plan.start&&beat<plan.end)return;
+        if(plan&&(s.moodId==='solemn'||s.moodId==='horror')&&beat>=plan.start&&beat<plan.end)return;
       }
       if(part===1){
         const plan=longFormPlan(s);
