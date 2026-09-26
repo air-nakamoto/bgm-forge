@@ -568,6 +568,12 @@ console.log('PASS: solemn shifts piano-side bass and requiem shifts pad without 
  assert.equal(score.events(s).some(n=>n.part===2&&n.beat>=plan.start&&n.beat<plan.end),false,'solemn rest must mute piano-side bass');
 }
 console.log('PASS: solemn long-form rest keeps flesh-voice side and mutes piano-side bass');
+{
+ const mood=MOODS.find(m=>m.id==='requiem'),s=compose(mood,2026,{length:120,lead:false}),plan=score.longFormPlan(s);
+ assert.equal(score.events(s).some(n=>n.part===1&&n.beat>=plan.start&&n.beat<plan.end),false,'requiem rest must mute flesh-voice side');
+ assert.equal(score.events(s).some(n=>n.part===2&&n.beat>=plan.start&&n.beat<plan.end),true,'requiem rest keeps piano-side bass');
+}
+console.log('PASS: requiem long-form rest mutes flesh-voice side and keeps piano-side bass');
 // 水辺の水滴（2026-09-26）：0.5・2.5拍の等間隔、弱い打がほぼ無音にならない。
 {
  const water=MOODS.find(m=>m.id==='water');let quiet=0,total=0;

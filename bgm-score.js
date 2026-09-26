@@ -540,6 +540,10 @@
         const plan=longFormPlan(s);
         if(plan&&s.moodId==='solemn'&&beat>=plan.start&&beat<plan.end)return;
       }
+      if(part===1){
+        const plan=longFormPlan(s);
+        if(plan&&s.moodId==='requiem'&&beat>=plan.start&&beat<plan.end)return;
+      }
       duration=Math.min(duration,total-beat);if(beat>=total||duration<=0)return;notes.push({part,pitch,beat,duration,velocity:Math.max(1,Math.round(velocity*s.level)),pan})};
     const chordFor=bar=>(!loop&&bar>=lastBar)?0:chordAt(s,bar);
     // Weighted choice so each bar picks a figure instead of repeating one forever.
