@@ -82,6 +82,9 @@
   function themeBarsFor(bpm,length){const beats=length*bpm/60;return length>=60||beats>=48?16:beats>=32?8:beats>=16?4:2}
 
   function loopLength(bpm,length,bars=themeBarsFor(bpm,length)){
+    // 1分は4小節単位で切り上げる（指定未満にはしない）。1小節単位だと76 BPMで19小節になり、2小節周期の
+    // 和音・パッド・打楽器が継ぎ目で崩れていた（民族1分：和音Cが5小節続き、パッドが2小節連続）。
+    if(length>=60&&length<90)return Math.ceil((length*bpm/60-1e-8)/16)*16*60/bpm;
     if(length>=60)return Math.ceil((length*bpm/60-1e-8)/4)*4*60/bpm;
     const span=bars*4;
     const units=(length>=120?Math.ceil:Math.floor)((length*bpm/60+1e-8)/span);
