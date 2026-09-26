@@ -536,7 +536,7 @@
           if(beat<plan.start)duration=Math.min(duration,plan.start-beat);
         }
       }
-      if(part===1){
+      if(part===2){
         const plan=longFormPlan(s);
         if(plan&&s.moodId==='solemn'&&beat>=plan.start&&beat<plan.end)return;
       }
