@@ -4027,7 +4027,8 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       // Open fifths and wider spacing distinguish drones from tonal accompaniment.
       const pad=['dark','ritual'].includes(s.moodId)?[raw[0],raw[n-1]]:
         s.moodId==='horror'?[raw[0],Math.min(PAD_HIGH,raw[0]+1),raw[n-1]]:raw;
-      for(const at of (s.padShift&&c.padAlt?c.padAlt:c.pad))pad.forEach((q,j)=>add(1,q,b+at,c.hold,vel-4+j*2,(j/(pad.length-1||1)-.5)*.9));
+      const altPad=(innerMode==='alternate'&&c.padAlt)?c.padAlt:(s.padShift&&c.padAlt?c.padAlt:c.pad);
+      for(const at of altPad)pad.forEach((q,j)=>add(1,q,b+at,c.hold,vel-4+j*2,(j/(pad.length-1||1)-.5)*.9));
     }
     const root=base-12+pitch(s.scale,d),fifth=base-12+pitch(s.scale,d+4);
     // 内声ずらし2で、低音が既存の組と重なる場面だけ bassX の型にする。
