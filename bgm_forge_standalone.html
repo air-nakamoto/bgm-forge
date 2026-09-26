@@ -3156,7 +3156,7 @@ That&#x27;s all there is to it!
         <dt>長さ</dt>
         <dd>新しく作る曲は約30秒です。「この曲を調整」の「長さの目安」で、20秒〜2分に変えられます。<br>ループ用は小節やテーマの区切りで終わるため、実際の長さは指定より前後します（波形の下に表示）。<br>ループ素材なら30秒〜1分で十分です。2分は生成に時間がかかります（途中で「中止」できます）。</dd>
         <dt>1分以上の構成</dt>
-        <dd>同じ伴奏が続いて単調にならないよう、途中で伴奏の内声が休みます。休みは最大4小節（約16秒以内）です。<br>・1分：終わり際に休みます。<br>・1分半：約45秒から休み、元の形 → つなぎ → 別の伴奏の形 → 先頭へのつなぎ、と進んでループします。<br>・2分：1分半と同じ流れのあと、元の形に戻ってからループします。<br>メロディありの曲は、休みの間メロディも休みます。1分半・2分では、別の形から戻るつなぎでもメロディだけ少し休みます。<br>疑惑の場面と、伴奏の鳴らし方を選んだ曲は、別の形に切り替わらず休みだけが入ります。</dd>
+        <dd>同じ伴奏が続いて単調にならないよう、途中で伴奏の内声が休みます。休みは最大4小節（約16秒以内）です。<br>・1分：終わり際に休みます。<br>・1分半：約45秒から休み、元の形 → つなぎ → 別の伴奏の形 → 先頭へのつなぎ、と進んでループします。<br>・2分：1分半と同じ流れのあと、元の形に戻ってからループします。<br>メロディありの曲は、休みの間メロディも休みます。1分半・2分では、別の形から戻るつなぎでもメロディだけ少し休みます。<br>疑惑の場面と、伴奏の鳴らし方を選んだ曲では、同じ型の音の上下を入れ替えた形が「別の形」になります。</dd>
       </dl>
     </div>
     <div id="d-listen" data-title="再生・保存・調整の使い方">
@@ -4200,10 +4200,16 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
         const order=pattern==='up'?[0,1,2,3]:pattern==='pulse'?[0,2,0,1]:[0,1,2,1];
         const rising=[...new Set(inner)];
         const times=pattern==='up'?(rising.length===3?[0,1,2.5]:[0,1,2,3]):slow?(phraseVariant(bar)?[.5,2.5]:[0,2.5]):Array.from({length:4/step},(_,i)=>i*step);
+        // 1分半以上の伴奏型（疑惑の自動パターン・手動の型）にも、場面専用と同じ位置に「別の形」を置く。
+        // 型は保ち、音の上下を鏡写しにする（密度は変えない）。テーマ2周目の間引き（variant 1）は
+        // 休みの後に60秒以上内声が半分のまま続いていたので、1分半以上では使わない。
+        const plan90=(s.requestedLength||s.length)>=90?longFormPlan(s):null;
+        const mirror=!!plan90&&b>=plan90.close1Start&&b<plan90.close2Start;
         times.forEach((at,k)=>{
           if(pos===3&&!turn&&k===times.length-1)return;
-          if(variant===1&&!turn&&k%2===1)return;
-          const q=pattern==='up'?rising[Math.min(k,rising.length-1)]:inner[order[k%4]%inner.length];
+          if(variant===1&&!plan90&&!turn&&k%2===1)return;
+          let q=pattern==='up'?rising[Math.min(k,rising.length-1)]:inner[order[k%4]%inner.length];
+          if(mirror){const set=pattern==='up'?rising:inner,i=set.indexOf(q);if(i>=0)q=set[set.length-1-i]}
           add(3,q,b+at,slow?.8:step*.82,32+energy*16+(k===0?5:0),k%2?.35:-.35);
         });
       }

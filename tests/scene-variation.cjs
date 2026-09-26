@@ -582,5 +582,18 @@ for(const seed of [1,7,42]){
  }
  console.log(`PASS: ${rests} long-form melody takes rest together with the inner voice`);
 }
+// 1分半以上の伴奏型（疑惑の自動パターン・手動の型）：休みの後に内声が間引かれ続けないこと、
+{let routes=0;
+ for(const m of MOODS)for(const bpm of [60,96])for(const length of [90,120])for(const pattern of ['auto','wave','up','pulse']){
+  const s=compose(m,2026,{bpm,length,lead:false,accompaniment:pattern});
+  const route=score.accompanimentFor(s);if(route==='scene'||route==='legacy')continue;
+  const plan=score.longFormPlan(s),ev=score.events(s).filter(n=>n.part===3),per=beat=>ev.filter(n=>n.beat>=beat-1e-3&&n.beat<beat+4-1e-3).length;
+  const before=[],after=[];for(let b=0;b<plan.start;b+=4)before.push(per(b));for(let b=plan.end;b<s.length*bpm/60-4;b+=4)after.push(per(b));
+  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length;
+  assert(avg(after)>=avg(before)*.85,`${m.id} ${route} ${bpm}BPM ${length}s: inner stays thinned after the rest (${avg(before).toFixed(2)}→${avg(after).toFixed(2)})`);
+  routes++;
+ }
+ console.log(`PASS: ${routes} long-form pattern takes keep the inner density after the rest`);
+}
 assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),/function selectMood\(mood\)[^\n]*state\.lead=d\[2\]===true/);
 console.log(`PASS: ${tested} scene cases; ${MOODS.length} distinct scene rhythms, 3 arrangements each, melody off, determinism, remix, previews, manual patterns and note bounds.`);

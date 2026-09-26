@@ -587,10 +587,16 @@
         const order=pattern==='up'?[0,1,2,3]:pattern==='pulse'?[0,2,0,1]:[0,1,2,1];
         const rising=[...new Set(inner)];
         const times=pattern==='up'?(rising.length===3?[0,1,2.5]:[0,1,2,3]):slow?(phraseVariant(bar)?[.5,2.5]:[0,2.5]):Array.from({length:4/step},(_,i)=>i*step);
+        // 1分半以上の伴奏型（疑惑の自動パターン・手動の型）にも、場面専用と同じ位置に「別の形」を置く。
+        // 型は保ち、音の上下を鏡写しにする（密度は変えない）。テーマ2周目の間引き（variant 1）は
+        // 休みの後に60秒以上内声が半分のまま続いていたので、1分半以上では使わない。
+        const plan90=(s.requestedLength||s.length)>=90?longFormPlan(s):null;
+        const mirror=!!plan90&&b>=plan90.close1Start&&b<plan90.close2Start;
         times.forEach((at,k)=>{
           if(pos===3&&!turn&&k===times.length-1)return;
-          if(variant===1&&!turn&&k%2===1)return;
-          const q=pattern==='up'?rising[Math.min(k,rising.length-1)]:inner[order[k%4]%inner.length];
+          if(variant===1&&!plan90&&!turn&&k%2===1)return;
+          let q=pattern==='up'?rising[Math.min(k,rising.length-1)]:inner[order[k%4]%inner.length];
+          if(mirror){const set=pattern==='up'?rising:inner,i=set.indexOf(q);if(i>=0)q=set[set.length-1-i]}
           add(3,q,b+at,slow?.8:step*.82,32+energy*16+(k===0?5:0),k%2?.35:-.35);
         });
       }
