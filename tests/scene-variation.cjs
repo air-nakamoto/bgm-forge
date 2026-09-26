@@ -534,24 +534,26 @@ console.log('PASS: bright has 9 A patterns and 2 B candidates per A');
 // B候補2種は内声だけが変わる。既存seedの大半は以前と同じ伴奏のまま。
 {
  const extra=score.innerExtra;
- assert.deepEqual([...extra].sort(),['casino','decision','ethnic','japanese','memory','night','puzzle','tense','water'],'extra inner-shift scenes');
+ assert.deepEqual([...extra].sort(),['casino','chase','dark','decision','ethnic','horror','japanese','kagura','machine','memory','night','puzzle','ritual','sorrow','tense','town','victory','water','wonder'],'extra inner-shift scenes');
  for(const id of extra){
-  const mood=MOODS.find(m=>m.id===id),a=new Set();
+  const mood=MOODS.find(m=>m.id===id),a=new Set(),added=[];
   for(let v=0;v<3;v++)for(let shift=0;shift<3;shift++){
    const s={...compose(mood,2026,{length:30,lead:false}),arrangementVariant:v,innerShift:shift};
-   a.add(JSON.stringify(score.events(s).filter(n=>n.part===2||n.part===3).map(n=>[n.part,n.pitch,+n.beat.toFixed(5)])));
+   const key=JSON.stringify(score.events(s).filter(n=>n.part===2||n.part===3).map(n=>[n.part,n.pitch,+n.beat.toFixed(5)]));
+   if(shift===2)added.push(key);else a.add(key);
    const long0={...compose(mood,2026,{length:120,lead:false}),arrangementVariant:v,innerShift:shift,sceneBVariant:0};
    const long1={...long0,sceneBVariant:1};
    const plan=score.longFormPlan(long0),bshape=s=>shape(score.events(s).filter(n=>n.part===3&&n.beat>=plan.close1Start&&n.beat<plan.close2Start));
    assert.notEqual(bshape(long0),bshape(long1),id+' B candidates must differ');
    assert.deepEqual(score.events(long0).filter(n=>n.part!==3),score.events(long1).filter(n=>n.part!==3),id+' B choice preserves other parts');
   }
-  assert.equal(a.size,9,id+' must have 9 distinct A accompaniments');
+  assert.equal(new Set(added).size,3,id+' added A accompaniments must differ from each other');
+  for(const key of added)assert(!a.has(key),id+' added A accompaniments must not repeat an existing one');
   let two=0;for(let seed=1;seed<=300;seed++)if(compose(mood,seed,{length:30}).innerShift===2)two++;
   assert(two>60&&two<140,id+' uses the third inner shift for about a third of seeds');
  }
 }
-console.log('PASS: 9 more scenes have 9 A patterns and 2 B candidates per A');
+console.log('PASS: 19 more scenes add 3 new A patterns and 2 B candidates per A');
 // 水辺の水滴（2026-09-26）：0.5・2.5拍の等間隔、弱い打がほぼ無音にならない。
 {
  const water=MOODS.find(m=>m.id==='water');let quiet=0,total=0;

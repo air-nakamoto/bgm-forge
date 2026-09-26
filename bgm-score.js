@@ -28,16 +28,16 @@
   const SCENES={
     casino: {inner:[[2/3,1,8/3,3],[1,5/3,2.5,11/3],[0,2/3,2,8/3,3.5]],comp:true,bass:['walk','march','fifth'],pad:[],padBars:1,hold:0,harmony:[1,1,2],high:74,gate:.22,drum:'swing'},
     bright: {inner:[[0,.75,2,2.75],[0,1.5,2.5],[.5,1,2.5,3]],bass:['fifth','walk','two'],pad:[0,2],padBars:2,hold:1.2,harmony:[1,1,2],high:72,gate:.48,drum:'light'},
-    town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
+    town:   {inner:[[2/3,1,5/3,3],[0,2/3,2,8/3],[1,5/3,3,11/3]],bass:['walk','fifth','walk'],bassX:['two',null,'two'],pad:[],padBars:1,hold:0,harmony:[1,2,1],high:67,gate:.3,drum:'swing'},
     // クリア：4小節で主和音に着地。裏拍を交えた短い伴奏と二拍の低音で弾ませる。
-    victory:{inner:[[0,.5,1.5,2,3],[.5,1,2,2.5,3.5],[0,1,1.5,2.5,3]],bass:['fifth','two','fifth'],pad:[0,2.5],padBars:1,hold:1.1,harmony:[1,1,1],high:74,gate:.38,drum:'light'},
+    victory:{inner:[[0,.5,1.5,2,3],[.5,1,2,2.5,3.5],[0,1,1.5,2.5,3]],bass:['fifth','two','fifth'],bassX:['hold',null,'hold'],pad:[0,2.5],padBars:1,hold:1.1,harmony:[1,1,1],high:74,gate:.38,drum:'light'},
     // 民族は東方の音階に合わせて、低音を歩かせる編成のひとつを持続低音（ドローン）にし、
     // 和音の変化も減らした。機能和声で動き回ると民謡になり、オリエンタルに聞こえない。
     ethnic:  {inner:[[0,1.5,2.5],[.5,2,3],[0,1,2,3.5]],bass:['pedal','walk','fifth'],pad:[0,2.5],padBars:2,hold:2.8,harmony:[2,2,4],high:73,gate:.42,drum:'distant'},
     japanese:{inner:[[0,1.5,3],[.5,2.5],[0,1,2.5,3.5]],bass:['pedal','fifth','hold'],pad:[0],padBars:2,hold:2.4,harmony:[2,2,1],high:70,gate:.7,drum:'none'},
     decision:{inner:[[1.5],[.5,2.5],[0,2.75]],bass:['hold','pedal','fifth'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:67,gate:1.05,drum:'distant'},
-    kagura:  {inner:[[0,1.5,3],[.5,2.5],[0,2,3.5]],bass:['pedal','ritual','pedal'],pad:[0],padBars:2,hold:5.2,harmony:[4,2,4],high:75,gate:.8,drum:'ritual'},
-    wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
+    kagura:  {inner:[[0,1.5,3],[.5,2.5],[0,2,3.5]],bass:['pedal','ritual','pedal'],bassX:['hold',null,'hold'],pad:[0],padBars:2,hold:5.2,harmony:[4,2,4],high:75,gate:.8,drum:'ritual'},
+    wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],bassX:['openfifth',null,'openfifth'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
     night:  {inner:[[.5,1.75,3.25],[0,1.25,2.75],[.75,2,3.5]],bass:['fifth','two','hold'],bassHold:2.1,pad:[2],padBars:1,hold:1.2,harmony:[2,1,2],high:73,gate:.5,drum:'none'},
     // 水辺。揺れる伴奏（2拍ごとの和音）と、点で落ちる内声。打楽器は水滴に見立てた ticks。
     water:  {inner:[[0,2,3],[.5,1.5,3.5],[0,1.5,2,3]],bass:['two','hold','fifth'],pad:[0,2],padBars:2,hold:2.4,harmony:[2,1,2],high:74,gate:.55,drum:'drops'},
@@ -50,22 +50,25 @@
     // 「安定していない」と言われた（2026-09-22）。
     solemn: {inner:[[],[],[]],bass:['hold','pedal','fifth'],pad:[0],padAlt:[1],padBars:1,hold:3.85,harmony:[2,4,1],high:69,gate:1,drum:'none'},
     mystic: {inner:[[.75,3.25],[1.5,2.75],[.25,2.5]],bass:['pedal','hold','pedal'],pad:[1],padBars:2,hold:6.8,harmony:[4,2,4],high:76,gate:.7,drum:'none'},
-    sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
+    sorrow: {inner:[[0,2.75],[.5,2],[1,3.25]],bass:['hold','fifth','hold'],bassX:['pedal',null,'pedal'],pad:[0],padBars:1,hold:3.8,harmony:[2,1,2],high:67,gate:1.25,drum:'none'},
     memory: {inner:[[0,1.5,3],[.5,2,3.5],[0,.75,2.5]],bass:['fifth','two','walk'],pad:[2],padBars:2,hold:1.7,harmony:[1,2,2],high:69,gate:.6,drum:'none'},
     // 疑惑は autoPattern:'wave' を使うので、この行から効くのは harmony（和音の移り変わり）と
     // high（内声の音域）だけ。inner・bass・pad・gate・drum は伴奏を手動で場面型にしない限り使われない。
     doubt:  {inner:[[.75,2.25,3.25],[.5,1.75,2.75],[.25,1.5,2.5,3.75]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:3.6,pad:[0],padBars:2,hold:5.2,harmony:[2,4,2],high:74,gate:.7,drum:'ticks'},
     requiem:{inner:[[],[],[]],bass:['pedal','hold','pedal'],bassBars:1,bassHold:4,pad:[0],padAlt:[2],padBars:1,hold:4,harmony:[4,2,4],high:64,gate:1,drum:'none'},
     puzzle: {inner:[[0,.5,1.5,2.5],[.5,1,2,3.5],[0,1,1.5,3]],bass:['two','walk','fifth'],pad:[],padBars:1,hold:0,harmony:[2,1,2],high:70,gate:.28,drum:'ticks'},
-    dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
-    ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],bassHold:2.4,pad:[0],padBars:2,hold:3,harmony:[4,2,4],high:65,gate:.45,drum:'none'},
-    machine:{inner:[[0,.5,1,1.75,2.5,3],[0,.75,1.5,2,3,3.5],[0,.5,1.5,2.5,3.25]],bass:['motor','two','motor'],pad:[],padBars:1,hold:0,harmony:[2,4,2],high:66,gate:.22,drum:'motor'},
-    chase:  {inner:[[0,.5,1,1.5,2,2.5,3,3.5],[0,.5,1.5,2,2.5,3.5],[0,.75,1.5,2,2.75,3.5]],bass:['motor','walk','motor'],pad:[0],padBars:2,hold:.9,harmony:[1,1,2],high:73,gate:.32,drum:'running'},
+    dark:   {inner:[[2.75],[.75],[1.25,3.5]],bass:['pedal','hold','pedal'],bassX:['openfifth',null,'openfifth'],pad:[.5],padBars:2,hold:6.5,harmony:[4,2,4],high:62,gate:1.2,drum:'distant'},
+    ritual: {inner:[[0,2.5],[.5],[1.5,3]],bass:['pedal','hold','pedal'],bassX:['openfifth',null,'openfifth'],bassHold:2.4,pad:[0],padBars:2,hold:3,harmony:[4,2,4],high:65,gate:.45,drum:'none'},
+    machine:{inner:[[0,.5,1,1.75,2.5,3],[0,.75,1.5,2,3,3.5],[0,.5,1.5,2.5,3.25]],bass:['motor','two','motor'],bassX:['march',null,'march'],pad:[],padBars:1,hold:0,harmony:[2,4,2],high:66,gate:.22,drum:'motor'},
+    chase:  {inner:[[0,.5,1,1.5,2,2.5,3,3.5],[0,.5,1.5,2,2.5,3.5],[0,.75,1.5,2,2.75,3.5]],bass:['motor','walk','motor'],bassX:['march',null,'march'],pad:[0],padBars:2,hold:.9,harmony:[1,1,2],high:73,gate:.32,drum:'running'},
     tense:  {inner:[[0,.75,1.5,2.5,3],[0,.5,1.75,2.5,3.5],[0,1.5,2,2.75]],bass:['ritual','motor','march'],pad:[0,2.5],padBars:1,hold:.7,harmony:[1,2,1],high:67,gate:.35,drum:'battle'},
-    horror: {inner:[[1.75],[3.25],[.5,2.75]],bass:['pedal','pedal','hold'],pad:[1.5],padBars:2,hold:5.8,harmony:[4,4,2],high:78,gate:.55,drum:'broken'}
+    horror: {inner:[[1.75],[3.25],[.5,2.75]],bass:['pedal','pedal','hold'],bassX:['openfifth','openfifth',null],pad:[1.5],padBars:2,hold:5.8,harmony:[4,4,2],high:78,gate:.55,drum:'broken'}
   };
   // 明るい・のどか以外で、内声ずらしを3通りにし、長尺のB候補を2種持たせる場面。
-  const INNER_EXTRA=new Set(['water','casino','ethnic','japanese','night','puzzle','memory','decision','tense']);
+  const INNER_EXTRA=new Set(['water','casino','ethnic','japanese','night','puzzle','memory','decision','tense',
+    // 低音3型に同じ型が2つある場面。内声ずらし2の組が既存と同じ音にならないよう、
+    // 重なる側だけ低音を bassX の型に替える（2026-09-26）。
+    'town','victory','wonder','kagura','sorrow','dark','machine','chase','horror','ritual']);
   // 「場面におまかせ」の行き先。場面が autoPattern を持つときは、場面専用の伴奏より
   // その決まった型を優先する。持たない場合は今まで通り場面専用、それも無ければ legacy。
   const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:s.autoPattern?s.autoPattern:SCENES[s.moodId]?'scene':'legacy';
@@ -414,9 +417,13 @@
       for(const at of (s.padShift&&c.padAlt?c.padAlt:c.pad))pad.forEach((q,j)=>add(1,q,b+at,c.hold,vel-4+j*2,(j/(pad.length-1||1)-.5)*.9));
     }
     const root=base-12+pitch(s.scale,d),fifth=base-12+pitch(s.scale,d+4);
-    const bass=c.bass[v],bv=53+energy*18;
+    // 内声ずらし2で、低音が既存の組と重なる場面だけ bassX の型にする。
+    const bass=s.innerShift===2&&c.bassX&&c.bassX[v]?c.bassX[v]:c.bass[v],bv=53+energy*18;
     if(bass==='pedal'){
       if(local%(c.bassBars||2)===0)add(2,base-12,b,c.bassHold||7.8,bv-8);
+    }else if(bass==='openfifth'){
+      // 持続低音に主音の5度を重ねた空虚五度。静かな場面の追加型で、打鍵の間隔は pedal と同じにして密度を上げない。
+      if(local%(c.bassBars||2)===0){add(2,base-12,b,c.bassHold||7.8,bv-8);add(2,base-12+pitch(s.scale,4),b,c.bassHold||7.8,bv-14)}
     }else if(bass==='hold')add(2,root,b,c.bassHold||3.85,bv);
     else if(bass==='walk'){
       [root,base-12+pitch(s.scale,d+2),fifth,base-12+pitch(s.scale,chordFor(bar+1))].forEach((q,k)=>add(2,q,b+k,.82,bv-(k?7:0)));
