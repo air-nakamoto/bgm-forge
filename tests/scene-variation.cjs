@@ -483,7 +483,7 @@ for(const mood of MOODS){
     const settings={mood,scale:MODES[mood.mode],bpm:d[0],sound:d[1],length:30,ending:'loop',lead:d[2]===true,phrasing:d[3]||'auto'};
   const s=score.compose(settings,seed);
   assert(intervals.includes(s.harmonyEvery),mood.id+' must retain scene harmony intervals');
-  assert((three(mood.id)?[0,1,2]:[0,1]).includes(s.innerShift),mood.id+' must use a valid inner-voice shift');
+  assert((three(mood.id)||mood.id==='doubt'?[0,1,2]:[0,1]).includes(s.innerShift),mood.id+' must use a valid inner-voice shift');
   assert.equal(padded?[0,1].includes(s.padShift):s.padShift===0,true,mood.id+' must only shift the pad where padAlt exists');
   combinations.add([s.arrangementVariant,s.harmonyEvery,s.innerShift,s.padShift].join(':'));
   for(const key of ['bpm','sound','ending','lead','phrasing'])assert.equal(s[key],settings[key],mood.id+' must retain '+key);
@@ -496,7 +496,7 @@ for(const mood of MOODS){
   assert.equal(remix.innerShift,(s.innerShift+1)%(three(mood.id)?3:2),'remix must advance the inner shift');
   assert.equal(remix.padShift,padded?1-s.padShift:0,'remix must flip the pad only where padAlt exists');
  }
- assert.equal(combinations.size,3*intervals.length*(three(mood.id)?3:2)*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
+ assert.equal(combinations.size,3*intervals.length*((three(mood.id)||mood.id==='doubt')?3:2)*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
 }
 console.log('PASS: 7200 compositions; independent scene arrangement/harmony/inner-shift combinations and unchanged generation settings');
 // のどかだけはAを9型に増やし、長尺のB候補を2通り持つ。Aの音符列が9通りに分かれ、
@@ -554,6 +554,16 @@ console.log('PASS: bright has 9 A patterns and 2 B candidates per A');
  }
 }
 console.log('PASS: 19 more scenes add 3 new A patterns and 2 B candidates per A');
+// 疑惑は autoPattern のまま、低音3型×内声3型の9組を使う。
+{
+ const mood=MOODS.find(m=>m.id==='doubt'),a=new Set();
+ for(let v=0;v<3;v++)for(let shift=0;shift<3;shift++){
+  const s={...compose(mood,2026,{length:30,lead:false}),arrangementVariant:v,innerShift:shift};
+  a.add(JSON.stringify(score.events(s).filter(n=>n.part===2||n.part===3).map(n=>[n.part,n.pitch,+n.beat.toFixed(5)])));
+ }
+ assert.equal(a.size,9,'doubt must have 9 distinct auto-pattern accompaniments');
+}
+console.log('PASS: doubt has 9 auto-pattern accompaniments');
 // 内声のない場面でも、長尺Bで既存の発音位置を変えて展開する。荘厳はピアノ側、鎮魂はパッド側。
 for(const id of ['solemn','requiem']){
  const mood=MOODS.find(m=>m.id===id),base=compose(mood,2026,{length:120,lead:false}),plan=score.longFormPlan(base);
