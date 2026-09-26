@@ -102,6 +102,8 @@ console.log(score.events(s).length);
 - 公開はリポジトリ直下の `公開する.command` をダブルクリック。未公開のコミットを表示し、ビルドとテスト後にCloudflareの中継・本体をデプロイし、`git push` します。
   本体設定は `hosting/wrangler.toml`、公開用ファイルの生成は `scripts/build_hosting.py`（原音や秘密を含めない）。
   環境によっては push を代行できないので、その場合はこれを案内すること。
+- **MDに「未公開」「公開済み」を事実として書かない。** 公開するとすぐ古くなる。書くなら「◯◯（コミット）まで公開済み（日付に確認）」の形にし、
+  現在の状態は `git log --oneline origin/main..HEAD` で確かめる（空なら全部公開済み）。MDだけの変更は公開サイトに影響しない。
 - Cowork経由で触ると `.git/index.lock` などが消せずに残ります。`.git/_stale_locks/` へ退避してください。
 
 ---
