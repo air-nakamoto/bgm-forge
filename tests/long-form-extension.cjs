@@ -9,7 +9,11 @@ for(const mood of MOODS)for(const bpm of [46,60,76,96,116,132])for(const seed of
  const short=make(90),long=make(120),a=B.longFormPlan(short),b=B.longFormPlan(long);
  for(const key of ['start','end','recoverEnd','close1Start','close2Start'])assert.equal(a[key],b[key],`extension moved ${key}`);
  assert.equal(b.returnAt,Math.round(short.length*bpm/60),'return to A after the complete 90s form');
- if(bpm===60)assert.deepEqual([b.start,b.end,b.recoverEnd,b.close1Start,b.close2Start,b.returnAt],[44,60,68,72,76,92],'preserve existing 60 BPM timeline, then add A at 92s');
+ if(bpm===60)assert.deepEqual([b.start,b.end,b.recoverEnd,b.close1Start,b.close2Start,b.returnAt],[44,60,68,72,88,92],'60 BPM: B is 4 bars (72-88s), closing 1 bar, then add A at 92s');
+ // Bは最低4小節（入らないテンポでは接続を1小節まで縮めた上で最大限）。接続は最低1小節。
+ assert(b.formEnd-b.close2Start>=4,'closing keeps at least one bar');
+ assert(b.close2Start-b.close1Start>=Math.min(16,b.formEnd-4-b.close1Start),'B section gets at least 4 bars when it fits');
+ assert(b.melodyRest&&b.melodyRest.end===b.formEnd&&b.melodyRest.end-b.melodyRest.start<=8&&b.melodyRest.start>=b.close2Start,'melody rests only in the last bars of the closing');
  // Accompaniment before the ending transition is retained. Melody has its own
  // final-note sustain rule and is deliberately outside this arrangement check.
  const end=b.returnAt-4;

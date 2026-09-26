@@ -572,6 +572,9 @@ for(const seed of [1,7,42]){
   for(const n of score.events(s).filter(n=>n.part===0)){
    assert(!(n.beat>=plan.start-1e-7&&n.beat<plan.end-1e-7),`${m.id} ${bpm}BPM ${length}s: melody note at ${n.beat} inside rest ${plan.start}-${plan.end}`);
    assert(!(n.beat<plan.start&&n.beat+n.duration>plan.start+1e-7),`${m.id} ${bpm}BPM ${length}s: melody note rings into the rest`);
+   const mr=plan.melodyRest;
+   if(mr){assert(!(n.beat>=mr.start-1e-7&&n.beat<mr.end-1e-7),`${m.id} ${bpm}BPM ${length}s: melody note at ${n.beat} inside the closing rest ${mr.start}-${mr.end}`);
+    assert(!(n.beat<mr.start&&n.beat+n.duration>mr.start+1e-7),`${m.id} ${bpm}BPM ${length}s: melody note rings into the closing rest`);}
   }
   rests++;
  }

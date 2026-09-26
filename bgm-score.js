@@ -357,8 +357,13 @@
     const recoverEnd=restEnd+8;
     const returnAt=requested>=120?formEnd:Infinity;
     const close1Start=Math.min(formEnd-8,recoverEnd+4);
-    const close2Start=Math.max(close1Start+4,formEnd-16);
-    return {start:Math.max(0,start),end:restEnd,recoverEnd,close1Start,close2Start,returnAt};
+    // 別の形（B）は最低4小節。以前は接続を4小節先に確保していたため、46/60 BPMではBが1小節（4〜5秒）
+    // しかなく展開が聞き取れなかった。余裕のあるテンポは従来どおり接続4小節、足りなければ接続を最短1小節まで縮める。
+    const close2Start=Math.min(Math.max(close1Start+16,formEnd-16),formEnd-4);
+    // メロディありでは、Bから戻る接続の間だけ旋律を休ませ、Aへの戻りを際立たせる（1分半以上）。
+    // 接続が4小節あるテンポでは曲全体の休みと同じくらい長くなるので、戻る直前の最大2小節に限る。
+    const melodyRest=requested>=90?{start:Math.max(close2Start,formEnd-8),end:formEnd}:null;
+    return {start:Math.max(0,start),end:restEnd,recoverEnd,close1Start,close2Start,returnAt,formEnd,melodyRest};
   }
   function longFormMode(s,beat){
     const plan=longFormPlan(s);
@@ -628,7 +633,8 @@
         const lift=[0,-4,6,2][cycle%4],closes=loop&&(cycle+1)*span>=total;
         for(const n of s.melody){
           const beat=n.beat+cycle*span;if(!loop&&beat>=lastBar*4)continue;
-          if(rest&&beat>=rest.start-1e-7&&beat<rest.end-1e-7)continue;
+          const silent=w=>w&&beat>=w.start-1e-7&&beat<w.end-1e-7;
+          if(silent(rest)||silent(rest?.melodyRest))continue;
           // 儀式の声は息継ぎを残す。最後の音を曲末まで伸ばすと、後半が持続音になる。
           let melodyPitch=n.pitch;
           if(cycle>0&&previousMelody!==null){
@@ -637,7 +643,7 @@
           }
           previousMelody=melodyPitch;
           let duration=closes&&n===closing&&s.moodId!=='ritual'?Math.max(n.duration,total-beat):n.duration;
-          if(rest&&beat<rest.start&&beat+duration>rest.start)duration=Math.max(.25,rest.start-beat-.1);
+          for(const w of rest?[rest,rest.melodyRest]:[])if(w&&beat<w.start&&beat+duration>w.start)duration=Math.min(duration,Math.max(.25,w.start-beat-.1));
           add(n.part,melodyPitch,beat,duration,Math.max(1,n.velocity+lift),n.pan);
         }
       }
