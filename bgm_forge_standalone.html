@@ -3737,12 +3737,14 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 伴奏の型と和音の間隔を独立に選び、作り直しで生まれる組み合わせも新規作曲に使う。
     // 場面ごとの候補と重みは保ち、ほかの抽選に使う乱数列は動かさない。
     s.arrangementVariant=variant;s.harmonyEvery=profile?pick(rng(seed^0x4841524D),profile.harmony):1;
-    // 内声を、低音と同じ型に縛らず1つずらせるようにする。型3×和音の間隔2×ずらし2で
-    // 場面あたり12組。ずらしは0か1だけで、全部の型を自由に組み合わせるわけではない。
-    s.innerShift=Math.floor(rng(seed^0x494E4E52)()*2);
-    // のどかだけはAの9型と、B候補2種を独立に選ぶ。ほかの場面は従来の3型を維持。
-    s.scenePattern=m.id==='calm'?Math.floor(rng(seed^0x43414C4D)()*3):0;
-    s.sceneBVariant=m.id==='calm'?Math.floor(rng(seed^0x43414C42)()*2):0;
+    // 内声を、低音と同じ型に縛らずずらせるようにする。明るいは3型すべてを使い、
+    // 低音3型×内声3型の9組にする。他の場面は従来どおり0/1の2通りを保つ。
+    const innerChoices=m.id==='bright'?3:2;
+    s.innerShift=Math.floor(rng(seed^0x494E4E52)()*innerChoices);
+    // のどか・明るいはAの型とB候補2種を独立に選ぶ。ほかの場面は従来の3型を維持。
+    const hasSceneB=m.id==='calm'||m.id==='bright';
+    s.scenePattern=hasSceneB?Math.floor(rng(seed^0x43414C4D)()*3):0;
+    s.sceneBVariant=hasSceneB?Math.floor(rng(seed^0x43414C42)()*2):0;
     s.padShift=profile&&profile.padAlt?Math.floor(rng(seed^0x50414421)()*2):0;
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
   }
@@ -3866,7 +3868,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   }
   function remix(source,kind,seed){
     const s=JSON.parse(JSON.stringify(source));s.seed=seed;s.edit=kind;
-    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;s.innerShift=1-(s.innerShift||0);if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
+    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;const innerChoices=s.moodId==='bright'?3:2;s.innerShift=((s.innerShift||0)+1)%innerChoices;if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
     if(kind==='drums')s.drums=s.drums==='none'?s.defaultDrums:'none';
     if(kind==='quiet')s.level=Math.max(.2,s.level*.65);
     if(kind==='ending')s.ending=s.ending==='cadence'?'loop':'cadence';
@@ -3974,7 +3976,9 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const restEnd=Math.max(0,start)+restBars*4;
     // 120秒は90秒版の構成を完了してからAを追加する。Bと接続の長さは保つ。
     const formEnd=requested>=120?Math.round(loopLength(s.bpm,90)*s.bpm/60):end;
-    const recoverEnd=restEnd+8;
+    // 速いテンポでは休止直後のA復帰が短く聞こえるため、96 BPM以上だけ2小節分延長する。
+    // 遅いテンポはBの長さを圧迫しないよう従来の2小節復帰を保つ。
+    const recoverEnd=restEnd+(s.bpm>=96?16:8);
     const returnAt=requested>=120?formEnd:Infinity;
     const close1Start=Math.min(formEnd-8,recoverEnd+4);
     // 別の形（B）は最低4小節。以前は接続を4小節先に確保していたため、46/60 BPMではBが1小節（4〜5秒）
@@ -3998,13 +4002,13 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 接続最後の小節はAへ向ける。120秒では曲末ではなく追加Aの直前。
     const closingEnd=Math.min(s.length*s.bpm/60,longFormPlan(s)?.returnAt??Infinity);
     const finalClosing=innerMode==='closing'&&b+4>=closingEnd-1e-7;
-    const calm=s.moodId==='calm';
+    const calm=s.moodId==='calm',bright=s.moodId==='bright',hasSceneB=calm||bright;
     // 0/1は従来の内声ずらしを保持。2だけ未使用の組み合わせを選ぶ。
     const a=(v+(calm&&s.scenePattern===2?2:(s.innerShift||0)))%3;
     const w=calm
       ? (innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)
         ? (a+1+(s.sceneBVariant||0))%3 : a)
-      : (v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1:0))%3;
+      : (v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1+(hasSceneB?(s.sceneBVariant||0):0):0))%3;
     const localVariant=w,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);

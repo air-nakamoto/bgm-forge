@@ -170,7 +170,7 @@ for(const mood of MOODS)for(const bpm of [46,60,76,96,116,132])for(const length 
   assert.equal(plan.end,end,'rest duration follows tempo');
   assert((end-start)*60/bpm<=16+1e-7,'slow tempo must not create a rest longer than 16 seconds');
   if(length>60){
-   assert.equal(plan.recoverEnd,end+8,'return to A for two bars');
+   assert.equal(plan.recoverEnd,end+(bpm>=96?16:8),'tempo-aware return to A');
    assert.equal(plan.returnAt,length===120?Math.round(score.loopLength(bpm,90)*bpm/60):Infinity,'120s adds A after the 90s form');
    assert(plan.recoverEnd<=plan.close1Start&&plan.close1Start<plan.close2Start,'closing transition precedes B section');
    assert(plan.close2Start<Math.min(plan.returnAt,Math.round(s.length*bpm/60/4)*4),'B section has a closing boundary');
@@ -482,7 +482,7 @@ for(const mood of MOODS){
   const settings={mood,scale:MODES[mood.mode],bpm:d[0],sound:d[1],length:30,ending:'loop',lead:d[2]===true,phrasing:d[3]||'auto'};
   const s=score.compose(settings,seed);
   assert(intervals.includes(s.harmonyEvery),mood.id+' must retain scene harmony intervals');
-  assert([0,1].includes(s.innerShift),mood.id+' must shift the inner voice by 0 or 1');
+  assert((mood.id==='bright'?[0,1,2]:[0,1]).includes(s.innerShift),mood.id+' must use a valid inner-voice shift');
   assert.equal(padded?[0,1].includes(s.padShift):s.padShift===0,true,mood.id+' must only shift the pad where padAlt exists');
   combinations.add([s.arrangementVariant,s.harmonyEvery,s.innerShift,s.padShift].join(':'));
   for(const key of ['bpm','sound','ending','lead','phrasing'])assert.equal(s[key],settings[key],mood.id+' must retain '+key);
@@ -492,10 +492,10 @@ for(const mood of MOODS){
   assert.equal(s.length,score.loopLength(d[0],30));
   const remix=score.remix(s,'accompaniment',101);
   assert.equal(remix.harmonyEvery,s.harmonyEvery,'remix must retain harmony timing');
-  assert.equal(remix.innerShift,1-s.innerShift,'remix must flip the inner shift');
+  assert.equal(remix.innerShift,(s.innerShift+1)%(mood.id==='bright'?3:2),'remix must advance the inner shift');
   assert.equal(remix.padShift,padded?1-s.padShift:0,'remix must flip the pad only where padAlt exists');
  }
- assert.equal(combinations.size,3*intervals.length*2*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
+ assert.equal(combinations.size,3*intervals.length*(mood.id==='bright'?3:2)*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
 }
 console.log('PASS: 7200 compositions; independent scene arrangement/harmony/inner-shift combinations and unchanged generation settings');
 // のどかだけはAを9型に増やし、長尺のB候補を2通り持つ。Aの音符列が9通りに分かれ、
@@ -518,6 +518,17 @@ console.log('PASS: 7200 compositions; independent scene arrangement/harmony/inne
  assert.deepEqual(score.events(reported).filter(n=>n.part===3&&n.beat<4).map(n=>n.beat),[.5,1,2.5,3]);
 }
 console.log('PASS: calm has 9 A patterns and 2 B candidates per A');
+{
+ const bright=MOODS.find(m=>m.id==='bright');
+ for(let v=0;v<3;v++)for(let shift=0;shift<3;shift++){
+  const long0={...compose(bright,2026,{length:120,lead:false}),arrangementVariant:v,innerShift:shift,sceneBVariant:0};
+  const long1={...long0,sceneBVariant:1};
+  const plan=score.longFormPlan(long0),bshape=s=>shape(score.events(s).filter(n=>n.beat>=plan.close1Start&&n.beat<plan.close2Start));
+  assert.notEqual(bshape(long0),bshape(long1),'bright B candidates must differ');
+  assert.deepEqual(score.events(long0).filter(n=>n.part!==3),score.events(long1).filter(n=>n.part!==3),'bright B choice preserves other parts');
+ }
+}
+console.log('PASS: bright has 9 A patterns and 2 B candidates per A');
 let tested=0;
 for(const mood of MOODS){
  const arrangements=new Map();
