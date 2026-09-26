@@ -158,6 +158,7 @@
     return (useB?s.progB:s.prog)[bar%4];
   }
 
+  const longMelody=s=>!s.previewBars&&(s.requestedLength||s.length)>=60;
   function makeMelody(s){
     const bars=s.themeBars,p=period(s),result=[],r=rng(s.seed^0x4D454C),density=s.density||.65;
     // Voice-leading state carried across bars: last note, last direction, whether a leap awaits its answer, run length.
@@ -168,7 +169,9 @@
     const semis=(a,b)=>Math.abs(pitch(s.scale,a)-pitch(s.scale,b));
     for(let bar=0;bar<bars;bar++){
       const chord=chordAt(s,bar),phraseBar=bar%4,response=bars>=8&&bar%8>=4,turnaround=s.ending==='loop'&&bar===bars-1,cadence=!turnaround&&bar%p===p-1&&chord===0;
-      const interlude=bars>=16&&bar>=8&&bar<12,development=bars>=16&&bar>=12;
+      // 1分以上は曲全体の休み（longFormPlan の内声休止）で旋律も休むので、テーマ内の間奏は使わない。
+      // 両方あると60 BPMで間奏(32〜48秒)と休み(44〜60秒)が続き、約28秒旋律がほぼ鳴らなかった。
+      const interlude=bars>=16&&bar>=8&&bar<12&&!longMelody(s),development=bars>=16&&bar>=12;
       // A sparse line does not walk in on the downbeat: it lets the accompaniment set the scene
       // for half a bar first, which is what makes it sit under talking instead of leading it.
       const late=(s.phrasing==='sparse')&&bar===0&&!cadence;
@@ -285,7 +288,7 @@
     // 旋律はテーマの小節数ぶんしか作られていない。30秒(4小節)を1分以上(16小節)へ延ばしたとき
     // 旧4小節の旋律を残すと、各周の5〜16小節目が無音になる（決断60 BPMで約12秒以降が64秒まで無音）。
     // 同じ主題の種で作り直すので、冒頭3小節は元の旋律と同じになる。
-    const barsChanged=s.themeBars!==source.themeBars;
+    const barsChanged=s.themeBars!==source.themeBars||longMelody(s)!==longMelody({...source,requestedLength:source.requestedLength||source.length});
     if(settings.phrasing!==source.phrasing||barsChanged){
       const base=source.baseDensity||source.density||.55;
       s.baseDensity=base;s.phrasing=settings.phrasing;s.density=densityFor(base,s.phrasing);
@@ -618,11 +621,14 @@
     const span=bars*4;
     if(s.lead!==false){
       const closing=s.melody[s.melody.length-1];
+      // 曲全体の休み（内声休止）の間は旋律も休む。伴奏だけの曲と同じ位置・同じ長さ。
+      const rest=longFormPlan(s);
       let previousMelody=null;
       for(let cycle=0;cycle*span<total;cycle++){
         const lift=[0,-4,6,2][cycle%4],closes=loop&&(cycle+1)*span>=total;
         for(const n of s.melody){
           const beat=n.beat+cycle*span;if(!loop&&beat>=lastBar*4)continue;
+          if(rest&&beat>=rest.start-1e-7&&beat<rest.end-1e-7)continue;
           // 儀式の声は息継ぎを残す。最後の音を曲末まで伸ばすと、後半が持続音になる。
           let melodyPitch=n.pitch;
           if(cycle>0&&previousMelody!==null){
@@ -630,7 +636,9 @@
             while(previousMelody-melodyPitch>7)melodyPitch+=12;
           }
           previousMelody=melodyPitch;
-          add(n.part,melodyPitch,beat,closes&&n===closing&&s.moodId!=='ritual'?Math.max(n.duration,total-beat):n.duration,Math.max(1,n.velocity+lift),n.pan);
+          let duration=closes&&n===closing&&s.moodId!=='ritual'?Math.max(n.duration,total-beat):n.duration;
+          if(rest&&beat<rest.start&&beat+duration>rest.start)duration=Math.max(.25,rest.start-beat-.1);
+          add(n.part,melodyPitch,beat,duration,Math.max(1,n.velocity+lift),n.pan);
         }
       }
     }

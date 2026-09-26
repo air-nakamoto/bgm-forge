@@ -564,5 +564,18 @@ for(const seed of [1,7,42]){
  }
  console.log(`PASS: ${extended} lengthened takes keep a full-theme melody and the original opening`);
 }
+// 1分以上のメロディありの曲は、内声と同じ区間で旋律も休む（伴奏だけの曲と同じ位置）。
+{let rests=0;
+ for(const m of MOODS)for(const bpm of [46,60,76,96,116,132])for(const length of [60,90,120])for(const seed of [1,2026]){
+  const s=compose(m,seed,{bpm,length,lead:true,phrasing:'auto'}),plan=score.longFormPlan(s);
+  assert(plan,`${m.id} ${bpm} ${length}: long-form plan`);
+  for(const n of score.events(s).filter(n=>n.part===0)){
+   assert(!(n.beat>=plan.start-1e-7&&n.beat<plan.end-1e-7),`${m.id} ${bpm}BPM ${length}s: melody note at ${n.beat} inside rest ${plan.start}-${plan.end}`);
+   assert(!(n.beat<plan.start&&n.beat+n.duration>plan.start+1e-7),`${m.id} ${bpm}BPM ${length}s: melody note rings into the rest`);
+  }
+  rests++;
+ }
+ console.log(`PASS: ${rests} long-form melody takes rest together with the inner voice`);
+}
 assert.match(fs.readFileSync(path.join(root,'bgm-forge.js'),'utf8'),/function selectMood\(mood\)[^\n]*state\.lead=d\[2\]===true/);
 console.log(`PASS: ${tested} scene cases; ${MOODS.length} distinct scene rhythms, 3 arrangements each, melody off, determinism, remix, previews, manual patterns and note bounds.`);
