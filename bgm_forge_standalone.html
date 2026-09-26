@@ -3653,7 +3653,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     wonder: {inner:[[.5,2.75],[1.25,3.5],[0,1.75,3]],bass:['pedal','hold','pedal'],pad:[0],padBars:1,hold:4.2,harmony:[2,4,2],high:79,gate:1.1,drum:'none'},
     night:  {inner:[[.5,1.75,3.25],[0,1.25,2.75],[.75,2,3.5]],bass:['fifth','two','hold'],bassHold:2.1,pad:[2],padBars:1,hold:1.2,harmony:[2,1,2],high:73,gate:.5,drum:'none'},
     // 水辺。揺れる伴奏（2拍ごとの和音）と、点で落ちる内声。打楽器は水滴に見立てた ticks。
-    water:  {inner:[[0,2,3],[.5,1.5,3.5],[0,1.5,2,3]],bass:['two','hold','fifth'],pad:[0,2],padBars:2,hold:2.4,harmony:[2,1,2],high:74,gate:.55,drum:'ticks'},
+    water:  {inner:[[0,2,3],[.5,1.5,3.5],[0,1.5,2,3]],bass:['two','hold','fifth'],pad:[0,2],padBars:2,hold:2.4,harmony:[2,1,2],high:74,gate:.55,drum:'drops'},
     // のどかはAを9型にし、長尺のBは各Aに対応する2候補から選ぶ。
     calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
     // 荘厳と鎮魂は内声が空なので、内声のずらしが効かない。代わりに和音を鳴らす位置を
@@ -3677,6 +3677,8 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     tense:  {inner:[[0,.75,1.5,2.5,3],[0,.5,1.75,2.5,3.5],[0,1.5,2,2.75]],bass:['ritual','motor','march'],pad:[0,2.5],padBars:1,hold:.7,harmony:[1,2,1],high:67,gate:.35,drum:'battle'},
     horror: {inner:[[1.75],[3.25],[.5,2.75]],bass:['pedal','pedal','hold'],pad:[1.5],padBars:2,hold:5.8,harmony:[4,4,2],high:78,gate:.55,drum:'broken'}
   };
+  // 明るい・のどか以外で、内声ずらしを3通りにし、長尺のB候補を2種持たせる場面。
+  const INNER_EXTRA=new Set(['water','casino','ethnic','japanese','night','puzzle','memory','decision','tense']);
   // 「場面におまかせ」の行き先。場面が autoPattern を持つときは、場面専用の伴奏より
   // その決まった型を優先する。持たない場合は今まで通り場面専用、それも無ければ legacy。
   const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:s.autoPattern?s.autoPattern:SCENES[s.moodId]?'scene':'legacy';
@@ -3741,10 +3743,14 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 低音3型×内声3型の9組にする。他の場面は従来どおり0/1の2通りを保つ。
     const innerChoices=m.id==='bright'?3:2;
     s.innerShift=Math.floor(rng(seed^0x494E4E52)()*innerChoices);
+    // 3つ目の内声ずらし（2）を足した場面。既存の0/1の抽選は動かさず、別の乱数で
+    // 1/3の曲だけ2に置き換える。こうすると既存seedの約2/3は以前と同じ伴奏のまま。
+    // 対象は、低音3型が互いに異なり、追加3組が既存6組と音符列で重複しない場面だけ（2026-09-26計測）。
+    if(INNER_EXTRA.has(m.id)&&rng(seed^0x494E3321)()<1/3)s.innerShift=2;
     // のどか・明るいはAの型とB候補2種を独立に選ぶ。ほかの場面は従来の3型を維持。
     const hasSceneB=m.id==='calm'||m.id==='bright';
     s.scenePattern=hasSceneB?Math.floor(rng(seed^0x43414C4D)()*3):0;
-    s.sceneBVariant=hasSceneB?Math.floor(rng(seed^0x43414C42)()*2):0;
+    s.sceneBVariant=hasSceneB||INNER_EXTRA.has(m.id)?Math.floor(rng(seed^0x43414C42)()*2):0;
     s.padShift=profile&&profile.padAlt?Math.floor(rng(seed^0x50414421)()*2):0;
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
   }
@@ -3868,7 +3874,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   }
   function remix(source,kind,seed){
     const s=JSON.parse(JSON.stringify(source));s.seed=seed;s.edit=kind;
-    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;const innerChoices=s.moodId==='bright'?3:2;s.innerShift=((s.innerShift||0)+1)%innerChoices;if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
+    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;const innerChoices=s.moodId==='bright'||INNER_EXTRA.has(s.moodId)?3:2;s.innerShift=((s.innerShift||0)+1)%innerChoices;if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
     if(kind==='drums')s.drums=s.drums==='none'?s.defaultDrums:'none';
     if(kind==='quiet')s.level=Math.max(.2,s.level*.65);
     if(kind==='ending')s.ending=s.ending==='cadence'?'loop':'cadence';
@@ -4002,7 +4008,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 接続最後の小節はAへ向ける。120秒では曲末ではなく追加Aの直前。
     const closingEnd=Math.min(s.length*s.bpm/60,longFormPlan(s)?.returnAt??Infinity);
     const finalClosing=innerMode==='closing'&&b+4>=closingEnd-1e-7;
-    const calm=s.moodId==='calm',bright=s.moodId==='bright',hasSceneB=calm||bright;
+    const calm=s.moodId==='calm',bright=s.moodId==='bright',hasSceneB=calm||bright||INNER_EXTRA.has(s.moodId);
     // 0/1は従来の内声ずらしを保持。2だけ未使用の組み合わせを選ぶ。
     const a=(v+(calm&&s.scenePattern===2?2:(s.innerShift||0)))%3;
     const w=calm
@@ -4067,7 +4073,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // An explicitly enabled drum part on a quiet scene gets a restrained pulse.
     const kind=c.drum==='none'?'light':c.drum;
     const hit=(pitch,at,velocity,duration=.2)=>add(4,pitch,b+at,duration,velocity);
-    const kicks={march:[0,2],ritual:[0,1.5,3],motor:[0,1,2,3],running:[0,1.5,2.5],battle:[0,.75,2.5],swing:[0],ticks:[],light:[],distant:[0],broken:[.5,2.75]};
+    const kicks={march:[0,2],ritual:[0,1.5,3],motor:[0,1,2,3],running:[0,1.5,2.5],battle:[0,.75,2.5],swing:[0],ticks:[],drops:[],light:[],distant:[0],broken:[.5,2.75]};
     if((kind==='distant'&&local%2)|| (kind==='broken'&&local%4!==v))return;
     for(const at of kicks[kind]||[])hit(36,at,kind==='distant'||kind==='broken'?42:64,.4);
     if(kind==='running'||kind==='battle'||kind==='march'){
@@ -4078,6 +4084,9 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     }else if(kind==='motor')for(const at of [.5,1.5,2.5,3.5])hit(42,at,32,.1);
     else if(kind==='swing')for(const at of [2/3,5/3,8/3,11/3])hit(54,at,29,.15);
     else if(kind==='ticks')for(const at of [.5,2,3.5])hit(54,at,26,.12);
+    // 水辺の水滴。時計の刻み（0.5・2・3.5拍＝3+3+2）だと並びが非対称で
+    // 「カチッが規則的でない鳴り方」と言われた（2026-09-26）。0.5・2.5拍の等間隔にする。
+    else if(kind==='drops')for(const at of [.5,2.5])hit(54,at,26,.12);
     else if(kind==='light')for(const at of [1,3])hit(54,at,29,.18);
   }
 
@@ -4094,7 +4103,10 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
       if(s.humanize===false)return [beat,velocity];
       const sub=Math.abs(beat*2-Math.round(beat*2))>1e-6;   // a 16th between the 8ths
       const ms=gauss()*9+(sub?5:0);
-      const v=velocity+gauss()*14-(sub?8:0);
+      // 水辺の水滴は基本の強さが26と小さく、±14のゆらぎでは1〜47まで散って約13%がほぼ無音になり、
+      // 鳴ったり消えたりして聞こえた（2026-09-26）。弱い打ほどゆらぎを小さくする。乱数の引き方は変えない。
+      const k=s.moodId==='water'?Math.min(1,velocity/64):1;
+      const v=velocity+(gauss()*14-(sub?8:0))*k;
       return [Math.max(0,Math.min(total-1e-3,beat+ms*s.bpm/60000)),Math.max(1,v)];
     };
     // 内声（part 3）は、同じ強さ・同じ位置で同じ録音を鳴らし続けていた。同梱のピアノは
@@ -4293,7 +4305,7 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     const last=new Map();for(const n of notes){const key=n.part+':'+n.pitch,q=last.get(key);if(q&&q.beat+q.duration>n.beat)q.duration=n.beat-q.beat;last.set(key,n)}
     return notes.filter(n=>n.duration>0);
   }
-  const api={ACCOMPANIMENTS,accompanimentFor,arrangementKey,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,longFormPlan,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH}};
+  const api={ACCOMPANIMENTS,accompanimentFor,arrangementKey,compose,remix,adjust,sample,sampleSeconds,scene,events,chordAt,identity,themeBarsFor,loopLength,longFormPlan,registers:{INNER_GAP,INNER_SPAN,PAD_LOW,PAD_HIGH},innerExtra:[...INNER_EXTRA]};
   if(typeof module!=='undefined')module.exports=api;else root.BGMScore=api;
 })(typeof window!=='undefined'?window:this);
 

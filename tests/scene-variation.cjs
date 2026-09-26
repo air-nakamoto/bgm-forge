@@ -120,6 +120,7 @@ state.playTake=state.take;state.busy=true;syncTakeTransport();assert.equal(trans
 state.busy=false;state.playSource=null;state.playTake=null;syncTakeTransport();assert.equal(transport.takePlay.textContent,'▶');
 assert.equal(transport.play.textContent,'▶ 再生');
 state.take=null;state.takes=[];delete context.document;
+const three=id=>id==='bright'||score.innerExtra.includes(id);
 const compose=(m,seed,extra={})=>score.compose({mood:m,scale:MODES[m.mode],bpm:DEFAULTS[m.id][0],sound:DEFAULTS[m.id][1],length:30,ending:'loop',lead:false,...extra},seed);
 const shape=events=>JSON.stringify(events.filter(n=>n.part!==0&&n.part!==4).map(n=>[n.part,+n.beat.toFixed(5),+n.duration.toFixed(5)]));
 function valid(s){
@@ -479,10 +480,10 @@ for(const mood of MOODS){
  const padded=['solemn','requiem'].includes(mood.id);
  const d=DEFAULTS[mood.id];
  for(let seed=1;seed<=300;seed++){
-  const settings={mood,scale:MODES[mood.mode],bpm:d[0],sound:d[1],length:30,ending:'loop',lead:d[2]===true,phrasing:d[3]||'auto'};
+    const settings={mood,scale:MODES[mood.mode],bpm:d[0],sound:d[1],length:30,ending:'loop',lead:d[2]===true,phrasing:d[3]||'auto'};
   const s=score.compose(settings,seed);
   assert(intervals.includes(s.harmonyEvery),mood.id+' must retain scene harmony intervals');
-  assert((mood.id==='bright'?[0,1,2]:[0,1]).includes(s.innerShift),mood.id+' must use a valid inner-voice shift');
+  assert((three(mood.id)?[0,1,2]:[0,1]).includes(s.innerShift),mood.id+' must use a valid inner-voice shift');
   assert.equal(padded?[0,1].includes(s.padShift):s.padShift===0,true,mood.id+' must only shift the pad where padAlt exists');
   combinations.add([s.arrangementVariant,s.harmonyEvery,s.innerShift,s.padShift].join(':'));
   for(const key of ['bpm','sound','ending','lead','phrasing'])assert.equal(s[key],settings[key],mood.id+' must retain '+key);
@@ -492,10 +493,10 @@ for(const mood of MOODS){
   assert.equal(s.length,score.loopLength(d[0],30));
   const remix=score.remix(s,'accompaniment',101);
   assert.equal(remix.harmonyEvery,s.harmonyEvery,'remix must retain harmony timing');
-  assert.equal(remix.innerShift,(s.innerShift+1)%(mood.id==='bright'?3:2),'remix must advance the inner shift');
+  assert.equal(remix.innerShift,(s.innerShift+1)%(three(mood.id)?3:2),'remix must advance the inner shift');
   assert.equal(remix.padShift,padded?1-s.padShift:0,'remix must flip the pad only where padAlt exists');
  }
- assert.equal(combinations.size,3*intervals.length*(mood.id==='bright'?3:2)*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
+ assert.equal(combinations.size,3*intervals.length*(three(mood.id)?3:2)*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
 }
 console.log('PASS: 7200 compositions; independent scene arrangement/harmony/inner-shift combinations and unchanged generation settings');
 // のどかだけはAを9型に増やし、長尺のB候補を2通り持つ。Aの音符列が9通りに分かれ、
@@ -529,6 +530,38 @@ console.log('PASS: calm has 9 A patterns and 2 B candidates per A');
  }
 }
 console.log('PASS: bright has 9 A patterns and 2 B candidates per A');
+// 明るい・のどか以外の追加場面（2026-09-26）：A 9組が音符列で全部異なり、
+// B候補2種は内声だけが変わる。既存seedの大半は以前と同じ伴奏のまま。
+{
+ const extra=score.innerExtra;
+ assert.deepEqual([...extra].sort(),['casino','decision','ethnic','japanese','memory','night','puzzle','tense','water'],'extra inner-shift scenes');
+ for(const id of extra){
+  const mood=MOODS.find(m=>m.id===id),a=new Set();
+  for(let v=0;v<3;v++)for(let shift=0;shift<3;shift++){
+   const s={...compose(mood,2026,{length:30,lead:false}),arrangementVariant:v,innerShift:shift};
+   a.add(JSON.stringify(score.events(s).filter(n=>n.part===2||n.part===3).map(n=>[n.part,n.pitch,+n.beat.toFixed(5)])));
+   const long0={...compose(mood,2026,{length:120,lead:false}),arrangementVariant:v,innerShift:shift,sceneBVariant:0};
+   const long1={...long0,sceneBVariant:1};
+   const plan=score.longFormPlan(long0),bshape=s=>shape(score.events(s).filter(n=>n.part===3&&n.beat>=plan.close1Start&&n.beat<plan.close2Start));
+   assert.notEqual(bshape(long0),bshape(long1),id+' B candidates must differ');
+   assert.deepEqual(score.events(long0).filter(n=>n.part!==3),score.events(long1).filter(n=>n.part!==3),id+' B choice preserves other parts');
+  }
+  assert.equal(a.size,9,id+' must have 9 distinct A accompaniments');
+  let two=0;for(let seed=1;seed<=300;seed++)if(compose(mood,seed,{length:30}).innerShift===2)two++;
+  assert(two>60&&two<140,id+' uses the third inner shift for about a third of seeds');
+ }
+}
+console.log('PASS: 9 more scenes have 9 A patterns and 2 B candidates per A');
+// 水辺の水滴（2026-09-26）：0.5・2.5拍の等間隔、弱い打がほぼ無音にならない。
+{
+ const water=MOODS.find(m=>m.id==='water');let quiet=0,total=0;
+ for(let seed=1;seed<=50;seed++){
+  const hits=score.events(compose(water,seed,{length:60})).filter(n=>n.part===4);
+  for(const n of hits){total++;if(n.velocity<10)quiet++;assert([.5,2.5].includes((Math.round(n.beat*2)/2)%4),'water drops sit on beats 0.5 and 2.5');}
+ }
+ assert(total>0&&quiet/total<.01,'water drops must rarely fall below velocity 10');
+}
+console.log('PASS: water drops are evenly spaced and steady');
 let tested=0;
 for(const mood of MOODS){
  const arrangements=new Map();
