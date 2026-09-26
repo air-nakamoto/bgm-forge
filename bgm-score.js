@@ -42,7 +42,7 @@
     // 水辺。揺れる伴奏（2拍ごとの和音）と、点で落ちる内声。打楽器は水滴に見立てた ticks。
     water:  {inner:[[0,2,3],[.5,1.5,3.5],[0,1.5,2,3]],bass:['two','hold','fifth'],pad:[0,2],padBars:2,hold:2.4,harmony:[2,1,2],high:74,gate:.55,drum:'ticks'},
     // のどかはAを9型にし、長尺のBは各Aに対応する2候補から選ぶ。
-    calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5],[.75,2.75],[1,2,3],[0,2],[.5,2.5],[1,3],[0,1.75,3]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
+    calm:   {inner:[[0,1.5,2,3.5],[.5,1,2.5,3],[0,1,2,2.5,3.5]],bass:['two','walk','fifth'],pad:[0],padBars:2,hold:2.2,harmony:[1,2,1],high:71,gate:.5,drum:'swing'},
     // 荘厳と鎮魂は内声が空なので、内声のずらしが効かない。代わりに和音を鳴らす位置を
     // 2通り持たせて幅を作る（padAlt）。内声のある場面には置かない＝12組を超えさせない。
     // padAlt は「位置をずらす」だけにして、打鍵の数は増やさない。荘厳で [0,2] にしたら
@@ -386,13 +386,13 @@
     const closingEnd=Math.min(s.length*s.bpm/60,longFormPlan(s)?.returnAt??Infinity);
     const finalClosing=innerMode==='closing'&&b+4>=closingEnd-1e-7;
     const calm=s.moodId==='calm';
-    const a=(v*3+((s.scenePattern||0)+(s.innerShift||0))%3)%9;
-    const bCandidates=[[1,4],[2,5],[0,3],[4,7],[5,8],[3,6],[7,1],[8,2],[6,0]];
+    // 0/1は従来の内声ずらしを保持。2だけ未使用の組み合わせを選ぶ。
+    const a=(v+(calm&&s.scenePattern===2?2:(s.innerShift||0)))%3;
     const w=calm
       ? (innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)
-        ? bCandidates[a][s.sceneBVariant||0] : a)
+        ? (a+1+(s.sceneBVariant||0))%3 : a)
       : (v+(s.innerShift||0)+(innerMode==='alternate'||(innerMode==='closing'&&!finalClosing)?1:0))%3;
-    const localVariant=calm?Math.floor(w/3):w,local=bar%(s.themeBars||16);
+    const localVariant=w,local=bar%(s.themeBars||16);
     const phrase=Math.floor(local/4),answer=local%4===3;
     const sparse=['wonder','mystic','dark','horror','doubt','ritual'].includes(s.moodId);
     const breath=sparse&&local%4===(w===1?1:3);

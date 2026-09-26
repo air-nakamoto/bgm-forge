@@ -502,12 +502,20 @@ console.log('PASS: 7200 compositions; independent scene arrangement/harmony/inne
 // B候補も同じAから別の内声型へ切り替わることを固定する。
 {
  const calm=MOODS.find(m=>m.id==='calm'),base=compose(calm,2026,{length:30}),aShapes=new Set();
- for(let v=0;v<3;v++)for(let p=0;p<3;p++)aShapes.add(shape(score.events({...base,arrangementVariant:v,scenePattern:p,innerShift:0})));
+ // 2eb59be以前の6組の全イベント。位置だけでなく音順・強弱も固定する。
+ const originalSix=[0,1,2].flatMap(v=>[0,1].map(shift=>score.events({...base,arrangementVariant:v,innerShift:shift,scenePattern:0,sceneBVariant:0})));
+ assert.equal(crypto.createHash('sha256').update(JSON.stringify(originalSix)).digest('hex'),'6e77427fbee4362ea6c59be0568096d8bbe31ab41f3e668a73d287868d575e51','retain original six calm patterns');
+ for(let v=0;v<3;v++)for(let p=0;p<3;p++)aShapes.add(JSON.stringify(score.events({...base,arrangementVariant:v,scenePattern:p===2?2:0,innerShift:p===2?0:p})));
  assert.equal(aShapes.size,9,'calm must expose nine A accompaniment patterns');
- const long0={...compose(calm,2026,{length:120,lead:false}),sceneBVariant:0};
+ for(let v=0;v<3;v++)for(let p=0;p<3;p++){
+ const long0={...compose(calm,2026,{length:120,lead:false}),arrangementVariant:v,scenePattern:p===2?2:0,innerShift:p===2?0:p,sceneBVariant:0};
  const long1={...long0,sceneBVariant:1};
- const plan=score.longFormPlan(long0),bshape=s=>shape(score.events(s).filter(n=>n.beat>=plan.close2Start&&n.beat<plan.returnAt));
+ const plan=score.longFormPlan(long0),bshape=s=>shape(score.events(s).filter(n=>n.beat>=plan.close1Start&&n.beat<plan.close2Start));
  assert.notEqual(bshape(long0),bshape(long1),'calm B candidates must differ');
+ assert.deepEqual(score.events(long0).filter(n=>n.part!==3),score.events(long1).filter(n=>n.part!==3),'B choice preserves other parts');
+ }
+ const reported=compose(calm,84859770);reported.humanize=false;
+ assert.deepEqual(score.events(reported).filter(n=>n.part===3&&n.beat<4).map(n=>n.beat),[.5,1,2.5,3]);
 }
 console.log('PASS: calm has 9 A patterns and 2 B candidates per A');
 let tested=0;
