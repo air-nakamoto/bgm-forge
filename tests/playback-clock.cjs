@@ -1,7 +1,7 @@
-// NODE_PATH=<playwright node_modules> node tests/playback-clock.cjs [screenshot directory]
+// 手順・依存関係・採用WAVの条件は tests/README.md を参照。
 const assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {pathToFileURL}=require('node:url'),{chromium}=require('playwright');
-(async()=>{const browser=await chromium.launch({channel:'chrome',headless:true,args:['--autoplay-policy=no-user-gesture-required']});try{
+(async()=>{const browser=await chromium.launch({headless:true,args:['--autoplay-policy=no-user-gesture-required']});try{
 for(const file of ['bgm_forge.html','bgm_forge_standalone.html'])for(const reducedMotion of ['no-preference','reduce']){
  const p=await browser.newPage({reducedMotion});await p.addInitScript(()=>window.BGM_TEST={});
  await p.goto(pathToFileURL(path.resolve(__dirname,'..',file)).href);

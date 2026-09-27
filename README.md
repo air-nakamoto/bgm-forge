@@ -43,7 +43,7 @@
 - `scripts/build_sitar.py` `build_koto.py` `build_shinobue.py` `build_choir.py`：原音から同梱バンクを作り直す
 
 本ツールの開発は、Claude（ClaudeCode）・ChatGPT（Codex）を用いて実施されています。
-継続してAIに作業を頼むときは、先に `AGENTS.md`（開発ルール）と `HANDOVER.md`（経緯と計測値）を読ませてください。
+継続してAIに作業を頼むときは、先に `AGENTS.md`（開発ルール）と `HANDOVER.md`（現仕様・未確認事項・次の作業）を読ませてください。
 開発目標（安定した品質・場面内の幅・自然な構成・場面拡充）と、長尺の展開・編集後の音量バランスについては、[現行の問題・計測結果・対策案](docs/long-form-and-timbre-balance.md)を参照してください。1分以上の曲には展開があります（約45秒で内声とメロディが休む → 元の形 → 別の伴奏の形 → Aへ戻る直前にメロディだけ休む → ループ。2分は最後に元の形へ戻る）。1分以上の長さは継ぎ目で伴奏が崩れないよう4小節単位で切り上げます。別旋律・別和声と音量バランスの聴感評価は継続中です。
 
 修正は分割ソースへ行い、最後に次のコマンドで単体版を作り直します。
@@ -60,11 +60,14 @@ python3 scripts/build_standalone.py
 「場面におまかせ」で場面専用の伴奏を使います。手動でアルペジオ等を選んだ場合は、その指定を優先します。
 伴奏の作り直しでは、元のメロディーとコード進行を保持します。
 
-作曲処理の検証:
+通常テスト（長尺延長・hosting・feedbackを含む）:
 
 ```sh
-node tests/scene-variation.cjs
+npm test
+# または node tests/scene-variation.cjs
 ```
+
+ブラウザテストは `npm ci` → `npm run test:browser:install` → `npm run test:browser`。音声比較にはGit管理外の採用WAVが必要です。依存関係・個別実行・検証範囲は [テスト手順](tests/README.md)、過去の経緯と計測値は [引き継ぎ履歴](HANDOVER_HISTORY.md) を参照してください。
 
 ## 収録内容
 

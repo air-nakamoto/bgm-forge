@@ -1,7 +1,8 @@
-// Requires Playwright, Chrome and the locally approved listening fixture.
-const fs=require('fs'),path=require('path'),assert=require('assert');
+// 手順・依存関係・採用WAVの条件は tests/README.md を参照。
+const path=require('path'),assert=require('assert');
+const wav=require('./audio-fixtures.cjs')('wonder');
 (async()=>{
- const browser=await require('playwright').chromium.launch({channel:'chrome',headless:true});
+ const browser=await require('playwright').chromium.launch({headless:true});
  try{
  const page=await browser.newPage();await page.evaluate(()=>window.BGM_TEST={});
  for(const f of ['bgm-score.js','bgm-forge.js'])await page.addScriptTag({path:path.resolve(__dirname,'..',f)});
@@ -10,8 +11,7 @@ const fs=require('fs'),path=require('path'),assert=require('assert');
  const s=BGMScore.compose({mood:m,scale:T.MODES[m.mode],bpm:60,sound:'glass',length:90,ending:'loop',lead:false},2026);
  const t=await T.render(s);return {L:Array.from(t.L),R:Array.from(t.R),peak:t.peak};
  });
- const wav=fs.readFileSync(path.resolve(__dirname,'../Claude outputs/wonder-pad-correct-20260924/minus15/B.wav'));
- assert.equal(wav.length,44+r.L.length*4);let max=0;
+ assert.equal(wav.length,44+r.L.length*4,'採用WAVと現行出力の長さが不一致。採用時の尺・構成を確認してください（tests/README.md）');let max=0;
  for(let i=0;i<r.L.length;i++){
  assert(Number.isFinite(r.L[i])&&Number.isFinite(r.R[i]));
  max=Math.max(max,Math.abs(Math.round(r.L[i]*32767)-wav.readInt16LE(44+i*4)),Math.abs(Math.round(r.R[i]*32767)-wav.readInt16LE(46+i*4)));

@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
 """公開用ファイルだけをCloudflare向けにまとめる。原音・秘密・開発ファイルは配らない。"""
 from pathlib import Path
+import argparse
 import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parent.parent
-OUT = ROOT / '.cloudflare-public'
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output', type=Path, help='検証用の新規出力先（既存パスは上書きしない）')
+args = parser.parse_args()
+OUT = args.output.resolve() if args.output is not None else ROOT / '.cloudflare-public'
+if args.output is not None and OUT.exists():
+    parser.error('--output は存在しない新規パスを指定してください')
 FILES = ['bgm_forge.html', 'bgm_forge_standalone.html', 'bgm-score.js', 'bgm-forge.js',
          'favicon.svg', 'ogp.png', 'LICENSE']
 tracked = subprocess.check_output(['git', 'ls-files', '-z', 'samples', 'vendor'], cwd=ROOT).decode().split('\0')

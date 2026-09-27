@@ -1,0 +1,19 @@
+{
+  "name": "bgm-forge",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node tests/scene-variation.cjs",
+    "test:browser": "node tests/run-browser.cjs",
+    "test:browser:playback": "node tests/playback-clock.cjs",
+    "test:browser:audio": "node tests/run-browser.cjs audio",
+    "test:browser:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}

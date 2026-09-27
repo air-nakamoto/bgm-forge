@@ -68,6 +68,7 @@ for(const token of ['feedback-endpoint','data-feedback-open','feedbackText','fee
 
 require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'feedback.cjs')],{stdio:'inherit'});
 require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'hosting.cjs')],{stdio:'inherit'});
+require('node:child_process').execFileSync(process.execPath,[path.join(__dirname,'long-form-extension.cjs')],{stdio:'inherit'});
 
 // 使用素材・ライセンスは、他の詳細と同じ重ねて出す画面（#license）に入れる。折りたたみへ戻さないこと。
 // 中身はHTMLに置いたまま開く（単体版では全文ライセンスが数MBになり、複製すると開くたびに重い）。
@@ -583,14 +584,14 @@ for(const id of ['solemn','requiem']){
  assert.equal(seen.size,9,id+' generates all nine patterns');
 }
 console.log('PASS: solemn/requiem nine patterns, other parts preserved, density and remix');
-// 内声のない場面でも、長尺Bで既存の発音位置を変えて展開する。荘厳はピアノ側、鎮魂はパッド側。
+// 長尺Bの対象パートがAと異なることを検査する。荘厳は低音の位置、鎮魂はコラールの動きを変える。
 for(const id of ['solemn','requiem']){
  const mood=MOODS.find(m=>m.id===id),base=compose(mood,2026,{length:120,lead:false}),plan=score.longFormPlan(base);
  const part=id==='solemn'?2:1,all=score.events(base).filter(n=>n.part===part),normal=all.filter(n=>n.beat>=plan.close1Start-16&&n.beat<plan.close1Start),shifted=all.filter(n=>n.beat>=plan.close1Start&&n.beat<plan.close2Start);
- assert(normal.length>0&&shifted.length>0,id+' long-form B keeps density');
+ assert(normal.length>0&&shifted.length>0,id+' A and B both contain target-part notes');
  assert.notDeepEqual(normal.map(n=>[n.pitch,n.beat%16]),shifted.map(n=>[n.pitch,n.beat%16]),id+' long-form B changes the intended part');
 }
-console.log('PASS: solemn shifts piano-side bass and requiem shifts pad without adding notes');
+console.log('PASS: solemn/requiem long-form B target-part note patterns differ from A');
 {
  const mood=MOODS.find(m=>m.id==='solemn'),s=compose(mood,2026,{length:120,lead:false}),plan=score.longFormPlan(s);
  assert.equal(score.events(s).some(n=>n.part===1&&n.beat>=plan.start&&n.beat<plan.end),true,'solemn rest keeps flesh-voice side');

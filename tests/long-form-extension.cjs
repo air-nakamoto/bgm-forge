@@ -22,7 +22,7 @@ for(const mood of MOODS)for(const bpm of [46,60,76,96,116,132])for(const seed of
  // just before this cutoff and differs when that bar is no longer a loop end.
  const prefix=s=>B.events({...s,humanize:false}).filter(n=>n.part!==0&&n.beat<end).map(n=>({...n,duration:Math.min(n.duration,end-n.beat)}));
  assert.deepEqual(prefix(short),prefix(long),`${mood.id}/${bpm}/${seed}/${lead}/${accompaniment}/${edited}: changed prefix`);
- assert.equal(b.recoverEnd-b.end,8);
+ assert.equal(b.recoverEnd-b.end,bpm>=96?16:8,`${bpm} BPM: recovery is 4 bars from 96 BPM, otherwise 2 bars`);
  if(B.accompanimentFor(long)==='scene'){
   const tail=s=>B.events({...s,humanize:false}).filter(n=>n.part===3&&n.beat>=b.returnAt);
   assert.deepEqual(tail(long),tail({...long,requestedLength:30}),'added tail must use ordinary A inner pattern');
