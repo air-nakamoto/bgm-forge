@@ -564,6 +564,25 @@ console.log('PASS: 19 more scenes add 3 new A patterns and 2 B candidates per A'
  assert.equal(a.size,9,'doubt must have 9 distinct auto-pattern accompaniments');
 }
 console.log('PASS: doubt has 9 auto-pattern accompaniments');
+for(const id of ['solemn','requiem']){
+ const mood=MOODS.find(m=>m.id===id),target=id==='solemn'?2:1;
+ for(const seed of [1,42,2026])for(const bpm of [46,60,76,96,116,132]){
+  const base=compose(mood,seed,{length:30,lead:false,bpm}),keys=new Set(),counts=[];
+  const reference=score.events({...base,quietPattern:0}).filter(n=>n.part!==target);
+  for(let quietPattern=0;quietPattern<9;quietPattern++){
+   const s={...base,quietPattern},ev=score.events(s);
+   keys.add(JSON.stringify(ev.filter(n=>n.part===target).map(n=>[n.pitch,n.beat,n.duration])));
+   counts.push(ev.length);
+   assert.deepEqual(ev.filter(n=>n.part!==target),reference,id+' preserves other parts');
+   assert.equal(score.remix(s,'accompaniment',101).quietPattern,(quietPattern+1)%9);
+  }
+  assert.equal(keys.size,9,id+' has nine audible event patterns');
+  assert(Math.max(...counts)/Math.min(...counts)<2,id+' density spread below two');
+ }
+ const seen=new Set();for(let seed=1;seed<=300;seed++)seen.add(compose(mood,seed).quietPattern);
+ assert.equal(seen.size,9,id+' generates all nine patterns');
+}
+console.log('PASS: solemn/requiem nine patterns, other parts preserved, density and remix');
 // 内声のない場面でも、長尺Bで既存の発音位置を変えて展開する。荘厳はピアノ側、鎮魂はパッド側。
 for(const id of ['solemn','requiem']){
  const mood=MOODS.find(m=>m.id===id),base=compose(mood,2026,{length:120,lead:false}),plan=score.longFormPlan(base);

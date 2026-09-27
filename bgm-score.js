@@ -72,7 +72,7 @@
   // 「場面におまかせ」の行き先。場面が autoPattern を持つときは、場面専用の伴奏より
   // その決まった型を優先する。持たない場合は今まで通り場面専用、それも無ければ legacy。
   const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:s.autoPattern?s.autoPattern:SCENES[s.moodId]?'scene':'legacy';
-  const arrangementKey=s=>[s.moodId,s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0,s.accompaniment||'auto'].join(':');
+  const arrangementKey=s=>[s.moodId,s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0,s.accompaniment||'auto',s.quietPattern??''].join(':');
   // Registers: the inner voice stays under the melody, the pad stays inside the sampled string range.
   const INNER_GAP=4,INNER_SPAN=11,PAD_LOW=55,PAD_HIGH=79;
   const STEPS=[-4,-3,-2,-2,-1,-1,1,1,2,2,3,4];
@@ -81,7 +81,7 @@
   const pitch=(scale,d)=>scale[(d%scale.length+scale.length)%scale.length]+12*Math.floor(d/scale.length);
   const nearest=(values,target)=>values.reduce((a,b)=>Math.abs(b-target)<Math.abs(a-target)?b:a);
   function chordDegrees(d){return [d-7,d-5,d-3,d,d+2,d+4,d+7,d+9,d+11]}
-  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0,s.scenePattern||0,s.sceneBVariant||0].join('|');return s}
+  function identity(s){s.requestedLength=s.requestedLength||s.length;s.length=s.ending==='cadence'?s.requestedLength:loopLength(s.bpm,s.requestedLength,s.previewBars||s.themeBars);s.fingerprint=[s.root,s.mode,s.prog.join('.'),s.progB.join('.'),s.motif.join('.'),s.rhythmIndex,s.arpIndex,s.arrangementSeed,s.scene,s.drums,s.level,s.sound,s.ending,s.themeBars,s.phrasing,s.lead,s.bpm,s.length.toFixed(3),s.accompaniment||'auto',s.arrangementVariant,s.harmonyEvery,s.innerShift||0,s.padShift||0,s.scenePattern||0,s.sceneBVariant||0,s.quietPattern??''].join('|');return s}
 
   // A 16-bar theme cannot be heard inside 25 beats, so the form follows the requested duration.
   // 1分指定は8小節（約30秒）に丸めず、16小節の長いテーマにする。
@@ -142,6 +142,7 @@
     s.scenePattern=hasSceneB?Math.floor(rng(seed^0x43414C4D)()*3):0;
     s.sceneBVariant=hasSceneB||INNER_EXTRA.has(m.id)?Math.floor(rng(seed^0x43414C42)()*2):0;
     s.padShift=profile&&profile.padAlt?Math.floor(rng(seed^0x50414421)()*2):0;
+    if(m.id==='solemn'||m.id==='requiem')s.quietPattern=Math.floor(rng(seed^0x51554945)()*9);
     s.arp=ARPS[s.arpIndex];s.rhythm=RHYTHMS[s.rhythmIndex];s.melody=makeMelody(s);return identity(s);
   }
 
@@ -264,6 +265,7 @@
   }
   function remix(source,kind,seed){
     const s=JSON.parse(JSON.stringify(source));s.seed=seed;s.edit=kind;
+    if(kind==='accompaniment'&&(s.moodId==='solemn'||s.moodId==='requiem'))s.quietPattern=((s.quietPattern??-1)+1)%9;
     if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;const innerChoices=s.moodId==='bright'||INNER_EXTRA.has(s.moodId)?3:2;s.innerShift=((s.innerShift||0)+1)%innerChoices;if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
     if(kind==='drums')s.drums=s.drums==='none'?s.defaultDrums:'none';
     if(kind==='quiet')s.level=Math.max(.2,s.level*.65);
@@ -393,6 +395,15 @@
     return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat<plan.close1Start?'closing':beat<plan.close2Start?'alternate':beat<plan.returnAt?'closing':'normal';
   }
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
+    // 内声のない2場面：荘厳は低音3型×位置3種、鎮魂は偶数/奇数小節の和音位置3×3。
+    // 未指定の保存済みテイクは従来どおり。打鍵数を増やさない。
+    const quiet=Number.isInteger(s.quietPattern)?s.quietPattern:null;
+    if(quiet!==null&&(s.moodId==='solemn'||s.moodId==='requiem')){
+      const originalAdd=add,target=s.moodId==='solemn'?2:1;
+      const delay=s.moodId==='solemn'?Math.floor(quiet/3)*.5:(bar%2?quiet%3:Math.floor(quiet/3));
+      add=(part,pitch,beat,duration,velocity,pan)=>originalAdd(part,pitch,beat+(part===target?delay:0),duration,velocity,pan);
+      s={...s,...(s.moodId==='solemn'?{arrangementVariant:quiet%3}:{padShift:0})};
+    }
     const innerMode=longFormMode(s,b);
     const c=SCENES[s.moodId],v=s.arrangementVariant||0;
     // 接続最後の小節はAへ向ける。120秒では曲末ではなく追加Aの直前。
