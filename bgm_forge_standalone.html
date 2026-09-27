@@ -4009,11 +4009,12 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
   }
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
     // 内声のない2場面：荘厳は低音3型×位置3種、鎮魂は偶数/奇数小節の和音位置3×3。
+    // 鎮魂の2・4小節目は0・1・0.5拍。2拍だと4小節目の和音が2拍で切れてループへ戻り、試聴で違和感（2026-09-27）。
     // 未指定の保存済みテイクは従来どおり。打鍵数を増やさない。
     const quiet=Number.isInteger(s.quietPattern)?s.quietPattern:null;
     if(quiet!==null&&(s.moodId==='solemn'||s.moodId==='requiem')){
       const originalAdd=add,target=s.moodId==='solemn'?2:1;
-      const delay=s.moodId==='solemn'?Math.floor(quiet/3)*.5:(bar%2?quiet%3:Math.floor(quiet/3));
+      const delay=s.moodId==='solemn'?Math.floor(quiet/3)*.5:(bar%2?[0,1,.5][quiet%3]:Math.floor(quiet/3));
       add=(part,pitch,beat,duration,velocity,pan)=>originalAdd(part,pitch,beat+(part===target?delay:0),duration,velocity,pan);
       s={...s,...(s.moodId==='solemn'?{arrangementVariant:quiet%3}:{padShift:0})};
     }
