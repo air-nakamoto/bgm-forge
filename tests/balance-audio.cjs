@@ -8,6 +8,8 @@ for(const f of ['bgm-score.js','bgm-forge.js'])await p.addScriptTag({path:path.j
 const r=await p.evaluate(async()=>{
 const T=BGM_TEST,m=T.MOODS.find(m=>m.id==='night');
 const s=T.compose({mood:m,bpm:76,sound:'musicbox',length:30,ending:'loop',lead:true,phrasing:'sparse'},2026);
+// 採用WAVは9型拡張（8eddad6）前の内声ずらし0。抽選の回帰ではなく採用音の合成を比較する。
+s.innerShift=0;
 const t=await T.render(s);return {L:Array.from(t.L),R:Array.from(t.R),peak:t.peak};
 });
 assert.equal(b.length,44+r.L.length*4,'採用WAVと現行出力の長さが不一致。採用時の尺・構成を確認してください（tests/README.md）');let max=0;

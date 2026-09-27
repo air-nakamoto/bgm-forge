@@ -19,7 +19,7 @@ node tests/scene-variation.cjs
 | feedback | 分類・入力検証・オリジン・クールダウン等。実送信しない |
 | hosting | OS一時フォルダ内に公開ファイルを生成し、入口・素材・除外対象・リダイレクト等を確認。成功・失敗時とも後片付け |
 
-hostingテストは `.cloudflare-public/` を使用しない。`build_hosting.py --output <新規パス>` は既存パスを拒否する。引数なしの公開ビルドは従来どおり `.cloudflare-public/` を再生成する。
+hostingテストは `.cloudflare-public/` を使用しない。`build_hosting.py --output <新規パス>` は既存パスを拒否する。出力先の親フォルダは呼出側で用意する（テストではmkdtempで作成）。引数なしの公開ビルドは従来どおり `.cloudflare-public/` を再生成する。
 
 ## ブラウザテスト（別入口）
 
@@ -33,19 +33,20 @@ npm run test:browser
 
 Playwright 1.63.0と、それに対応するChromium（revision 1243）を使う。システムのChromeや `NODE_PATH` に依存しない。初回セットアップにはネット接続が必要。Linuxで共有ライブラリが不足する場合は `npx playwright install --with-deps chromium` でOS依存も準備する。
 
-全入口は下記3本を最後まで実行し、1本でも失敗すれば終了コード1。依存不足・WAV不足も失敗であり、黙ってスキップしない。
+通常のブラウザ入口はplayback-clockとbalance-audioの2本を最後まで実行し、1本でも失敗すれば終了コード1。実行対象の依存不足・WAV不足も失敗とする。幻想のwonder-pad-audioは採用条件の再確認待ちとして集計から外し、入口で毎回 `PENDING (not PASS)` と表示する。幻想を合格扱いしたり、不意の失敗を保留へ変換したりはしない。
 
 | テスト | 前提と検査範囲 |
 |---|---|
 | playback-clock | 採用WAV不要。分割／単体版×通常／動きを減らす設定の4条件。位置・シーク・ループ・一時停止／再開・停止・実尺表示 |
-| balance-audio | 下記の夜空の採用WAVが必要。seed 2026・76 BPM・musicbox・30秒・旋律sparse。16bit PCM差最大1以下・ピーク0.95以下 |
-| wonder-pad-audio | 下記の幻想の採用WAVが必要。seed 2026・60 BPM・glass・90秒・旋律なし。16bit PCM差最大1以下・ピーク0.95以下 |
+| balance-audio | 下記の夜空の採用WAVが必要。seed 2026・76 BPM・musicbox・30秒・旋律sparse・採用時の `innerShift=0` を固定。16bit PCM差最大1以下・ピーク0.95以下 |
+| wonder-pad-audio（通常集計外・再確認待ち） | 下記の幻想の採用WAVが必要。seed 2026・60 BPM・glass・90秒・旋律なし。16bit PCM差最大1以下・ピーク0.95以下 |
 
 個別の入口：
 
 ```sh
 npm run test:browser:playback
-npm run test:browser:audio
+npm run test:browser:audio # 夜空の採用音比較
+npm run test:browser:pending # 幻想の旧採用音比較。現仕様とは不一致で終了コード1
 # 任意のスクリーンショット保存先（390px・820px）
 node tests/playback-clock.cjs /tmp/bgm-forge-playback
 ```
@@ -65,8 +66,14 @@ node tests/playback-clock.cjs /tmp/bgm-forge-playback
 
 通常テストは音符列・構造を調べるもので、聴感の合格ではない。ブラウザ音声比較も指定条件の採用音との一致だけを調べ、Firefox・Android実機・全場面の聴感は保証しない。旧外部フォルダのplayback / adjust / browser / loop / seamテストは当リポジトリに存在せず、移植済みとも実行可能とも扱わない。
 
-調査用の `scripts/audit_*.cjs` はこの必須回帰テストとは別。入口は [評価ツール一覧](../docs/quality-evaluation.md)。現仕様と未確認事項は [HANDOVER.md](../HANDOVER.md)。
+調査用の `scripts/audit_*.cjs` はこの必須回帰テストとは別で、システムChromeを使用する既存前提が残る。今回の固定Chromium化の対象外。入口は [評価ツール一覧](../docs/quality-evaluation.md)。現仕様と未確認事項は [HANDOVER.md](../HANDOVER.md)。
 
-## 2026-09-27の検証結果
+## 採用条件の整理（2026-09-27レビュー対応）
 
-通常テストは全PASS。ブラウザは再生4条件がPASSし、採用WAV比較2本は失敗した。夜空は最大1,375 PCM単位の差、幻想は採用WAV92秒に対して現仕様96秒。入口全体は終了コード1を返す。原本の差し替え・許容差の拡大・音声処理の変更は行っていない。詳しい環境と切り分けは [検証記録](../docs/test-results-20260927.md) を参照。
+夜空は `8eddad6` の9型拡張でseed 2026の `innerShift` が0から2に変わった。テスト側だけ0に固定すると採用時（`2c805e6`）の全音符列と一致する。現在の抽選結果は通常テストで検証し、この音声テストは過去の採用条件で合成処理を比較する。
+
+幻想は `568d943` の4小節単位切り上げ（92→96秒）に加え、`0bd76b6` の伴奏変更がある。採用時（`3630978`）と比較し、92秒・ずらし0に固定しても内声が41音→39音で一致しない。通常入口からは外し、採用条件の再確認待ちとする。復帰には比較対象の設計と人間による採否判断が必要で、①では原本・許容差・製品の音を変えない。
+
+変更前の最大1,375 PCM差と92秒対96秒の失敗、およびレビュー対応後の結果は [検証記録](../docs/test-results-20260927.md) を参照。
+
+レビュー対応後：通常ブラウザ入口は2/2本PASS（再生4条件、夜空PCM差最大1・ピーク0.10271835）。幻想1本は再確認待ち・集計外。

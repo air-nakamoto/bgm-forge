@@ -15,6 +15,7 @@ node tests/scene-variation.cjs      # 通常テストの統一入口（長尺延
 ```
 
 PASSしない状態で作業を始めないでください。先に原因を報告すること。
+再生・音声の処理を変えたときは `npm run test:browser` も回す（依存関係・再確認待ちの検査は `tests/README.md`）。
 
 ---
 
