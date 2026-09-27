@@ -4008,15 +4008,41 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     return beat<plan.start?'normal':beat<plan.end?'rest':beat<plan.recoverEnd?'normal':beat<plan.close1Start?'closing':beat<plan.close2Start?'alternate':beat<plan.returnAt?'closing':'normal';
   }
   function sceneAccompaniment(s,{bar,b,base,d,raw,inner,energy,chordFor,turn,formCycle,add}){
-    // 内声のない2場面：荘厳は低音3型×位置3種、鎮魂は偶数/奇数小節の和音位置3×3。
-    // 鎮魂の2・4小節目は0・1・0.5拍。2拍だと4小節目の和音が2拍で切れてループへ戻り、試聴で違和感（2026-09-27）。
-    // 未指定の保存済みテイクは従来どおり。打鍵数を増やさない。
+    // 内声のない2場面：荘厳は低音3型×位置3種、鎮魂はコラール方式の3動き×3配置。
+    // 鎮魂は和音を常に小節頭で鳴らし、中の1音だけを動かす（バッハのコラール315曲の集計で、和音全体を遅らせる形は無く、
+    // 変化は1声部の掛留・刺繍音・経過音で作っていた。和音全体を遅らせる旧案は試聴で違和感、2026-09-27）。
+    // 動き（quiet%3）：0 掛留、1 刺繍音、2 経過音。配置（quiet/3）：0 2・4小節目、1 4小節目だけ、2 全小節。
+    // 長尺のB区間は動きを1つ先へ進めて変化を出す。未指定の保存済みテイクは従来どおり。
     const quiet=Number.isInteger(s.quietPattern)?s.quietPattern:null;
-    if(quiet!==null&&(s.moodId==='solemn'||s.moodId==='requiem')){
-      const originalAdd=add,target=s.moodId==='solemn'?2:1;
-      const delay=s.moodId==='solemn'?Math.floor(quiet/3)*.5:(bar%2?[0,1,.5][quiet%3]:Math.floor(quiet/3));
-      add=(part,pitch,beat,duration,velocity,pan)=>originalAdd(part,pitch,beat+(part===target?delay:0),duration,velocity,pan);
-      s={...s,...(s.moodId==='solemn'?{arrangementVariant:quiet%3}:{padShift:0})};
+    if(quiet!==null&&s.moodId==='solemn'){
+      const originalAdd=add,delay=Math.floor(quiet/3)*.5;
+      add=(part,pitch,beat,duration,velocity,pan)=>originalAdd(part,pitch,beat+(part===2?delay:0),duration,velocity,pan);
+      s={...s,arrangementVariant:quiet%3};
+    }
+    if(quiet!==null&&s.moodId==='requiem'){
+      const originalAdd=add,place=Math.floor(quiet/3);
+      const motion=(quiet%3+(longFormMode(s,b)==='alternate'?1:0))%3;
+      const active=place===0?bar%2===1:place===1?bar%4===3:true;
+      const pc=k=>(base+pitch(s.scale,d+k))%12,up=(a,z)=>((pc(z)-pc(a))%12+12)%12;
+      const inScale=q=>s.scale.some(x=>(base+x-q)%12===0),chordPcs=new Set(raw.map(q=>q%12)),top=Math.max(...raw);
+      const stepDown=q=>inScale(q-1)?q-1:q-2;
+      add=(part,pitch,beat,duration,velocity,pan)=>{
+        if(part!==1||!active||duration<=3)return originalAdd(part,pitch,beat,duration,velocity,pan);
+        if(motion===0){
+          // 掛留：完全4度が取れれば4→3、取れなければ長2度の9→8。どちらも3拍目で解決。
+          const perfect4=up(0,3)===5,from=perfect4?pc(2):up(0,1)===2?pc(0):null,rise=perfect4?up(2,3):2;
+          if(from!==null&&pitch%12===from){originalAdd(part,pitch+rise,beat,2,velocity,pan);return originalAdd(part,pitch,beat+2,duration-2,velocity-4,pan)}
+        }else if(motion===1){
+          // 刺繍音：5度が3拍目に隣の音へ上がり、4拍目で戻る。
+          if(pitch%12===pc(4)&&up(4,5)>0&&up(4,5)<=2){originalAdd(part,pitch,beat,2,velocity,pan);originalAdd(part,pitch+up(4,5),beat+2,1,velocity-6,pan);return originalAdd(part,pitch,beat+3,duration-3,velocity-6,pan)}
+        }else if(pitch===top){
+          // 経過音：最上声が3拍目に音階を1つ下り、4拍目に和音の音へ着く。着けなければ戻る（下の刺繍音）。
+          const s1=stepDown(pitch),s2=stepDown(s1),land=chordPcs.has(((s2%12)+12)%12)?s2:pitch;
+          originalAdd(part,pitch,beat,2,velocity,pan);originalAdd(part,s1,beat+2,1,velocity-6,pan);return originalAdd(part,land,beat+3,duration-3,velocity-6,pan);
+        }
+        return originalAdd(part,pitch,beat,duration,velocity,pan);
+      };
+      s={...s,padShift:0};
     }
     const innerMode=longFormMode(s,b);
     const c=SCENES[s.moodId],v=s.arrangementVariant||0;
