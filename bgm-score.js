@@ -398,7 +398,7 @@
     // 内声のない2場面：荘厳は低音3型×位置3種、鎮魂はコラール方式の3動き×3配置。
     // 鎮魂は和音を常に小節頭で鳴らし、中の1音だけを動かす（バッハのコラール315曲の集計で、和音全体を遅らせる形は無く、
     // 変化は1声部の掛留・刺繍音・経過音で作っていた。和音全体を遅らせる旧案は試聴で違和感、2026-09-27）。
-    // 動き（quiet%3）：0 掛留、1 刺繍音、2 経過音。配置（quiet/3）：0 2・4小節目、1 4小節目だけ、2 全小節。
+    // 動き（quiet%3）：0 掛留、1 刺繍音、2 経過音。配置（quiet/3）：0 2・4小節目、1 4小節目だけ、2 2小節目だけ。全小節は試聴で違和感（2026-09-27）。コラールの掛留は約0.22回/小節で、4小節に1回が近い。
     // 長尺のB区間は動きを1つ先へ進めて変化を出す。未指定の保存済みテイクは従来どおり。
     const quiet=Number.isInteger(s.quietPattern)?s.quietPattern:null;
     if(quiet!==null&&s.moodId==='solemn'){
@@ -409,25 +409,21 @@
     if(quiet!==null&&s.moodId==='requiem'){
       const originalAdd=add,place=Math.floor(quiet/3);
       const motion=(quiet%3+(longFormMode(s,b)==='alternate'?1:0))%3;
-      const active=place===0?bar%2===1:place===1?bar%4===3:true;
+      const active=place===0?bar%2===1:place===1?bar%4===3:bar%4===1;
       const pc=k=>(base+pitch(s.scale,d+k))%12,up=(a,z)=>((pc(z)-pc(a))%12+12)%12;
       const inScale=q=>s.scale.some(x=>(base+x-q)%12===0),chordPcs=new Set(raw.map(q=>q%12)),top=Math.max(...raw);
-      const stepDown=q=>inScale(q-1)?q-1:q-2;
+      const stepDown=q=>inScale(q-1)?q-1:q-2,stepUp=q=>inScale(q+1)?q+1:q+2;
+      // 動かす1音と経路（拍・長さ・音高）を先に決める。指定の動きが取れない和音では、動きごとに別の形で最上声を動かす
+      // （掛留→上からの倚音、刺繍音→3拍目の下の刺繍音、経過音→2拍目の下の刺繍音）。同じ形に落ちて型が重なるのを防ぐ。
+      const perfect4=up(0,3)===5,susFrom=perfect4?pc(2):up(0,1)===2?pc(0):null;
+      let target=null,path=null;
+      if(motion===0&&susFrom!==null){target=raw.find(q=>q%12===susFrom);if(target!==undefined)path=[[0,2,target+(perfect4?up(2,3):2)],[2,null,target]]}
+      if(!path&&motion===1&&up(4,5)>0&&up(4,5)<=2){target=raw.find(q=>q%12===pc(4));if(target!==undefined)path=[[0,2,target],[2,1,target+up(4,5)],[3,null,target]]}
+      if(!path&&motion===2){const s1=stepDown(top),s2=stepDown(s1);if(chordPcs.has(((s2%12)+12)%12)){target=top;path=[[0,2,top],[2,1,s1],[3,null,s2]]}}
+      if(!path){target=top;path=motion===0?[[0,2,stepUp(top)],[2,null,top]]:motion===1?[[0,2,top],[2,1,stepDown(top)],[3,null,top]]:[[0,1,top],[1,1,stepDown(top)],[2,null,top]]}
       add=(part,pitch,beat,duration,velocity,pan)=>{
-        if(part!==1||!active||duration<=3)return originalAdd(part,pitch,beat,duration,velocity,pan);
-        if(motion===0){
-          // 掛留：完全4度が取れれば4→3、取れなければ長2度の9→8。どちらも3拍目で解決。
-          const perfect4=up(0,3)===5,from=perfect4?pc(2):up(0,1)===2?pc(0):null,rise=perfect4?up(2,3):2;
-          if(from!==null&&pitch%12===from){originalAdd(part,pitch+rise,beat,2,velocity,pan);return originalAdd(part,pitch,beat+2,duration-2,velocity-4,pan)}
-        }else if(motion===1){
-          // 刺繍音：5度が3拍目に隣の音へ上がり、4拍目で戻る。
-          if(pitch%12===pc(4)&&up(4,5)>0&&up(4,5)<=2){originalAdd(part,pitch,beat,2,velocity,pan);originalAdd(part,pitch+up(4,5),beat+2,1,velocity-6,pan);return originalAdd(part,pitch,beat+3,duration-3,velocity-6,pan)}
-        }else if(pitch===top){
-          // 経過音：最上声が3拍目に音階を1つ下り、4拍目に和音の音へ着く。着けなければ戻る（下の刺繍音）。
-          const s1=stepDown(pitch),s2=stepDown(s1),land=chordPcs.has(((s2%12)+12)%12)?s2:pitch;
-          originalAdd(part,pitch,beat,2,velocity,pan);originalAdd(part,s1,beat+2,1,velocity-6,pan);return originalAdd(part,land,beat+3,duration-3,velocity-6,pan);
-        }
-        return originalAdd(part,pitch,beat,duration,velocity,pan);
+        if(part!==1||!active||duration<=3||pitch!==target)return originalAdd(part,pitch,beat,duration,velocity,pan);
+        let last;path.forEach(([at,len,q],i)=>{last=originalAdd(part,q,beat+at,len??duration-at,velocity-(i?5:0),pan)});return last;
       };
       s={...s,padShift:0};
     }
