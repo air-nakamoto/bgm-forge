@@ -3682,6 +3682,9 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 低音3型に同じ型が2つある場面。内声ずらし2の組が既存と同じ音にならないよう、
     // 重なる側だけ低音を bassX の型に替える（2026-09-26）。
     'town','victory','wonder','kagura','sorrow','dark','machine','chase','horror','ritual']);
+  // 型2・内声ずらし1が型0・ずらし0と重なる9場面だけ、内声を16分音符ぶん遅らせる。
+  // 音数・音高・低音・和音を増やさず区別する。恐怖はパッドが違うので対象外。
+  const INNER_DELAY=new Set(['town','victory','wonder','kagura','sorrow','dark','machine','chase','ritual']);
   // 「場面におまかせ」の行き先。場面が autoPattern を持つときは、場面専用の伴奏より
   // その決まった型を優先する。持たない場合は今まで通り場面専用、それも無ければ legacy。
   const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:s.autoPattern?s.autoPattern:SCENES[s.moodId]?'scene':'legacy';
@@ -4089,14 +4092,15 @@ window.BGM_SHINOBUE_BANK=[{"kind":"shinobue","root":59.876484079663406,"rate":32
     // 民族は通常、奇数小節だけを撥く。長尺の別型区間では偶数小節にも
     // 同じ内声の語彙を置き、休止から戻ったことが聴き取れる密度にする。
     if(innerMode!=='rest'&&!breath&&(s.moodId!=='ethnic'||bar%2===1||innerMode==='alternate')){
+      const offset=v===2&&s.innerShift===1&&INNER_DELAY.has(s.moodId)?.25:0;
       const times=c.inner[w],orders=[[0,2,1,2],[2,1,0,1],[0,1,2,1]],order=orders[localVariant%3];
       times.forEach((at,k)=>{
         // The answer leaves room; it does not append a new tune.
         if(answer&&times.length>2&&k===times.length-1)return;
         const index=(order[k%4]+(phrase%2&&w===2?1:0))%inner.length;
         const q=inner[index];
-        add(3,q,b+at,Math.min(c.gate,4-at),32+energy*17+(k===0?5:-2)+(phrase%2?-3:0),k%2?.3:-.3);
-        if(c.comp)add(3,inner[(index+1)%inner.length],b+at,Math.min(c.gate,4-at),28+energy*15,k%2?.15:-.15);
+        add(3,q,b+at+offset,Math.min(c.gate,4-at-offset),32+energy*17+(k===0?5:-2)+(phrase%2?-3:0),k%2?.3:-.3);
+        if(c.comp)add(3,inner[(index+1)%inner.length],b+at+offset,Math.min(c.gate,4-at-offset),28+energy*15,k%2?.15:-.15);
       });
     }
     // 幻想も最後の小節は通常の和音を保つ。hold=4.2 で曲末まで届く。

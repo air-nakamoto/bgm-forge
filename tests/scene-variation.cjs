@@ -555,6 +555,27 @@ console.log('PASS: bright has 9 A patterns and 2 B candidates per A');
  }
 }
 console.log('PASS: 19 more scenes add 3 new A patterns and 2 B candidates per A');
+// 追加3設定だけでなく既存6設定どうしも比較する。型0/ずらし0と型2/ずらし1の退行を防ぐ。
+{
+ const ids=['town','victory','wonder','kagura','sorrow','dark','machine','chase','ritual'];
+ let cases=0;
+ for(const id of ids)for(const seed of [2026,1,42])for(const length of [30,90,120])for(const b of [0,1]){
+  const mood=MOODS.find(m=>m.id===id),base={...compose(mood,seed,{length,lead:false}),humanize:false,sceneBVariant:b};
+  const shapes=new Set(),counts=[];
+  for(let v=0;v<3;v++)for(let shift=0;shift<3;shift++){
+   const events=score.events({...base,arrangementVariant:v,innerShift:shift});
+   shapes.add(JSON.stringify(events));counts.push(events.length);cases++;
+  }
+  assert.equal(shapes.size,9,id+' all nine settings must differ, including original six');
+  assert(Math.max(...counts)/Math.min(...counts)<2,id+' accompaniment density spread');
+  const original=score.events({...base,arrangementVariant:0,innerShift:0});
+  const formerlyDuplicate=score.events({...base,arrangementVariant:2,innerShift:1});
+  assert.equal(formerlyDuplicate.length,original.length,id+' duplicate repair must not add notes');
+  assert.deepEqual(formerlyDuplicate.filter(n=>n.part!==3),original.filter(n=>n.part!==3),id+' duplicate repair preserves other parts');
+ }
+ console.log('PASS:',cases,'all-nine accompaniment checks, density and formerly duplicate pair');
+}
+
 // 疑惑は autoPattern のまま、低音3型×内声3型の9組を使う。
 {
  const mood=MOODS.find(m=>m.id==='doubt'),a=new Set();
