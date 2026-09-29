@@ -471,6 +471,8 @@ for(let seed=1;seed<=24;seed++){
  assert(inner.every(e=>e.duration<=.4),'clear accompaniment must stay short and bouncy');
  for(let bar=3;bar<s.themeBars;bar+=4)assert.equal(score.chordAt(s,bar),0,'resolution phrase must arrive on tonic');
 }
+// 型2・ずらし1が型0・ずらし0と同じ音になるため選ばない9場面。
+const DUPLICATE_PAIR_SCENES=['town','victory','wonder','kagura','sorrow','dark','machine','chase','ritual'];
 // 新規作曲でも、場面の伴奏3型・和音の間隔・内声のずらしを独立に組み合わせる。
 // 内声が空の荘厳と鎮魂だけ、代わりに和音を鳴らす位置（padAlt）も2通り持つ。
 // 疑惑の autoPattern は型を使わないため、ここは音の種類でなく設定の網羅を検証する。
@@ -494,10 +496,11 @@ for(const mood of MOODS){
   assert.equal(s.length,score.loopLength(d[0],30));
   const remix=score.remix(s,'accompaniment',101);
   assert.equal(remix.harmonyEvery,s.harmonyEvery,'remix must retain harmony timing');
-  assert.equal(remix.innerShift,(s.innerShift+1)%(three(mood.id)?3:2),'remix must advance the inner shift');
+  const nextShift=(s.innerShift+1)%(three(mood.id)?3:2),dupScene=DUPLICATE_PAIR_SCENES.includes(mood.id);
+  assert.equal(remix.innerShift,dupScene&&remix.arrangementVariant===2&&nextShift===1?2:nextShift,'remix must advance the inner shift, skipping the duplicate pair');
   assert.equal(remix.padShift,padded?1-s.padShift:0,'remix must flip the pad only where padAlt exists');
  }
- assert.equal(combinations.size,3*intervals.length*((three(mood.id)||mood.id==='doubt')?3:2)*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination');
+ assert.equal(combinations.size,(3*((three(mood.id)||mood.id==='doubt')?3:2)-(DUPLICATE_PAIR_SCENES.includes(mood.id)?1:0))*intervals.length*(padded?2:1),mood.id+' must cover every arrangement/harmony/inner-shift combination except the duplicate pair');
 }
 console.log('PASS: 7200 compositions; independent scene arrangement/harmony/inner-shift combinations and unchanged generation settings');
 // のどかだけはAを9型に増やし、長尺のB候補を2通り持つ。Aの音符列が9通りに分かれ、
@@ -555,6 +558,23 @@ console.log('PASS: bright has 9 A patterns and 2 B candidates per A');
  }
 }
 console.log('PASS: 19 more scenes add 3 new A patterns and 2 B candidates per A');
+// 型2・内声ずらし1は型0・ずらし0と同じ音になる9場面では選ばない（2026-09-29、ずらし案は試聴不採用）。
+{
+ const ids=DUPLICATE_PAIR_SCENES;
+ let composed=0,remixed=0;
+ for(const id of ids){
+  const mood=MOODS.find(m=>m.id===id);
+  for(let seed=1;seed<=120;seed++){
+   const s=compose(mood,seed,{length:30,lead:false});composed++;
+   assert(!(s.arrangementVariant===2&&s.innerShift===1),id+' '+seed+' must not pick the duplicate pair');
+   const r=score.remix(s,'accompaniment',seed*7+3);remixed++;
+   assert(!(r.arrangementVariant===2&&r.innerShift===1),id+' remix must not pick the duplicate pair');
+   assert.notEqual(JSON.stringify(score.events({...r,humanize:false})),JSON.stringify(score.events({...s,humanize:false})),id+' '+seed+' remaking the accompaniment must change the notes');
+  }
+ }
+ console.log('PASS:',composed,'compositions and',remixed,'accompaniment remakes avoid the duplicate pair');
+}
+
 // 疑惑は autoPattern のまま、低音3型×内声3型の9組を使う。
 {
  const mood=MOODS.find(m=>m.id==='doubt'),a=new Set();

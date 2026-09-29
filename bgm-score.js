@@ -69,6 +69,11 @@
     // 低音3型に同じ型が2つある場面。内声ずらし2の組が既存と同じ音にならないよう、
     // 重なる側だけ低音を bassX の型に替える（2026-09-26）。
     'town','victory','wonder','kagura','sorrow','dark','machine','chase','horror','ritual']);
+  // 型2・内声ずらし1が型0・ずらし0と同じ音になる9場面（2026-09-27レビュー）。
+  // 内声をずらして区別する案は試聴で不採用（2026-09-29）なので、この組は選ばず型2・ずらし2へ回す。
+  // 作り直しで「押したのに同じ音」になるのを防ぐのが主目的。
+  const DUPLICATE_PAIR=new Set(['town','victory','wonder','kagura','sorrow','dark','machine','chase','ritual']);
+  const avoidDuplicate=s=>{if(DUPLICATE_PAIR.has(s.moodId)&&s.arrangementVariant===2&&s.innerShift===1)s.innerShift=2;return s};
   // 「場面におまかせ」の行き先。場面が autoPattern を持つときは、場面専用の伴奏より
   // その決まった型を優先する。持たない場合は今まで通り場面専用、それも無ければ legacy。
   const accompanimentFor=s=>s.accompaniment&&s.accompaniment!=='auto'?s.accompaniment:s.autoPattern?s.autoPattern:SCENES[s.moodId]?'scene':'legacy';
@@ -137,6 +142,7 @@
     // 1/3の曲だけ2に置き換える。こうすると既存seedの約2/3は以前と同じ伴奏のまま。
     // 対象は、低音3型が互いに異なり、追加3組が既存6組と音符列で重複しない場面だけ（2026-09-26計測）。
     if(INNER_EXTRA.has(m.id)&&rng(seed^0x494E3321)()<1/3)s.innerShift=2;
+    avoidDuplicate(s);
     // のどか・明るいはAの型とB候補2種を独立に選ぶ。ほかの場面は従来の3型を維持。
     const hasSceneB=m.id==='calm'||m.id==='bright';
     s.scenePattern=hasSceneB?Math.floor(rng(seed^0x43414C4D)()*3):0;
@@ -266,7 +272,7 @@
   function remix(source,kind,seed){
     const s=JSON.parse(JSON.stringify(source));s.seed=seed;s.edit=kind;
     if(kind==='accompaniment'&&(s.moodId==='solemn'||s.moodId==='requiem'))s.quietPattern=((s.quietPattern??-1)+1)%9;
-    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;const innerChoices=s.moodId==='bright'||INNER_EXTRA.has(s.moodId)?3:2;s.innerShift=((s.innerShift||0)+1)%innerChoices;if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
+    if(kind==='accompaniment'){s.arrangementVariant=((s.arrangementVariant||0)+1+(seed>>>0)%2)%3;const innerChoices=s.moodId==='bright'||INNER_EXTRA.has(s.moodId)?3:2;s.innerShift=((s.innerShift||0)+1)%innerChoices;avoidDuplicate(s);if(SCENES[s.moodId]&&SCENES[s.moodId].padAlt)s.padShift=1-(s.padShift||0);s.arrangementSeed=seed;s.arpIndex=(s.arpIndex+1+seed%3)%4;s.arp=ARPS[s.arpIndex]}
     if(kind==='drums')s.drums=s.drums==='none'?s.defaultDrums:'none';
     if(kind==='quiet')s.level=Math.max(.2,s.level*.65);
     if(kind==='ending')s.ending=s.ending==='cadence'?'loop':'cadence';
