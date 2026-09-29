@@ -5,7 +5,7 @@ const group=process.argv[2];
 if(group!==undefined&&group!=='audio'){
  console.error('Usage: node tests/run-browser.cjs [audio]');process.exit(1);
 }
-const tests=group==='audio'?['balance-audio']:['playback-clock','balance-audio'];
+const tests=group==='audio'?['balance-audio']:['playback-clock','balance-audio','dialog-keyboard'];
 console.log('PENDING (not PASS): wonder-pad-audio — 採用後の尺・伴奏変更により再確認待ち。通常集計外。npm run test:browser:pending で明示実行。');
 let failed=0;
 for(const test of tests){

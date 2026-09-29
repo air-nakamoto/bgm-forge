@@ -11,6 +11,7 @@
     "test:browser": "node tests/run-browser.cjs",
     "test:browser:playback": "node tests/playback-clock.cjs",
     "test:browser:audio": "node tests/run-browser.cjs audio",
+    "test:browser:dialog": "node tests/dialog-keyboard.cjs",
     "test:browser:pending": "node tests/wonder-pad-audio.cjs",
     "test:browser:install": "playwright install chromium"
   },

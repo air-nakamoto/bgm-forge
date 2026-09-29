@@ -855,14 +855,36 @@
   function lockScroll(on){if(document.body&&document.body.style)document.body.style.overflow=on?'hidden':''}
   function showOverlay(on){const o=$('overlay');if(!o)return;o.hidden=!on;lockScroll(on)}
   // One controller for the help sheet and the per-section detail sheets.
-  function closeSheets(){['help','detail','license'].forEach(id=>{const o=$(id);if(o)o.hidden=true});lockScroll(false)}
+  // 開いたボタンを覚えておき、閉じ方（×・Esc・背景）によらずそこへフォーカスを戻す。
+  let sheetOpener=null;
+  const SHEETS=['help','detail','license'];
+  function openSheet(sheet,focus){
+    const a=document.activeElement;
+    if(!SHEETS.some(id=>{const o=$(id);return o&&!o.hidden}))sheetOpener=a&&a!==document.body?a:null;
+    sheet.hidden=false;lockScroll(true);if(focus&&focus.focus)focus.focus();
+  }
+  function closeSheets(){
+    SHEETS.forEach(id=>{const o=$(id);if(o)o.hidden=true});lockScroll(false);
+    const b=sheetOpener;sheetOpener=null;
+    if(b&&b.focus&&b.isConnected!==false)b.focus();
+  }
+  // 開いているシートの中だけでTabが巡回するようにする。
+  function trapTab(e){
+    const sheet=SHEETS.map($).find(o=>o&&!o.hidden);if(!sheet||!sheet.querySelectorAll)return;
+    const xs=[...sheet.querySelectorAll('a[href],button,input,select,textarea,summary,[tabindex]')]
+      .filter(x=>!x.disabled&&x.tabIndex>=0&&x.getClientRects().length);
+    if(!xs.length)return;
+    const first=xs[0],last=xs[xs.length-1],at=document.activeElement;
+    if(!sheet.contains(at)){e.preventDefault();(e.shiftKey?last:first).focus()}
+    else if(e.shiftKey&&at===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&at===last){e.preventDefault();first.focus()}
+  }
   function openDetail(key){
     const src=$(key),body=$('detailBody'),title=$('detailTitle'),sheet=$('detail');
     if(!src||!body||!sheet||body.innerHTML===undefined)return;
     title.textContent=src.dataset?src.dataset.title||'詳細':'詳細';
     body.innerHTML=src.innerHTML;body.scrollTop=0;
-    sheet.hidden=false;lockScroll(true);
-    const b=sheet.querySelector('[data-close]');if(b&&b.focus)b.focus();
+    openSheet(sheet,sheet.querySelector('[data-close]'));
   }
   // The sound list comes from the same table the app runs on.
   function fillDetailLists(){
@@ -871,8 +893,8 @@
       '<dt>'+x.name+'</dt><dd>'+x.note+'</dd>').join('');
   }
   function showHelp(on){
-    const o=$('help');if(!o)return;o.hidden=!on;lockScroll(on);
-    const b=$(on?'helpClose':'helpOpen');if(b&&b.focus)b.focus();
+    const o=$('help');if(!o)return;
+    if(on)openSheet(o,$('helpClose'));else closeSheets();
   }
   function overlayProgress(title,pct,meta,step){
     const set=(id,v)=>{const el=$(id);if(el&&v!==undefined&&v!==null)el.textContent=v};
@@ -1292,11 +1314,13 @@
   // 一番下の閉じるボタンから閉じたときは、見出しが画面の外へ行かないよう戻す。
   {const b=$('adjustClose'),d=$('adjustments');if(b&&d)b.onclick=()=>{d.open=false;
     const h=$('stepAdjust');if(h&&h.scrollIntoView)h.scrollIntoView({block:'center'})}}
-  {const b=$('licenseOpen'),o=$('license');if(b&&o)b.onclick=()=>{o.hidden=false;lockScroll(true);
-    const c=o.querySelector('[data-close]');if(c&&c.focus)c.focus()}}
+  {const b=$('licenseOpen'),o=$('license');if(b&&o)b.onclick=()=>openSheet(o,o.querySelector('[data-close]'))}
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeSheets);
-  ['help','detail','license'].forEach(id=>{const o=$(id);if(o)o.onclick=e=>{if(e.target===o)closeSheets()}});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&['help','detail','license'].some(id=>{const o=$(id);return o&&!o.hidden}))closeSheets()});
+  SHEETS.forEach(id=>{const o=$(id);if(o)o.onclick=e=>{if(e.target===o)closeSheets()}});
+  document.addEventListener('keydown',e=>{
+    if(!SHEETS.some(id=>{const o=$(id);return o&&!o.hidden}))return;
+    if(e.key==='Escape')closeSheets();else if(e.key==='Tab')trapTab(e);
+  });
   // Build the context on the user's first touch of the page, while the gesture is still live.
   ['pointerdown','keydown'].forEach(type=>document.addEventListener(type,unlockAudio,{capture:true}));
   $('volume').oninput=e=>setVolume(Number(e.target.value)/100);

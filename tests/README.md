@@ -33,12 +33,13 @@ npm run test:browser
 
 Playwright 1.63.0と、それに対応するChromium（revision 1243）を使う。システムのChromeや `NODE_PATH` に依存しない。初回セットアップにはネット接続が必要。Linuxで共有ライブラリが不足する場合は `npx playwright install --with-deps chromium` でOS依存も準備する。
 
-通常のブラウザ入口はplayback-clockとbalance-audioの2本を最後まで実行し、1本でも失敗すれば終了コード1。実行対象の依存不足・WAV不足も失敗とする。幻想のwonder-pad-audioは採用条件の再確認待ちとして集計から外し、入口で毎回 `PENDING (not PASS)` と表示する。幻想を合格扱いしたり、不意の失敗を保留へ変換したりはしない。
+通常のブラウザ入口はplayback-clock・balance-audio・dialog-keyboardの3本を最後まで実行し、1本でも失敗すれば終了コード1。実行対象の依存不足・WAV不足も失敗とする。幻想のwonder-pad-audioは採用条件の再確認待ちとして集計から外し、入口で毎回 `PENDING (not PASS)` と表示する。幻想を合格扱いしたり、不意の失敗を保留へ変換したりはしない。
 
 | テスト | 前提と検査範囲 |
 |---|---|
 | playback-clock | 採用WAV不要。分割／単体版×通常／動きを減らす設定の4条件。位置・シーク・ループ・一時停止／再開・停止・実尺表示 |
 | balance-audio | 下記の夜空の採用WAVが必要。seed 2026・76 BPM・musicbox・30秒・旋律sparse・採用時の `innerShift=0` を固定。16bit PCM差最大1以下・ピーク0.95以下 |
+| dialog-keyboard | 採用WAV不要。分割／単体版×390・820px。使い方・詳細（先頭2つ）・ライセンス・意見フォームで、Tab/Shift+Tabの巡回、Esc・×・背景での閉じとフォーカスの復帰、スクロール固定の解除。意見は実送信しない |
 | wonder-pad-audio（通常集計外・再確認待ち） | 下記の幻想の採用WAVが必要。seed 2026・60 BPM・glass・90秒・旋律なし。16bit PCM差最大1以下・ピーク0.95以下 |
 
 個別の入口：
@@ -46,6 +47,7 @@ Playwright 1.63.0と、それに対応するChromium（revision 1243）を使う
 ```sh
 npm run test:browser:playback
 npm run test:browser:audio # 夜空の採用音比較
+npm run test:browser:dialog # ダイアログのキーボード操作
 npm run test:browser:pending # 幻想の旧採用音比較。現仕様とは不一致で終了コード1
 # 任意のスクリーンショット保存先（390px・820px）
 node tests/playback-clock.cjs /tmp/bgm-forge-playback
